@@ -783,6 +783,18 @@ public abstract class BoxSide
 		}
 	}
 
+	/**
+	 * Returns whether the mouse is currently hovering over this side. The value
+	 * of this property is automatically updated for each {@code mouseMoved}
+	 * event.
+	 *
+	 * @return  {@code true} if the mouse hovers over this side.
+	 */
+	public boolean isHover()
+	{
+		return _hover;
+	}
+
 	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		boolean result = false;

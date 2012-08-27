@@ -71,7 +71,6 @@ public class ContentNodeBoxSide
 		return _node.getBounds();
 	}
 
-	@Override
 	public int getPrecedence()
 	{
 		return _precedence;

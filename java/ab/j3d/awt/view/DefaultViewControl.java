@@ -482,12 +482,14 @@ public class DefaultViewControl
 
 		boolean update = false;
 
-		for ( final ContentNode contentNode : scene.getContentNodes() )
+		final List<ContentNode> controlledContentNodes = getControlledContentNodes( event );
+		for ( final ContentNode contentNode : controlledContentNodes )
 		{
 			final ContentNodeControl control = contentNode.getControl();
 			if ( control != null )
 			{
 				control.mouseMoved( event, contentNode );
+				break;
 			}
 		}
 

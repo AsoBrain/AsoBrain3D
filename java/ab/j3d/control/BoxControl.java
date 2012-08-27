@@ -99,6 +99,11 @@ public class BoxControl
 	private Object _tag = null;
 
 	/**
+	 * Whether the mouse is currently positioned inside the box.
+	 */
+	private boolean _hover;
+
+	/**
 	 * Construct new control.
 	 *
 	 * @param   node    Content node to manipulate.
@@ -272,10 +277,28 @@ public class BoxControl
 
 	public void mouseMoved( final ControlInputEvent event, final ContentNode contentNode )
 	{
+		boolean hover = false;
 		for ( final BoxSide side : _sides )
 		{
 			side.mouseMoved( event, contentNode );
+			hover |= side.isHover();
 		}
+		_hover = hover;
+
+		if ( _listener != null )
+		{
+			_listener.mouseMoved( event, contentNode );
+		}
+	}
+
+	/**
+	 * Returns whether the mouse is hovering above the box.
+	 *
+	 * @return  {@code true} if the mouse is hovering above the box.
+	 */
+	public boolean isHover()
+	{
+		return _hover;
 	}
 
 	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode )
