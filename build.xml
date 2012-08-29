@@ -3,7 +3,7 @@
 	<property file="build.properties"/>
 	<property file="../build.properties"/>
 	<property file="${build.properties}"/>
-	<property name="build.sysclasspath" value="last"/>
+	<property name="build.sysclasspath" value="ignore"/>
 
 	<include file="${include.pack200}"/>
 
@@ -87,6 +87,7 @@
 
 	<path id="java.classpath">
 		<pathelement location="classes/java"/>
+		<pathelement location="${java.home}/lib/rt.jar"/>
 		<pathelement location="${jetbrains-annotations.jar}"/>
 		<pathelement location="${jogl.jar}"/>
 		<pathelement location="${gluegen-rt.jar}"/>
@@ -96,7 +97,7 @@
 
 	<target name="compile-java" depends="api-check,java.uptodate.check" unless="java.uptodate" description="Compile Java source files">
 		<mkdir dir="classes/java"/>
-		<javac2 srcdir="java" destdir="classes/java" classpathref="java.classpath" source="1.5">
+		<javac2 srcdir="java" destdir="classes/java" includeantruntime="false" classpathref="java.classpath" source="1.5">
 			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
 		</javac2>
@@ -122,7 +123,7 @@
 
 	<target name="compile-examples" depends="compile-java,examples.uptodate.check" unless="examples.uptodate" description="Compile examples">
 		<mkdir dir="classes/examples"/>
-		<javac2 srcdir="examples" destdir="classes/examples" classpathref="java.classpath" source="1.5"/>
+		<javac2 srcdir="examples" destdir="classes/examples" includeantruntime="false" classpathref="java.classpath" source="1.5"/>
 		<copy todir="classes/examples" preservelastmodified="true">
 			<fileset dir="examples" excludes="**/*.java"/>
 		</copy>
@@ -152,7 +153,7 @@
 
 	<target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
 		<mkdir dir="classes/test"/>
-		<javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" source="1.5">
+		<javac2 srcdir="test" destdir="classes/test" includeantruntime="false" classpathref="test.classpath" source="1.5">
 			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
 		</javac2>
