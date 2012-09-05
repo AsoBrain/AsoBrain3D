@@ -260,14 +260,19 @@ public class BoxControl
 	{
 		Double result = null;
 
+		final boolean entireBoxHasListener = ( _listener != null );
+
 		for ( final BoxSide side : _sides )
 		{
-			final Double reference = side.getDepth( pointerRay );
-			if ( reference != null )
+			if ( side.isEnabled() || entireBoxHasListener )
 			{
-				if ( ( result == null ) || ( reference < result ) )
+				final Double reference = side.getDepth( pointerRay );
+				if ( reference != null )
 				{
-					result = reference;
+					if ( ( result == null ) || ( reference < result ) )
+					{
+						result = reference;
+					}
 				}
 			}
 		}

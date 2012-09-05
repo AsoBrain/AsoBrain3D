@@ -488,8 +488,11 @@ public class DefaultViewControl
 			final ContentNodeControl control = contentNode.getControl();
 			if ( control != null )
 			{
-				control.mouseMoved( event, contentNode );
-				break;
+				if ( control.getDepth( event.getPointerRay() ) != null )
+				{
+					control.mouseMoved( event, contentNode );
+					break;
+				}
 			}
 		}
 
