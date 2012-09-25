@@ -322,14 +322,14 @@ public class BasicAppearances
 		STEEL = steel; // "steel"
 
 		final BasicAppearance bronze = new BasicAppearance();
-		bronze.setAmbientColor( new Color4f( 0.80f, 0.50f, 0.20f ) );
-		bronze.setDiffuseColor( new Color4f( 0.80f, 0.50f, 0.20f ) );
-		bronze.setSpecularColor( new Color4f( 1.0f, 0.63f, 0.25f ) );
+		bronze.setAmbientColor( new Color4f( 0.42f, 0.27f, 0.11f ) );
+		bronze.setDiffuseColor( new Color4f( 0.53f, 0.37f, 0.15f ) );
+		bronze.setSpecularColor( new Color4f( 0.83f, 0.79f, 0.72f ) );
 		bronze.setShininess( 16 );
 		bronze.setReflectionMap( reflectionMap );
 		bronze.setReflectionMin( 0.1f );
 		bronze.setReflectionMax( 0.5f );
-		bronze.setReflectionColor( new Color4f( 1.0f, 0.63f, 0.25f ) );
+		bronze.setReflectionColor( new Color4f( 0.83f, 0.79f, 0.72f ) );
 		BRONZE = bronze; // "bronze"
 
 		final BasicAppearance messing = new BasicAppearance();
