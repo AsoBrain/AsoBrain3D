@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -83,6 +83,12 @@ public class SingleImageCubeMap
 	 * Image source for entire cube map.
 	 */
 	private TextureMap _source = null;
+
+	/**
+	 * Flag to indicate that we tried to load the image, but it failed. This is
+	 * done to make sure we don't keep trying to load the image.
+	 */
+	private boolean _loadFailed = false;
 
 	/**
 	 * Image for entire cube map.
@@ -220,6 +226,7 @@ public class SingleImageCubeMap
 		if ( source != _source )
 		{
 			_source =source;
+			_loadFailed = false;
 			_image = null;
 			_imageX1 = null;
 			_imageY1 = null;
@@ -241,7 +248,7 @@ public class SingleImageCubeMap
 	{
 		BufferedImage result = _image;
 		final TextureMap source = _source;
-		if ( ( result == null ) && ( source != null ) )
+		if ( ( result == null ) && ( source != null ) && !_loadFailed )
 		{
 			try
 			{
@@ -270,7 +277,7 @@ public class SingleImageCubeMap
 			catch ( IOException e )
 			{
 				System.err.println( "getImage( " + source + " ) => " + e );
-				e.printStackTrace();
+				_loadFailed = true;
 			}
 
 			_image = result;

@@ -2,7 +2,7 @@
  *  $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -184,11 +184,11 @@ public class TextureProxy
 			}
 			catch ( InterruptedException e )
 			{
-				e.printStackTrace();
+				System.err.println( "getTextureData( " + _textureMap + " ) => " + e );
 			}
 			catch ( ExecutionException e )
 			{
-				e.printStackTrace();
+				System.err.println( "getTextureData( " + _textureMap + " ) => " + e.getCause() );
 				_textureData = null;
 			}
 		}

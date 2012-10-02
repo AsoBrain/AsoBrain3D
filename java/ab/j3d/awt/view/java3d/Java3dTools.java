@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,6 @@ import java.util.*;
 import java.util.List;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.*;
-import javax.media.j3d.Material;
 import javax.vecmath.*;
 import javax.vecmath.Vector3f;
 
@@ -384,7 +383,7 @@ public class Java3dTools
 					}
 					catch ( IOException e )
 					{
-						e.printStackTrace();
+						System.err.println( "getColorMapTexture( " + colorMap + " ) => " + e );
 					}
 
 					if ( image != null )
