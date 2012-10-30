@@ -816,89 +816,110 @@ public class ShapeTools
 	{
 		final String result;
 
-		final PathIterator pathIterator = shape.getPathIterator( null );
+		final NumberFormat df = TOW_DECIMALS;
 
-		if ( pathIterator.isDone() )
+		if ( shape instanceof Line2D )
 		{
-			result = "empty path";
+			final Line2D line = (Line2D)shape;
+			result = "Line2D( p1:[" + df.format( line.getX1() ) +
+			         ',' + df.format( line.getY1() ) +
+			         "], p2:[" + df.format( line.getX2() ) +
+			         ',' + df.format( line.getY2() ) + "] )";
+		}
+		else if ( shape instanceof Rectangle2D )
+		{
+			final Rectangle2D rectangle = (Rectangle2D)shape;
+			result = "Rectangle2D( x:" + df.format( rectangle.getX() ) +
+			         ", y:" + df.format( rectangle.getY() ) +
+			         ", w:" + df.format( rectangle.getWidth() ) +
+			         ", h:" + df.format( rectangle.getHeight() ) + " )";
 		}
 		else
 		{
-			final StringBuilder out = new StringBuilder();
-
-			final NumberFormat df = TOW_DECIMALS;
+			final StringBuilder sb = new StringBuilder();
+			sb.append( shape );
+			sb.append( " : " );
 
 			final double[] coords = new double[ 6 ];
+			boolean empty = true;
 
-			for ( ; !pathIterator.isDone() ; pathIterator.next() )
+			for ( final PathIterator pathIterator = shape.getPathIterator( null ); !pathIterator.isDone() ; pathIterator.next() )
 			{
-				if ( out.length() == 0 )
+				if ( empty )
 				{
-					out.append( "path { " );
+					sb.append( "path {" );
+					empty = false;
 				}
 				else
 				{
-					out.append( ", " );
+					sb.append( ", " );
 				}
 
 				switch ( pathIterator.currentSegment( coords ) )
 				{
 					case PathIterator.SEG_LINETO:
-						out.append( "LINE[" );
-						out.append( df.format( coords[ 0 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 1 ] ) );
-						out.append( ']' );
+						sb.append( "LINE[" );
+						sb.append( df.format( coords[ 0 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 1 ] ) );
+						sb.append( ']' );
 						break;
 
 					case PathIterator.SEG_MOVETO:
-						out.append( "START[" );
-						out.append( df.format( coords[ 0 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 1 ] ) );
-						out.append( ']' );
+						sb.append( "START[" );
+						sb.append( df.format( coords[ 0 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 1 ] ) );
+						sb.append( ']' );
 						break;
 
 					case PathIterator.SEG_CLOSE:
-						out.append( "CLOSE" );
+						sb.append( "CLOSE" );
 						break;
 
 					case PathIterator.SEG_QUADTO:
-						out.append( "QUAD[" );
-						out.append( df.format( coords[ 2 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 3 ] ) );
-						out.append( "](p1=[" );
-						out.append( df.format( coords[ 0 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 1 ] ) );
-						out.append( "])" );
+						sb.append( "QUAD[" );
+						sb.append( df.format( coords[ 2 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 3 ] ) );
+						sb.append( "](p1=[" );
+						sb.append( df.format( coords[ 0 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 1 ] ) );
+						sb.append( "])" );
 						break;
 
 					case PathIterator.SEG_CUBICTO:
-						out.append( "CUBIC[" );
-						out.append( df.format( coords[ 4 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 5 ] ) );
-						out.append( "](p1=[" );
-						out.append( df.format( coords[ 0 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 1 ] ) );
-						out.append( "],p2=[" );
-						out.append( df.format( coords[ 2 ] ) );
-						out.append( ',' );
-						out.append( df.format( coords[ 3 ] ) );
-						out.append( "])" );
+						sb.append( "CUBIC[" );
+						sb.append( df.format( coords[ 4 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 5 ] ) );
+						sb.append( "](p1=[" );
+						sb.append( df.format( coords[ 0 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 1 ] ) );
+						sb.append( "],p2=[" );
+						sb.append( df.format( coords[ 2 ] ) );
+						sb.append( ',' );
+						sb.append( df.format( coords[ 3 ] ) );
+						sb.append( "])" );
 						break;
 
 					default :
-						out.append( "unknown segment" );
+						sb.append( "unknown segment" );
 				}
 			}
 
-			out.append( " }" );
+			if ( empty )
+			{
+				sb.append( "empty path" );
+			}
+			else
+			{
+				sb.append( " }" );
+			}
 
-			result = out.toString();
+			result = sb.toString();
 		}
 
 		return result;
