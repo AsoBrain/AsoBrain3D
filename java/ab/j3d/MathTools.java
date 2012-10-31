@@ -20,6 +20,8 @@
  */
 package ab.j3d;
 
+import org.jetbrains.annotations.*;
+
 /**
  * This class provides tools for various math problems.
  *
@@ -638,7 +640,7 @@ public final class MathTools
 	 * @return  {@code true} is the object are equal or both {@code null};
 	 *          {@code false} otherwise.
 	 */
-	public static boolean equals( final Object object1 , final Object object2 )
+	public static boolean equals( @Nullable final Object object1 , @Nullable final Object object2 )
 	{
 		return ( object1 != null ) ? object1.equals( object2 ) : ( object2 == null );
 	}
@@ -651,7 +653,7 @@ public final class MathTools
 	 *
 	 * @return Hash code.
 	 */
-	public static int hashCode( final Double value )
+	public static int hashCode( @Nullable final Double value )
 	{
 		final int result;
 
