@@ -109,7 +109,8 @@ public class AbToPovConverter
 	 * @param   box2wcs     Transform to apply to node.
 	 * @param   box         The {@link Box3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object.
+	 * @return  The resulting {@link PovGeometry} object;
+	 *          {@code null} if the object did not produce any geometry.
 	 */
 	public PovGeometry convertBox3D( final Matrix3D box2wcs, final Box3D box )
 	{
@@ -122,15 +123,22 @@ public class AbToPovConverter
 		else
 		{
 			final List<FaceGroup> faceGroups = box.getFaceGroups();
-			final FaceGroup anyFaceGroup = faceGroups.get( 0 );
+			final FaceGroup faceGroup = faceGroups.get( 0 );
+			final Appearance appearance = faceGroup.getAppearance();
+			if ( appearance != null )
+			{
+				final String name = ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null;
+				final Vector3D v1 = Vector3D.ZERO;
+				final Vector3D v2 = v1.plus( box.getDX(), box.getDY(), box.getDZ() );
+				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
-			final String     name    = ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null;
-			final Vector3D   v1      = Vector3D.ZERO;
-			final Vector3D   v2      = v1.plus( box.getDX(), box.getDY(), box.getDZ() );
-			final PovTexture texture = convertMaterialToPovTexture( anyFaceGroup.getAppearance() );
-
-			result = new PovBox( name, v1, v2, texture );
-			result.setTransform( new PovMatrix( box2wcs ) );
+				result = new PovBox( name, v1, v2, texture );
+				result.setTransform( new PovMatrix( box2wcs ) );
+			}
+			else
+			{
+				result = null;
+			}
 		}
 
 		return result;
@@ -143,7 +151,8 @@ public class AbToPovConverter
 	 * @param   transform   Transform to apply to node.
 	 * @param   cone    The {@link Cone3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object.
+	 * @return  The resulting {@link PovGeometry} object;
+	 *          {@code null} if the object did not produce any geometry.
 	 */
 	public PovGeometry convertCone3D( final Matrix3D transform, final Cone3D cone )
 	{
@@ -155,13 +164,21 @@ public class AbToPovConverter
 		}
 		else
 		{
-			final String name = ( cone.getTag() != null ) ? String.valueOf( cone.getTag() ) : null;
 			final List<FaceGroup> faceGroups = cone.getFaceGroups();
-			final FaceGroup anyFaceGroup = faceGroups.get( 0 );
-			final PovTexture texture = convertMaterialToPovTexture( anyFaceGroup.getAppearance() );
+			final FaceGroup faceGroup = faceGroups.get( 0 );
+			final Appearance appearance = faceGroup.getAppearance();
+			if ( appearance != null )
+			{
+				final String name = ( cone.getTag() != null ) ? String.valueOf( cone.getTag() ) : null;
+				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
-			result = new PovCylinder( name, 0.0, 0.0, 0.0, cone.height, cone.radiusBottom, cone.radiusTop, texture );
-			result.setTransform( new PovMatrix( transform ) );
+				result = new PovCylinder( name, 0.0, 0.0, 0.0, cone.height, cone.radiusBottom, cone.radiusTop, texture );
+				result.setTransform( new PovMatrix( transform ) );
+			}
+			else
+			{
+				result = null;
+			}
 		}
 
 		return result;
@@ -174,7 +191,8 @@ public class AbToPovConverter
 	 * @param   transform   Transform to apply to node.
 	 * @param   cylinder    The {@link Cylinder3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object.
+	 * @return  The resulting {@link PovGeometry} object;
+	 *          {@code null} if the object did not produce any geometry.
 	 */
 	public PovGeometry convertCylinder3D( final Matrix3D transform, final Cylinder3D cylinder )
 	{
@@ -186,13 +204,21 @@ public class AbToPovConverter
 		}
 		else
 		{
-			final String     name    = ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null;
 			final List<FaceGroup> faceGroups = cylinder.getFaceGroups();
-			final FaceGroup anyFaceGroup = faceGroups.get( 0 );
-			final PovTexture texture = convertMaterialToPovTexture( anyFaceGroup.getAppearance() );
+			final FaceGroup faceGroup = faceGroups.get( 0 );
+			final Appearance appearance = faceGroup.getAppearance();
+			if ( appearance != null )
+			{
+				final String name = ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null;
+				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
-			result = new PovCylinder( name, 0.0, 0.0, 0.0, cylinder.height, cylinder.radius, cylinder.radius, texture );
-			result.setTransform( new PovMatrix( transform ) );
+				result = new PovCylinder( name, 0.0, 0.0, 0.0, cylinder.height, cylinder.radius, cylinder.radius, texture );
+				result.setTransform( new PovMatrix( transform ) );
+			}
+			else
+			{
+				result = null;
+			}
 		}
 
 		return result;
@@ -288,103 +314,137 @@ public class AbToPovConverter
 	 * @param   transform   Transform to apply to node.
 	 * @param   object      The {@link Object3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovMesh2} object.
+	 * @return  The resulting {@link PovMesh2} object;
+	 *          {@code null} if the object did not produce any geometry.
 	 */
 	public PovMesh2 convertObject3D( final Matrix3D transform, final Object3D object )
 	{
-		final PovMesh2 result = new PovMesh2( ( object.getTag() != null ) ? String.valueOf( object.getTag() ) : null );
+		PovMesh2 result = null;
 
-		final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
+		boolean hasFaces = false;
 
-		final List<PovVector> vertexVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
-		for ( final Vector3D point : vertexCoordinates )
-		{
-			vertexVectors.add( new PovVector( transform.transform( point ) ) );
-		}
-
-		result.setVertexVectors( vertexVectors );
-
-		List<PovVector> vertexNormals = null;
-		int      textureIndex  = 0;
-		boolean  uvMapping     = false;
-
-		int smoothVertexCount = 0;
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			if ( faceGroup.isSmooth() )
+			if ( faceGroup.getAppearance() != null)
 			{
 				for ( final Face3D face : faceGroup.getFaces() )
 				{
-					smoothVertexCount += face.getVertexCount();
-				}
-			}
-		}
-
-		if ( smoothVertexCount > 0 )
-		{
-			vertexNormals = new ArrayList<PovVector>( smoothVertexCount );
-		}
-
-		Appearance lastAppearance = null;
-
-		int normalIndex = 0;
-		for ( final FaceGroup faceGroup : object.getFaceGroups() )
-		{
-			final boolean smooth = faceGroup.isSmooth();
-
-			/*
-			 * Convert material.
-			 */
-			final Appearance appearance = faceGroup.getAppearance();
-			if ( appearance != lastAppearance )
-			{
-				uvMapping    = ( appearance.getColorMap() != null );
-				textureIndex = result.getOrAddTextureIndex( convertMaterialToPovTexture( appearance ) );
-				lastAppearance = appearance;
-			}
-
-			for ( final Face3D face : faceGroup.getFaces() )
-			{
-				/*
-				 * Add triangles.
-				 */
-				final Tessellation tessellation = face.getTessellation();
-				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
-				{
-					final int[] triangles = primitive.getTriangles();
-					for ( int j = 0; j < triangles.length; j += 3 )
+					final Tessellation tessellation = face.getTessellation();
+					final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+					if ( !primitives.isEmpty() )
 					{
-						final Vertex3D vertex0 = face.getVertex( triangles[ j ] );
-						final int v1  = vertex0.vertexCoordinateIndex;
-						final int vn1 = smooth ? normalIndex++ : 0;
-						final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
-
-						final Vertex3D vertex1 = face.getVertex( triangles[ j + 1 ] );
-						final int v2  = vertex1.vertexCoordinateIndex;
-						final int vn2 = smooth ? normalIndex++ : 0;
-						final int uv2 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
-
-						final Vertex3D vertex2 = face.getVertex( triangles[ j + 2 ] );
-						final int v3  = vertex2.vertexCoordinateIndex;
-						final int vn3 = smooth ? normalIndex++ : 0;
-						final int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex2.colorMapU, (double)vertex2.colorMapV, 0.0 ) ) : -1;
-
-						if ( smooth )
-						{
-							vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j ] ) ) ) );
-							vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j + 1 ] ) ) ) );
-							vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j + 2 ] ) ) ) );
-						}
-
-						result.addTriangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, textureIndex );
+						hasFaces = true;
+						break;
 					}
 				}
 			}
 		}
 
-		if ( vertexNormals != null )
+		if ( hasFaces )
 		{
-			result.setNormalVectors( vertexNormals );
+			hasFaces = false;
+			final PovMesh2 mesh = new PovMesh2( ( object.getTag() != null ) ? String.valueOf( object.getTag() ) : null );
+
+			final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
+
+			final List<PovVector> vertexVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
+			for ( final Vector3D point : vertexCoordinates )
+			{
+				vertexVectors.add( new PovVector( transform.transform( point ) ) );
+			}
+
+			mesh.setVertexVectors( vertexVectors );
+
+			List<PovVector> vertexNormals = null;
+			int      textureIndex  = 0;
+			boolean  uvMapping     = false;
+
+			int smoothVertexCount = 0;
+			for ( final FaceGroup faceGroup : object.getFaceGroups() )
+			{
+				if ( faceGroup.isSmooth() )
+				{
+					for ( final Face3D face : faceGroup.getFaces() )
+					{
+						smoothVertexCount += face.getVertexCount();
+					}
+				}
+			}
+
+			if ( smoothVertexCount > 0 )
+			{
+				vertexNormals = new ArrayList<PovVector>( smoothVertexCount );
+			}
+
+			Appearance lastAppearance = null;
+
+			int normalIndex = 0;
+			for ( final FaceGroup faceGroup : object.getFaceGroups() )
+			{
+				final Appearance appearance = faceGroup.getAppearance();
+				if ( appearance != null )
+				{
+					final boolean smooth = faceGroup.isSmooth();
+
+					/*
+					 * Convert material.
+					 */
+					if ( appearance != lastAppearance )
+					{
+						uvMapping    = ( appearance.getColorMap() != null );
+						textureIndex = mesh.getOrAddTextureIndex( convertMaterialToPovTexture( appearance ) );
+						lastAppearance = appearance;
+					}
+
+					for ( final Face3D face : faceGroup.getFaces() )
+					{
+						/*
+						 * Add triangles.
+						 */
+						final Tessellation tessellation = face.getTessellation();
+						for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+						{
+							final int[] triangles = primitive.getTriangles();
+							for ( int j = 0; j < triangles.length; j += 3 )
+							{
+								final Vertex3D vertex0 = face.getVertex( triangles[ j ] );
+								final int v1  = vertex0.vertexCoordinateIndex;
+								final int vn1 = smooth ? normalIndex++ : 0;
+								final int uv1 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
+
+								final Vertex3D vertex1 = face.getVertex( triangles[ j + 1 ] );
+								final int v2  = vertex1.vertexCoordinateIndex;
+								final int vn2 = smooth ? normalIndex++ : 0;
+								final int uv2 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
+
+								final Vertex3D vertex2 = face.getVertex( triangles[ j + 2 ] );
+								final int v3  = vertex2.vertexCoordinateIndex;
+								final int vn3 = smooth ? normalIndex++ : 0;
+								final int uv3 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex2.colorMapU, (double)vertex2.colorMapV, 0.0 ) ) : -1;
+
+								if ( smooth )
+								{
+									vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j ] ) ) ) );
+									vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j + 1 ] ) ) ) );
+									vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j + 2 ] ) ) ) );
+								}
+
+								mesh.addTriangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, textureIndex );
+								hasFaces = true;
+							}
+						}
+					}
+				}
+			}
+
+			if ( hasFaces )
+			{
+				if ( vertexNormals != null )
+				{
+					mesh.setNormalVectors( vertexNormals );
+				}
+				result = mesh;
+			}
 		}
 
 		return result;
@@ -396,7 +456,8 @@ public class AbToPovConverter
 	 * @param   transform   Transform to apply to node.
 	 * @param   sphere      The {@link Sphere3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object.
+	 * @return  The resulting {@link PovGeometry} object;
+	 *          {@code null} if the object did not produce any geometry.
 	 */
 	public PovGeometry convertSphere3D( final Matrix3D transform, final Sphere3D sphere )
 	{
@@ -410,11 +471,20 @@ public class AbToPovConverter
 		{
 			final List<FaceGroup> faceGroups = sphere.getFaceGroups();
 			final FaceGroup faceGroup = faceGroups.get( 0 );
-			final PovTexture texture = convertMaterialToPovTexture( faceGroup.getAppearance() );
+			final Appearance appearance = faceGroup.getAppearance();
+			if ( appearance != null )
+			{
+				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
-			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.ZERO, sphere._radius, texture );
-			result.setTransform( new PovMatrix( transform ) );
+				result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.ZERO, sphere._radius, texture );
+				result.setTransform( new PovMatrix( transform ) );
+			}
+			else
+			{
+				result = null;
+			}
 		}
+
 		return result;
 	}
 
@@ -454,25 +524,48 @@ public class AbToPovConverter
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();
+
+			final PovScene scene = _scene;
+
 			if ( node instanceof Light3D )
 			{
-				_scene.add( convertLight3D( path.getTransform(), (Light3D)node ) );
+				final PovLight light = convertLight3D( path.getTransform(), (Light3D)node );
+				if ( light != null )
+				{
+					scene.add( light );
+				}
 			}
 			else if ( node instanceof Box3D )
 			{
-				_scene.add( convertBox3D( path.getTransform(), (Box3D)node ) );
+				final PovGeometry geometry = convertBox3D( path.getTransform(), (Box3D)node );
+				if ( geometry != null )
+				{
+					scene.add( geometry );
+				}
 			}
 			else if ( node instanceof Cone3D )
 			{
-				_scene.add( convertCone3D( path.getTransform(), (Cone3D)node ) );
+				final PovGeometry geometry = convertCone3D( path.getTransform(), (Cone3D)node );
+				if ( geometry != null )
+				{
+					scene.add( geometry );
+				}
 			}
 			else if ( node instanceof Cylinder3D )
 			{
-				_scene.add( convertCylinder3D( path.getTransform(), (Cylinder3D)node ) );
+				final PovGeometry geometry = convertCylinder3D( path.getTransform(), (Cylinder3D)node );
+				if ( geometry != null )
+				{
+					scene.add( geometry );
+				}
 			}
 			else if ( node instanceof Sphere3D )
 			{
-				_scene.add( convertSphere3D( path.getTransform(), (Sphere3D)node ) );
+				final PovGeometry geometry = convertSphere3D( path.getTransform(), (Sphere3D)node );
+				if ( geometry != null )
+				{
+					scene.add( geometry );
+				}
 			}
 //			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
 //			{
@@ -480,26 +573,10 @@ public class AbToPovConverter
 //			}
 			else if ( node instanceof Object3D )
 			{
-				boolean hasFaces = false;
-
-				final Object3D object = (Object3D)node;
-				for ( final FaceGroup faceGroup : object.getFaceGroups() )
+				final PovMesh2 geometry = convertObject3D( path.getTransform(), (Object3D)node );
+				if ( geometry != null )
 				{
-					for ( final Face3D face : faceGroup.getFaces() )
-					{
-						final Tessellation tessellation = face.getTessellation();
-						final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
-						if ( !primitives.isEmpty() )
-						{
-							hasFaces = true;
-							break;
-						}
-					}
-				}
-
-				if ( hasFaces )
-				{
-					_scene.add( convertObject3D( path.getTransform(), (Object3D)node ) );
+					scene.add( geometry );
 				}
 			}
 
