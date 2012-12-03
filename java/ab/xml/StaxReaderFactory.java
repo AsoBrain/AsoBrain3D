@@ -50,6 +50,7 @@ class StaxReaderFactory
 			XMLInputFactory factory;
 			try
 			{
+				// NOTE: For OpenJDK, this requires a file 'META-INF/services/com.sun.xml.internal.stream.XMLInputFactoryImpl' containing the factory class name.
 				factory = XMLInputFactory.newFactory( "com.sun.xml.internal.stream.XMLInputFactoryImpl", getClass().getClassLoader() );
 			}
 			catch ( FactoryConfigurationError e )
