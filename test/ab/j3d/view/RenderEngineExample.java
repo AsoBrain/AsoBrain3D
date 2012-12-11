@@ -80,7 +80,7 @@ public class RenderEngineExample
 		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
 		final BasicAppearance sphereAppearance = BasicAppearance.createForColor( new Color4f( 0.0f, 1.0f, 1.0f, 075f ) );
-		sphereAppearance.setReflectionMap( new SingleImageCubeMap( getClass().getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		sphereAppearance.setReflectionMap( new SingleImageCubeMap( getClass().getResource( "maps/reflect-sky-bw.jpg" ) ) );
 		sphereAppearance.setReflectionMin( 0.2f );
 		sphereAppearance.setReflectionMax( 0.8f );
 		final Object3D sphere = new Sphere3D( 0.1 / unit, 20, 20, sphereAppearance );

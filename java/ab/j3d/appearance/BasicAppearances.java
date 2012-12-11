@@ -187,7 +187,7 @@ public class BasicAppearances
 		transparent.setShininess( 64 );
 		TRANSPARENT = transparent; // "transparent"
 
-		final TextureMap reflectionMapTexture = getTexture( "/ab3d/maps/reflect-sky-bw.jpg", 0.0f, 0.0f );
+		final TextureMap reflectionMapTexture = getTexture( "maps/reflect-sky-bw.jpg", 0.0f, 0.0f );
 		final SingleImageCubeMap reflectionMap = ( reflectionMapTexture != null ) ? new SingleImageCubeMap( reflectionMapTexture ) : null;
 
 		final BasicAppearance glass = new BasicAppearance();
@@ -304,7 +304,7 @@ public class BasicAppearances
 		aluPlate.setDiffuseColor( new Color4f( 0.61f, 0.61f, 0.61f ) );
 		aluPlate.setSpecularColor( new Color4f( 0.31f, 0.31f, 0.31f ) );
 		aluPlate.setShininess( 32 );
-		aluPlate.setColorMap( getTexture( "/ab3d/maps/alu-plate.jpg", 0.1f, 0.1f ) );
+		aluPlate.setColorMap( getTexture( "maps/alu-plate.jpg", 0.1f, 0.1f ) );
 		aluPlate.setReflectionMap( reflectionMap );
 		aluPlate.setReflectionMin( 0.0f );
 		aluPlate.setReflectionMax( 0.1f );

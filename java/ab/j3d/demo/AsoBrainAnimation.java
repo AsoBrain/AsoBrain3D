@@ -81,7 +81,7 @@ public class AsoBrainAnimation
 		backgroundMaterial.setDiffuseColor( new Color4f( 0.41f, 0.41f, 0.41f ) );
 		backgroundMaterial.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		backgroundMaterial.setShininess( 16 );
-		backgroundMaterial.setColorMap( getTexture( "/ab3d/maps/alu-plate.jpg", 0.1f, 0.1f ) );
+		backgroundMaterial.setColorMap( getTexture( "maps/alu-plate.jpg", 0.1f, 0.1f ) );
 
 		final BoxUVMap backgroundMap = new BoxUVMap( 0.04 );
 		final Rotator plateRotator = new Rotator( Matrix3D.getTranslation( 10.0, 0.0, 0.0 ), new Vector3D( 500.0, 500.0, 0.0 ), 0.0, -1.0 / 50.0 );
