@@ -380,7 +380,12 @@ public class BasicAppearances
 	{
 		final FileTextureMap result;
 
-		final URL url = BasicAppearances.class.getResource( imageResourcePath );
+		URL url = BasicAppearances.class.getResource( imageResourcePath );
+		if ( ( url == null ) && !( imageResourcePath.charAt( 0 ) == '/' ) )
+		{
+			url = BasicAppearances.class.getResource( '/' + imageResourcePath );
+		}
+
 		if ( url == null )
 		{
 			result = null;
