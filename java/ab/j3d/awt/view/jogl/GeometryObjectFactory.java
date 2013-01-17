@@ -122,11 +122,11 @@ public class GeometryObjectFactory
 		if ( result == null )
 		{
 			final GL gl = GLU.getCurrentGL();
-			if ( gl.isFunctionAvailable( "glGenBuffers" ) && gl.isFunctionAvailable( "glBindBuffer" ) )
+			if ( VertexBufferObjectCore.testSupport() )
 			{
 				result = Implementation.VERTEX_BUFFER_OBJECT_CORE;
 			}
-			else if ( gl.isFunctionAvailable( "glGenBuffersARB" ) && gl.isFunctionAvailable( "glBindBufferARB" ) )
+			else if ( VertexBufferObjectARB.testSupport() )
 			{
 				result = Implementation.VERTEX_BUFFER_OBJECT_ARB;
 			}
@@ -140,6 +140,7 @@ public class GeometryObjectFactory
 			 */
 			if ( result != Implementation.IMMEDIATE_MODE )
 			{
+				// TODO: If the above 'testSupport' calls are sufficiently reliable on Intel hardware, this check may no longer be needed.
 				final String renderer = gl.glGetString( GL.GL_RENDERER );
 				final boolean isCrappyCard = renderer.contains( "Intel" );
 

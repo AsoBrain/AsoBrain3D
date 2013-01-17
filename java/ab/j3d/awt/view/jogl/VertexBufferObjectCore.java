@@ -75,7 +75,6 @@ public class VertexBufferObjectCore
 		gl.glBindBuffer( GL.GL_ARRAY_BUFFER, 0 );
 	}
 
-	@Override
 	public void draw()
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -84,10 +83,40 @@ public class VertexBufferObjectCore
 		gl.glBindBuffer( GL.GL_ARRAY_BUFFER, 0 );
 	}
 
-	@Override
 	public void delete()
 	{
 		final GL gl = GLU.getCurrentGL();
 		gl.glDeleteBuffers( 1, new int[] { _vertexBufferObject }, 0 );
+	}
+
+	/**
+	 * Tests support for this vertex buffer object implementation, including the
+	 * actual creation and binding of a vertex buffer object. This is needed
+	 * because some drivers should have support based on their reported OpenGL
+	 * version and available functions, but fail when vertex buffer objects are
+	 * actually used.
+	 *
+	 * @return  {@code true} if the test succeeds.
+	 */
+	public static boolean testSupport()
+	{
+		boolean result = false;
+
+		final GL gl = GLU.getCurrentGL();
+		if ( gl.isFunctionAvailable( "glGenBuffers" ) && gl.isFunctionAvailable( "glBindBuffer" ) )
+		{
+			try
+			{
+				final VertexBufferObjectCore instance = new VertexBufferObjectCore( Collections.<FaceGroup>emptyList(), GeometryType.FACES );
+				instance.delete();
+				result = true;
+			}
+			catch ( GLException e )
+			{
+				System.err.println( VertexBufferObjectCore.class.getName() + ".testSupport() failed: " + e.toString() );
+			}
+		}
+
+		return result;
 	}
 }
