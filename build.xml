@@ -2,14 +2,15 @@
 <project name="AsoBrain 3D Toolkit" default="release">
 	<property file="build.properties"/>
 	<property file="../build.properties"/>
+	<property file="../../build.properties"/>
 	<property file="${build.properties}"/>
 	<property name="build.sysclasspath" value="ignore"/>
 
-	<include file="${include.pack200}"/>
+	<include file="build-pack200.xml"/>
 
 	<target name="clean" depends="init" description="Remove temporary build files">
 		<delete dir="classes"/>
-		<delete dir="lib"/>
+		<delete dir="lib" includes="*.jar"/>
 		<delete file="ab3d-test.jar"/>
 	</target>
 
@@ -60,19 +61,14 @@
 	<target name="init">
 		<echo message="Project: ${ant.project.name}"/>
 		<tstamp/>
-		<available property="api.hsqldb" type="file" file="${hsqldb.jar}"/>
 		<available property="api.jetbrains.annotations" type="file" file="${jetbrains-annotations.jar}"/>
-		<available property="api.jetbrains.javac2" type="file" file="${jetbrains-javac2.jar}"/>
-		<available property="api.jogl" type="file" file="${jogl.jar}"/>
+		<available property="api.jogl" type="file" file="lib/jogl1/jogl.jar"/>
 		<available property="api.junit" type="file" file="${junit.jar}"/>
 		<available property="api.kxml" type="file" file="${kxml.jar}"/>
-		<taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.lib.path"/>
 	</target>
 
 	<target name="api-check" depends="init" description="Pre-compilation initialization">
-		<fail unless="api.hsqldb" message="Please check 'hsqldb' library presence and 'build.properties' file."/>
 		<fail unless="api.jetbrains.annotations" message="Please check 'JetBrains annotations' library presence and 'build.properties' file."/>
-		<fail unless="api.jetbrains.javac2" message="Please check 'JetBrains Javac2' library presence and 'build.properties' file."/>
 		<fail unless="api.jogl" message="Please check 'JOGL' library presence and 'build.properties' file."/>
 		<fail unless="api.junit" message="Please check 'JUnit' library presence and 'build.properties' file."/>
 		<fail unless="api.kxml" message="Please check 'KXML' library presence and 'build.properties' file."/>
@@ -80,7 +76,6 @@
 
 	<path id="idea.lib.path">
 		<pathelement location="${jetbrains-annotations.jar}"/>
-		<pathelement location="${jetbrains-javac2.jar}"/>
 		<pathelement location="${asm.jar}"/>
 		<pathelement location="${asm-commons.jar}"/>
 	</path>
@@ -89,18 +84,18 @@
 		<pathelement location="classes/java"/>
 		<pathelement location="${java.home}/lib/rt.jar"/>
 		<pathelement location="${jetbrains-annotations.jar}"/>
-		<pathelement location="${jogl.jar}"/>
-		<pathelement location="${gluegen-rt.jar}"/>
+		<pathelement location="lib/jogl1/jogl.jar"/>
+		<pathelement location="lib/jogl1/gluegen-rt.jar"/>
 		<pathelement location="${junit.jar}"/>
 		<pathelement location="${kxml.jar}"/>
 	</path>
 
 	<target name="compile-java" depends="api-check,java.uptodate.check" unless="java.uptodate" description="Compile Java source files">
 		<mkdir dir="classes/java"/>
-		<javac2 srcdir="java" destdir="classes/java" includeantruntime="false" classpathref="java.classpath" source="1.5">
+		<javac srcdir="java" destdir="classes/java" includeantruntime="false" classpathref="java.classpath" source="1.5">
 			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
-		</javac2>
+		</javac>
 		<copy todir="classes/java" preservelastmodified="true">
 			<fileset dir="java" excludes="**/*.java"/>
 		</copy>
@@ -123,7 +118,7 @@
 
 	<target name="compile-examples" depends="compile-java,examples.uptodate.check" unless="examples.uptodate" description="Compile examples">
 		<mkdir dir="classes/examples"/>
-		<javac2 srcdir="examples" destdir="classes/examples" includeantruntime="false" classpathref="java.classpath" source="1.5"/>
+		<javac srcdir="examples" destdir="classes/examples" includeantruntime="false" classpathref="java.classpath" source="1.5"/>
 		<copy todir="classes/examples" preservelastmodified="true">
 			<fileset dir="examples" excludes="**/*.java"/>
 		</copy>
@@ -148,15 +143,14 @@
 		<pathelement location="classes/test"/>
 		<pathelement location="images"/>
 		<path refid="java.classpath"/>
-		<pathelement location="${hsqldb.jar}"/>
 	</path>
 
 	<target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
 		<mkdir dir="classes/test"/>
-		<javac2 srcdir="test" destdir="classes/test" includeantruntime="false" classpathref="test.classpath" source="1.5">
+		<javac srcdir="test" destdir="classes/test" includeantruntime="false" classpathref="test.classpath" source="1.5">
 			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
-		</javac2>
+		</javac>
 		<copy todir="classes/test" preservelastmodified="true">
 			<fileset dir="test" excludes="**/*.java"/>
 		</copy>
@@ -190,4 +184,44 @@
 			<formatter type="brief" usefile="false"/>
 		</junit>
 	</target>
+
+	<target name="resign-jogl1">
+		<macrodef name="resign">
+			<attribute name="jar"/>
+			<sequential>
+				<jar destfile="@{jar}_resigned.jar">
+					<zipfileset src="@{jar}" excludes="META-INF/**"/>
+				</jar>
+				<repack200 jar="@{jar}_resigned.jar"/>
+				<signjar jar="@{jar}_resigned.jar" keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}"/>
+				<pack200 jar="@{jar}_resigned.jar"/>
+				<move file="@{jar}_resigned.jar.pack.gz" tofile="@{jar}.pack.gz"/>
+				<move file="@{jar}_resigned.jar" tofile="@{jar}"/>
+			</sequential>
+		</macrodef>
+		<resign jar="lib/jogl1/gluegen-rt-natives-linux-amd64.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-linux-i586.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-macosx-ppc.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-macosx-universal.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-amd64.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-i586.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-sparc.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-sparcv9.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-windows-amd64.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt-natives-windows-i586.jar"/>
+		<resign jar="lib/jogl1/gluegen-rt.jar"/>
+		<resign jar="lib/jogl1/jogl-demos.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-linux-amd64.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-linux-i586.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-macosx-ppc.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-macosx-universal.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-solaris-amd64.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-solaris-i586.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-solaris-sparc.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-solaris-sparcv9.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-windows-amd64.jar"/>
+		<resign jar="lib/jogl1/jogl-natives-windows-i586.jar"/>
+		<resign jar="lib/jogl1/jogl.jar"/>
+	</target>
+
 </project>
