@@ -1,4 +1,4 @@
-/* $Id$
+/*
  * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
@@ -20,13 +20,13 @@
  */
 package ab.j3d.view.jogl2;
 
-import ab.j3d.view.RenderEngineExample;
+import ab.j3d.awt.view.jogl.*;
+import ab.j3d.view.*;
 
 /**
  * Example program for the JOGL render engine implementation.
  *
- * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
+ * @author G.B.M. Rupert
  */
 public class JOGLEngineExample
 	extends RenderEngineExample
