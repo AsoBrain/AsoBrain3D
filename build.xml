@@ -11,6 +11,7 @@
 	<target name="clean" depends="init" description="Remove temporary build files">
 		<delete dir="classes"/>
 		<delete dir="lib" includes="*.jar"/>
+		<delete dir="test-report"/>
 		<delete file="ab3d-test.jar"/>
 	</target>
 
@@ -171,18 +172,31 @@
 		</condition>
 	</target>
 
-	<target name="test" depends="compile-tests" description="Execute unit tests">
-		<junit fork="yes" haltonfailure="on">
+	<target name="test" depends="run-tests" if="test.failed">
+		<echo message="true" file="test-report/failed"/>
+		<fail message="Unit test(s) failed. See report: ${basedir}/test-report/index.html"/>
+	</target>
+
+	<target name="run-tests" depends="compile-tests" description="Execute unit tests">
+		<delete dir="test-report"/>
+		<mkdir dir="test-report"/>
+		<junit fork="yes" forkmode="once" showoutput="true" errorproperty="test.failed" failureproperty="test.failed">
 			<classpath refid="test.classpath"/>
-			<test name="${testcase}" if="testcase"/>
-			<batchtest unless="testcase">
+			<test todir="test-report" name="${testcase}" if="testcase"/>
+			<batchtest todir="test-report" unless="testcase">
 				<fileset dir="classes/test">
 					<include name="**/Test*.class"/>
 					<exclude name="**/*$*"/>
 				</fileset>
 			</batchtest>
-			<formatter type="brief" usefile="false"/>
+			<formatter type="xml"/>
 		</junit>
+		<junitreport todir="test-report">
+			<fileset dir="test-report">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="test-report"/>
+		</junitreport>
 	</target>
 
 	<target name="resign-jogl1">
