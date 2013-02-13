@@ -1,8 +1,7 @@
 /*
- * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,7 +54,6 @@ import ab.j3d.view.*;
  * </table>
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class ViewerApplet
 	extends JApplet
@@ -95,12 +93,6 @@ public class ViewerApplet
 	 */
 	private StatusOverlay _statusOverlay = null;
 
-	@Override
-	public void init()
-	{
-		SwingUtilities.invokeLater( new InitOnEDT() );
-	}
-
 	/**
 	 * Parses a 6-digit hexadecimal color with leading '#' character, starting
 	 * at the given offset in the given string.
@@ -119,7 +111,21 @@ public class ViewerApplet
 	}
 
 	@Override
-	public void destroy()
+	public void init()
+	{
+		final Scene scene = new Scene( Scene.MM );
+		Scene.addLegacyLights( scene );
+		_scene = scene;
+	}
+
+	@Override
+	public void start()
+	{
+		SwingUtilities.invokeLater( new InitOnEDT() );
+	}
+
+	@Override
+	public void stop()
 	{
 		if ( _view != null )
 		{
@@ -133,7 +139,7 @@ public class ViewerApplet
 		}
 		else
 		{
-			System.err.println( "destroy() called before view was made" );
+			System.err.println( "stop() called before view was made" );
 		}
 
 		final ExecutorService executor = _executor;
@@ -143,29 +149,7 @@ public class ViewerApplet
 		}
 		else
 		{
-			System.err.println( "destroy() called before executor was made" );
-		}
-	}
-
-	@Override
-	public void start()
-	{
-		try
-		{
-			final ExecutorService executor = _executor;
-			if ( executor == null )
-			{
-				System.err.println( "start() called before executor was made" );
-			}
-			else
-			{
-				executor.submit( new Start() );
-			}
-		}
-		catch ( Throwable e )
-		{
-			e.printStackTrace();
-			_statusOverlay.setStatus( e.toString() );
+			System.err.println( "stop() called before executor was made" );
 		}
 	}
 
@@ -250,10 +234,7 @@ public class ViewerApplet
 
 			try
 			{
-				final Scene scene = new Scene( Scene.MM );
-				Scene.addLegacyLights( scene );
-				_scene = scene;
-
+				final Scene scene = _scene;
 				final RenderEngine engine;
 
 				if ( Boolean.parseBoolean( getParameter( "opengl" ) ) )
@@ -328,8 +309,11 @@ public class ViewerApplet
 					add( view.getComponent() );
 				}
 
-				_executor = Executors.newSingleThreadExecutor();
+				final ExecutorService executor = Executors.newSingleThreadExecutor();
+				_executor = executor;
 				System.err.println( "Initialization complete" );
+
+				executor.submit( new Start() );
 			}
 			catch ( Throwable e )
 			{
@@ -361,7 +345,7 @@ public class ViewerApplet
 			{
 				System.err.println( "No 'source' specified" );
 			}
-			else
+			else if ( !scene.hasContentNode( "model" ) )
 			{
 				try
 				{
