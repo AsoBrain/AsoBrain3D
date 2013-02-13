@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt;
 
@@ -24,7 +22,6 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 import javax.imageio.*;
-import javax.imageio.stream.*;
 import javax.swing.*;
 
 import ab.j3d.pov.*;
@@ -34,8 +31,7 @@ import org.jetbrains.annotations.*;
  * This class provides a frontend for the POV-Ray renderer. It can be used to
  * render a {@link PovScene} using a native POV-Ray executable.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class PovRenderer
 {
@@ -43,116 +39,118 @@ public class PovRenderer
 	 * Renders the scene to an image with the specified size and returns the
 	 * resulting image.
 	 *
-	 * @param   povScene        Scene to render.
-	 * @param   povFile         File or directory to write POV file to (optional).
-	 * @param   width           The width of the rendered image.
-	 * @param   height          The height of the rendered image.
-	 * @param   progressModel   Progress model.
-	 * @param   log             Log to write console output to.
-	 * @param   background      Whether or not to draw a background.
+	 * @param povScene      Scene to render.
+	 * @param povFile       File or directory to write POV file to (optional).
+	 * @param imageFile     Target image file ({@code null} use stdout on unix).
+	 * @param width         The width of the rendered image.
+	 * @param height        The height of the rendered image.
+	 * @param progressModel Progress model.
+	 * @param log           Log to write console output to.
+	 * @param background    Whether or not to draw a background.
 	 *
-	 * @return  Rendered image.
+	 * @return Rendered image.
 	 *
-	 * @throws  IOException if there was a problem reading/writing data.
+	 * @throws IOException if there was a problem reading/writing data.
 	 */
-	public static BufferedImage render( final PovScene povScene, final File povFile, final int width, final int height, final BoundedRangeModel progressModel, final PrintWriter log, final boolean background )
-		throws IOException
+	public static BufferedImage render( final PovScene povScene, final File povFile, final File imageFile, final int width, final int height, final BoundedRangeModel progressModel, final PrintWriter log, final boolean background )
+	throws IOException
 	{
-		BufferedImage result;
-
 		final File actualPovFile = povScene.write( povFile );
 
-		final Process process = startPovRay( actualPovFile, width, height, background );
+		final File actualImageFile;
+		if ( imageFile == null )
+		{
+
+			actualImageFile = File.createTempFile( povFile.getName(), ".png", actualPovFile.getParentFile() );
+			actualImageFile.deleteOnExit();
+		}
+		else
+		{
+			actualImageFile = imageFile;
+		}
+
+		final Process process = startPovRay( actualPovFile, actualImageFile, width, height, background );
 		try
 		{
 			monitorPovRayProcess( process, height, progressModel, log );
-
-			/*
-			 * Pipe data from 'stdout' to 'out'
-			 */
-			try
-			{
-				final InputStream is = process.getInputStream();
-				try
-				{
-					result = ImageIO.read( new MemoryCacheImageInputStream( is ) );
-				}
-				finally
-				{
-					is.close();
-				}
-			}
-			catch ( IOException e )
-			{
-				throw new IOException( "POV-Ray command execution failed", e );
-			}
+			process.waitFor();
+			return ImageIO.read( actualImageFile );
+		}
+		catch ( InterruptedException e )
+		{
+			throw new IOException( "POV-Ray was interrupted!", e );
 		}
 		finally
 		{
 			process.destroy();
 
-			if ( ( actualPovFile != null ) && ( actualPovFile != povFile ) )
+			if ( actualPovFile != povFile )
 			{
 				actualPovFile.delete();
 			}
+
+			if ( ( actualImageFile != imageFile ) )
+			{
+				actualImageFile.delete();
+			}
 		}
-
-		return result;
 	}
 
 	/**
 	 * Start POV-Ray render process.
 	 *
-	 * @param   povFile     File containing POV-scene.
-	 * @param   width       The width of the rendered image.
-	 * @param   height      The height of the rendered image.
-	 * @param   background  Whether or not to draw a background.
+	 * @param povFile    File containing POV-scene.
+	 * @param imageFile  Target image file ({@code null} use stdout on unix).
+	 * @param width      The width of the rendered image.
+	 * @param height     The height of the rendered image.
+	 * @param background Whether or not to draw a background.
 	 *
-	 * @return  POV-Ray process.
+	 * @return POV-Ray process.
 	 *
-	 * @throws  IOException if the POV-Ray executable could not be accessed.
-	 * @throws  SecurityException if a security manager prevents file access.
+	 * @throws IOException if the POV-Ray executable could not be accessed.
+	 * @throws SecurityException if a security manager prevents file access.
 	 */
-	public static Process startPovRay( final File povFile, final int width, final int height, final boolean background )
-		throws IOException
+	public static Process startPovRay( final File povFile, final File imageFile, final int width, final int height, final boolean background )
+	throws IOException
 	{
-		return startPovRay( povFile, width, height, background, 0, width );
+		return startPovRay( povFile, imageFile, width, height, background, 0, width );
 	}
 
 	/**
-	 * Start POV-Ray render process. By specifying start and end columns, only
-	 * a part of the image can be rendered.
+	 * Start POV-Ray render process. By specifying start and end columns, only a
+	 * part of the image can be rendered.
 	 *
-	 * @param   povFile         File containing POV-scene.
-	 * @param   width           The width of the rendered image.
-	 * @param   height          The height of the rendered image.
-	 * @param   background      Whether or not to draw a background.
-	 * @param   startColumn     First column (x-coordinate) to render.
-	 * @param   endColumn       Last column (x-coordinate) to render.
+	 * @param povFile     File containing POV-scene.
+	 * @param imageFile   Target image file ({@code null} use stdout on unix).
+	 * @param width       The width of the rendered image.
+	 * @param height      The height of the rendered image.
+	 * @param background  Whether or not to draw a background.
+	 * @param startColumn First column (x-coordinate) to render.
+	 * @param endColumn   Last column (x-coordinate) to render.
 	 *
-	 * @return  POV-Ray process.
+	 * @return POV-Ray process.
 	 *
-	 * @throws  IOException if the POV-Ray executable could not be accessed.
-	 * @throws  SecurityException if a security manager prevents file access.
+	 * @throws IOException if the POV-Ray executable could not be accessed.
+	 * @throws SecurityException if a security manager prevents file access.
 	 */
-	public static Process startPovRay( final File povFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
-		throws IOException
+	public static Process startPovRay( final File povFile, final File imageFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
+	throws IOException
 	{
-		return startPovRay( getPovrayCommand( povFile, width, height, background, startColumn, endColumn ) );
+		return startPovRay( getPovrayCommand( povFile, imageFile, width, height, background, startColumn, endColumn ) );
 	}
 
 	/**
 	 * Start POV-Ray render process.
 	 *
-	 * @param   command         POV-Ray command.
+	 * @param command POV-Ray command.
 	 *
-	 * @return  POV-Ray process.
+	 * @return POV-Ray process.
 	 *
-	 * @throws  IOException if the POV-Ray executable could not be accessed.
-	 * @throws  SecurityException if a security manager prevents file access.
+	 * @throws IOException if the POV-Ray executable could not be accessed.
+	 * @throws SecurityException if a security manager prevents file access.
 	 */
 	public static Process startPovRay( final List<String> command )
-		throws IOException
+	throws IOException
 	{
 		/*
 		 * Start POV-Ray process.
@@ -180,24 +178,40 @@ public class PovRenderer
 	 * Get POV-Ray command-line to execute. By specifying start and end columns,
 	 * only a part of the image can be rendered.
 	 *
-	 * @param   povFile         File containing POV-scene.
-	 * @param   width           The width of the rendered image.
-	 * @param   height          The height of the rendered image.
-	 * @param   background      Whether or not to draw a background.
-	 * @param   startColumn     First column (x-coordinate) to render.
-	 * @param   endColumn       Last column (x-coordinate) to render.
+	 * @param povFile     File containing POV-scene.
+	 * @param imageFile   Target image file ({@code null} use stdout on unix).
+	 * @param width       The width of the rendered image.
+	 * @param height      The height of the rendered image.
+	 * @param background  Whether or not to draw a background.
+	 * @param startColumn First column (x-coordinate) to render.
+	 * @param endColumn   Last column (x-coordinate) to render.
 	 *
-	 * @return  POV-Ray command line.
+	 * @return POV-Ray command line.
 	 *
-	 * @throws  SecurityException if a security manager prevents file access.
+	 * @throws SecurityException if a security manager prevents file access.
 	 */
-	public static List<String> getPovrayCommand( final File povFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
+	public static List<String> getPovrayCommand( final File povFile, final File imageFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
 	{
 		final List<String> command = new ArrayList<String>( 16 );
 
-		command.add( "povray" );                   /* POV-Ray executable */
+		final boolean isWindows = ( File.separatorChar == '\\' );
+		if ( isWindows )
+		{
+			if ( imageFile == null )
+			{
+				throw new IllegalArgumentException( "Windows required a 'pngFile' to be specified" );
+			}
+
+			command.add( "pvengine" );
+			command.add( "/EXIT" );
+		}
+		else
+		{
+			command.add( "povray" );
+		}
+
 		command.add( "+I" + povFile.getPath() );   /* Input file ('-' = stdin) */
-		command.add( "+O-" );                      /* Output file ('-' = stdout) */
+		command.add( "+O" + ( ( imageFile == null ) ? "-" : imageFile.getPath() ) ); /* Output file ('-' = stdout) */
 		command.add( "+FN" );                      /* File format: PNG */
 		command.add( "+W" + width );               /* Image width */
 		command.add( "+H" + height );              /* Image height */
@@ -224,10 +238,10 @@ public class PovRenderer
 	/**
 	 * Monitor 'stderr' for progress monitoring and logging from POV-Ray.
 	 *
-	 * @param   povProcess      POV-Ray process to monitor.
-	 * @param   height          The height of the rendered image.
-	 * @param   progressModel   Progress model.
-	 * @param   log             Log to write console output to.
+	 * @param povProcess    POV-Ray process to monitor.
+	 * @param height        The height of the rendered image.
+	 * @param progressModel Progress model.
+	 * @param log           Log to write console output to.
 	 */
 	public static void monitorPovRayProcess( @NotNull final Process povProcess, final int height, @Nullable final BoundedRangeModel progressModel, @Nullable final PrintWriter log )
 	{
@@ -244,7 +258,7 @@ public class PovRenderer
 	 * reported by POV-Ray in real time.
 	 */
 	public static class PovRayProcessMonitor
-		implements Runnable
+	implements Runnable
 	{
 		/**
 		 * Progress model.
@@ -267,10 +281,10 @@ public class PovRenderer
 		/**
 		 * Construct monitor.
 		 *
-		 * @param   povProcess      POV-Ray process to monitor.
-		 * @param   height          The height of the rendered image.
-		 * @param   progressModel   Progress model.
-		 * @param   log             Log to write console output to.
+		 * @param povProcess    POV-Ray process to monitor.
+		 * @param height        The height of the rendered image.
+		 * @param progressModel Progress model.
+		 * @param log           Log to write console output to.
 		 */
 		public PovRayProcessMonitor( @NotNull final Process povProcess, final int height, @Nullable final BoundedRangeModel progressModel, @Nullable final PrintWriter log )
 		{
@@ -308,7 +322,7 @@ public class PovRenderer
 								final int value = Integer.parseInt( temp );
 								_progressModel.setValue( value );
 							}
-							catch( Exception e )
+							catch ( Exception e )
 							{
 								/* ignore */
 							}

@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view;
 
@@ -35,15 +33,14 @@ import ab.j3d.pov.*;
 import ab.j3d.view.*;
 
 /**
- * This action converts the given {@link View3D} to a POV-Ray image using
- * the {@link AbToPovConverter} and paints this image on top of the view when
+ * This action converts the given {@link View3D} to a POV-Ray image using the
+ * {@link AbToPovConverter} and paints this image on top of the view when
  * needed.
  *
- * @author  Rob Veneberg
- * @version $Revision$ $Date$
+ * @author Rob Veneberg
  */
 public class ViewToPovAction
-	extends AbstractAction
+extends AbstractAction
 {
 	/**
 	 * Resource bundle for this class.
@@ -71,14 +68,14 @@ public class ViewToPovAction
 	private static final String BUNDLE_NAME = ViewToPovAction.class.getPackage().getName() + ".LocalStrings";
 
 	/**
-	 * The {@link ImagePanel} is constructed and added to the view. When the
-	 * user clicks on the view, the panel is set invisible and the view component
-	 * is set visible (the original view is visible again).
+	 * The {@link ImagePanel} is constructed and added to the view. When the user
+	 * clicks on the view, the panel is set invisible and the view component is set
+	 * visible (the original view is visible again).
 	 *
-	 * @param   locale              Needed to retrieve the correct resource bundle.
-	 * @param   view                View this action belongs to.
-	 * @param   viewContainer       Container that holds the view components.
-	 * @param   constraints         Layout constraints for the image panel.
+	 * @param locale        Needed to retrieve the correct resource bundle.
+	 * @param view          View this action belongs to.
+	 * @param viewContainer Container that holds the view components.
+	 * @param constraints   Layout constraints for the image panel.
 	 */
 	public ViewToPovAction( final Locale locale, final View3D view, final JPanel viewContainer, final Object constraints )
 	{
@@ -109,13 +106,14 @@ public class ViewToPovAction
 		imagePanel.addMouseListener( new MouseAdapter()
 		{
 			@Override
-			public void mousePressed( final MouseEvent e)
+			public void mousePressed( final MouseEvent e )
 			{
 				imagePanel.setVisible( false );
 				viewComponent.setVisible( true );
-			} } );
+			}
+		} );
 
-		viewContainer.add(  imagePanel, constraints );
+		viewContainer.add( imagePanel, constraints );
 
 		_view = view;
 		_imagePanel = imagePanel;
@@ -126,23 +124,25 @@ public class ViewToPovAction
 	 */
 	public void actionPerformed( final ActionEvent e )
 	{
-		final Thread thread = new Thread( new Runnable() {
+		final Thread thread = new Thread( new Runnable()
+		{
 			public void run()
 			{
 				render();
-			} } );
+			}
+		} );
 
 		thread.start();
 	}
 
 	/**
 	 * The {@link RenderEngine} is converted to a {@link PovScene}, the scene is
-	 * rendered with POV-Ray, and the resulting image is placed onto the
-	 * image panel.
+	 * rendered with POV-Ray, and the resulting image is placed onto the image
+	 * panel.
 	 */
 	private void render()
 	{
-		final ResourceBundle res  = _bundle;
+		final ResourceBundle res = _bundle;
 
 		/*
 		 * Get view properties.
@@ -169,13 +169,13 @@ public class ViewToPovAction
 			throw new IllegalStateException( "View component is not on any window!" );
 		}
 
-		int viewWidth  = viewComponent.getWidth();
+		int viewWidth = viewComponent.getWidth();
 		int viewHeight = viewComponent.getHeight();
 
 		if ( viewComponent instanceof Container )
 		{
 			final Insets insets = ( (Container)viewComponent ).getInsets();
-			viewWidth  -= insets.left + insets.right;
+			viewWidth -= insets.left + insets.right;
 			viewHeight -= insets.top + insets.bottom;
 		}
 
@@ -198,7 +198,7 @@ public class ViewToPovAction
 		final GraphicsConfiguration graphicsConfiguration = progressDialog.getGraphicsConfiguration();
 		final Rectangle screenBounds = graphicsConfiguration.getBounds();
 		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
-		final int windowWidth  = Math.min( screenBounds.width, progressDialog.getWidth()  );
+		final int windowWidth = Math.min( screenBounds.width, progressDialog.getWidth() );
 		final int windowHeight = Math.min( screenBounds.height, progressDialog.getHeight() );
 		progressDialog.setBounds( screenBounds.x + ( screenBounds.width + screenInsets.left + screenInsets.right - windowWidth ) / 2, screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - windowHeight ) / 2, windowWidth, windowHeight );
 
@@ -215,7 +215,7 @@ public class ViewToPovAction
 		 * Perform conversion
 		 */
 		final StringWriter logBuffer = new StringWriter();
-		final PrintWriter  logWriter = new PrintWriter( logBuffer );
+		final PrintWriter logWriter = new PrintWriter( logBuffer );
 
 		BufferedImage image = null;
 		try
@@ -223,8 +223,8 @@ public class ViewToPovAction
 			/*
 			 * Convert view properties to camera properties.
 			 */
-			final Scene    scene       = view.getScene();
-			final double   aspectRatio = (double)viewWidth / (double)viewHeight;
+			final Scene scene = view.getScene();
+			final double aspectRatio = (double)viewWidth / (double)viewHeight;
 
 			/*
 			 * Convert scene to POV-Ray.
@@ -238,7 +238,7 @@ public class ViewToPovAction
 			 */
 			try
 			{
-				image = PovRenderer.render( povScene, null, viewWidth, viewHeight, progressBar.getModel(), logWriter, false );
+				image = PovRenderer.render( povScene, null, null, viewWidth, viewHeight, progressBar.getModel(), logWriter, false );
 			}
 			catch ( IOException e )
 			{
@@ -255,13 +255,15 @@ public class ViewToPovAction
 					{
 						progressDialog.dispose();
 					}
-					catch ( Throwable t ) { /* ignore */ }
+					catch ( Throwable t )
+					{ /* ignore */ }
 
 					try
 					{
 						progressDialog.setVisible( false );
 					}
-					catch ( Throwable t ) { /* ignore */ }
+					catch ( Throwable t )
+					{ /* ignore */ }
 				}
 			} );
 		}
@@ -281,9 +283,9 @@ public class ViewToPovAction
 		{
 			final String logText = logBuffer.toString();
 			int pos = logText.length();
-			for ( int i = 0 ; ( pos > 0 ) && ( i < 25 ) ; i++ )
+			for ( int i = 0; ( pos > 0 ) && ( i < 25 ); i++ )
 			{
-				pos = logText.lastIndexOf( (int) '\n', pos - 1 );
+				pos = logText.lastIndexOf( (int)'\n', pos - 1 );
 			}
 
 			final String message = MessageFormat.format( res.getString( "errorMessage" ), ( ( pos < 0 ) ? logText : logText.substring( pos ) ) );
@@ -296,7 +298,7 @@ public class ViewToPovAction
 	 * Panel displaying the rendered image.
 	 */
 	private static class ImagePanel
-		extends JPanel
+	extends JPanel
 	{
 		/**
 		 * Image displayed by this panel.
@@ -314,7 +316,7 @@ public class ViewToPovAction
 		/**
 		 * Set image to display.
 		 *
-		 * @param   image   Image to display (<code>null</code> = none).
+		 * @param image Image to display (<code>null</code> = none).
 		 */
 		public void setImage( final BufferedImage image )
 		{
@@ -330,7 +332,7 @@ public class ViewToPovAction
 			if ( !isPreferredSizeSet() && ( _image != null ) )
 			{
 				final Insets i = getInsets();
-				result = new Dimension( _image.getWidth( this ) + i.left + i.right , _image.getHeight( this ) + i.top  + i.bottom );
+				result = new Dimension( _image.getWidth( this ) + i.left + i.right, _image.getHeight( this ) + i.top + i.bottom );
 			}
 			else
 			{
@@ -348,7 +350,7 @@ public class ViewToPovAction
 			if ( _image != null )
 			{
 				final Insets i = getInsets();
-				g.drawImage( _image , i.left , i.top , getWidth()  - i.left - i.right , getHeight() - i.top  - i.bottom , this );
+				g.drawImage( _image, i.left, i.top, getWidth() - i.left - i.right, getHeight() - i.top - i.bottom, this );
 			}
 		}
 	}

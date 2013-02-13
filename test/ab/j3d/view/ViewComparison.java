@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.view;
 
@@ -41,11 +39,11 @@ import ab.j3d.pov.*;
  * Shows a 3D scene using the various render engines in several lighting modes,
  * for comparison purposes.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  * @version $Revision$ $Date$
  */
 public class ViewComparison
-	implements Runnable
+implements Runnable
 {
 	/**
 	 * Whether to include a POV view.
@@ -117,11 +115,11 @@ public class ViewComparison
 				final JLabel povComponent = new JLabel();
 				layoutPanel.add( povComponent );
 
-				final SwingWorker<Object,BufferedImage> povImageRenderer = new SwingWorker<Object,BufferedImage>()
+				final SwingWorker<Object, BufferedImage> povImageRenderer = new SwingWorker<Object, BufferedImage>()
 				{
 					@Override
 					protected Object doInBackground()
-						throws Exception
+					throws Exception
 					{
 						final Thread thread = Thread.currentThread();
 						thread.setPriority( Thread.MIN_PRIORITY );
@@ -134,14 +132,14 @@ public class ViewComparison
 								final String cameraName = finalView.getLabel();
 								final Matrix3D view2Scene = finalView.getView2Scene();
 								final double cameraAngle = Math.toDegrees( finalView.getFieldOfView() );
-								final double  aspectRatio = (double)size.width / (double)size.height;
+								final double aspectRatio = (double)size.width / (double)size.height;
 
 								final AbToPovConverter converter = new AbToPovConverter();
 								final PovScene povScene = converter.convert( scene );
 								povScene.add( new PovCamera( cameraName, view2Scene, cameraAngle, aspectRatio ) );
 								povScene.setBackground( new PovVector( 0.5f, 0.5f, 0.5f ) );
 
-								publish( PovRenderer.render( povScene, null, size.width, size.height, null, new PrintWriter( System.err ), true ) );
+								publish( PovRenderer.render( povScene, null, null, size.width, size.height, null, new PrintWriter( System.err ), true ) );
 							}
 							Thread.sleep( 1000L );
 						}
@@ -198,7 +196,7 @@ public class ViewComparison
 		protected Template()
 		{
 			_cameraLocation = new Vector3D( 500.0, -500.0, 500.0 );
-			_cameraTarget   = new Vector3D( 0.0, 150.0, 40.0 );
+			_cameraTarget = new Vector3D( 0.0, 150.0, 40.0 );
 //			_cameraLocation = new Vector3D( 4000.0, 1500.0, 4000.0 );
 //			_cameraTarget   = new Vector3D( 0.0, 1500.0, 40.0 );
 		}
@@ -222,24 +220,24 @@ public class ViewComparison
 	}
 
 	private static class DefaultTemplate
-		extends Template
+	extends Template
 	{
 		@Override
 		public void createModel( final Scene target )
 		{
-			final BasicAppearance solid     = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "solid";
-			final BasicAppearance shiny     = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "shiny";
-			final BasicAppearance shinier   = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "shinier";
-			final BasicAppearance textured  = BasicAppearance.createForColor( new Color4f( 0xffffffff ) ); // "textured";
+			final BasicAppearance solid = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "solid";
+			final BasicAppearance shiny = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "shiny";
+			final BasicAppearance shinier = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "shinier";
+			final BasicAppearance textured = BasicAppearance.createForColor( new Color4f( 0xffffffff ) ); // "textured";
 			final BasicAppearance textured2 = BasicAppearance.createForColor( new Color4f( 0xff0080ff ) ); // "textured2";
 			final BasicAppearance textured3 = BasicAppearance.createForColor( new Color4f( 0xffff0000 ) ); // "textured3";
 
 			if ( SPECULAR_HIGHLIGHTS )
 			{
-				solid    .setSpecularColor( Color4.WHITE );
-				shiny    .setSpecularColor( Color4.WHITE );
-				shinier  .setSpecularColor( Color4.WHITE );
-				textured .setSpecularColor( Color4.WHITE );
+				solid.setSpecularColor( Color4.WHITE );
+				shiny.setSpecularColor( Color4.WHITE );
+				shinier.setSpecularColor( Color4.WHITE );
+				textured.setSpecularColor( Color4.WHITE );
 				textured2.setSpecularColor( Color4.WHITE );
 				textured3.setSpecularColor( Color4.WHITE );
 			}
@@ -255,19 +253,19 @@ public class ViewComparison
 			/*
 			 * Test basic specular highlights, smoothing and texturing.
 			 */
-			target.addContentNode( "sphere-1", Matrix3D.getTranslation( -100.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid    ) );
-			target.addContentNode( "sphere-2", Matrix3D.getTranslation(    0.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid    ) );
-			target.addContentNode( "sphere-3", Matrix3D.getTranslation(  100.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured ) );
-			target.addContentNode( "sphere-4", Matrix3D.getTranslation( -100.0,    0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid    ) );
-			target.addContentNode( "sphere-5", Matrix3D.getTranslation(    0.0,    0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, shiny    ) );
-			target.addContentNode( "sphere-6", Matrix3D.getTranslation(  100.0,    0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, shinier  ) );
-			target.addContentNode( "box-1"   , Matrix3D.getTranslation( -140.0,   60.0,  0.0 ), new Box3D   ( 80.0, 80.0, 80.0, new BoxUVMap( Scene.MM ), solid ) );
+			target.addContentNode( "sphere-1", Matrix3D.getTranslation( -100.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid ) );
+			target.addContentNode( "sphere-2", Matrix3D.getTranslation( 0.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid ) );
+			target.addContentNode( "sphere-3", Matrix3D.getTranslation( 100.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured ) );
+			target.addContentNode( "sphere-4", Matrix3D.getTranslation( -100.0, 0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid ) );
+			target.addContentNode( "sphere-5", Matrix3D.getTranslation( 0.0, 0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, shiny ) );
+			target.addContentNode( "sphere-6", Matrix3D.getTranslation( 100.0, 0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, shinier ) );
+			target.addContentNode( "box-1", Matrix3D.getTranslation( -140.0, 60.0, 0.0 ), new Box3D( 80.0, 80.0, 80.0, new BoxUVMap( Scene.MM ), solid ) );
 
 			/*
 			 * Test advanced texturing. (i.e. with non-white diffuse color)
 			 */
-			target.addContentNode( "sphere-7", Matrix3D.getTranslation(    0.0,  100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured2 ) );
-			target.addContentNode( "sphere-8", Matrix3D.getTranslation(  100.0,  100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured3 ) );
+			target.addContentNode( "sphere-7", Matrix3D.getTranslation( 0.0, 100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured2 ) );
+			target.addContentNode( "sphere-8", Matrix3D.getTranslation( 100.0, 100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured3 ) );
 
 			/*
 			 * Test combinations of diffuse and ambient colors.
@@ -298,11 +296,11 @@ public class ViewComparison
 			/*
 			 * Test light fall-off
 			 */
-			for ( int i = 0 ; i < 50 ; i++ )
+			for ( int i = 0; i < 50; i++ )
 			{
-				target.addContentNode( "distant-sphere-a-" + i, Matrix3D.getTranslation( -100.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, solid    ) );
-				target.addContentNode( "distant-sphere-b-" + i, Matrix3D.getTranslation(    0.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, shiny    ) );
-				target.addContentNode( "distant-sphere-c-" + i, Matrix3D.getTranslation(  100.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, textured ) );
+				target.addContentNode( "distant-sphere-a-" + i, Matrix3D.getTranslation( -100.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, solid ) );
+				target.addContentNode( "distant-sphere-b-" + i, Matrix3D.getTranslation( 0.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, shiny ) );
+				target.addContentNode( "distant-sphere-c-" + i, Matrix3D.getTranslation( 100.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, textured ) );
 			}
 
 			createLights( target );
@@ -319,18 +317,18 @@ public class ViewComparison
 			final Light3D pointLight = new Light3D();
 			pointLight.setIntensity( 0.5f );
 			pointLight.setFallOff( FALL_OFF );
-			target.addContentNode( "light-1", Matrix3D.getTranslation(  1000.0,  -1000.0,  1000.0 ), pointLight );
+			target.addContentNode( "light-1", Matrix3D.getTranslation( 1000.0, -1000.0, 1000.0 ), pointLight );
 
 			final SpotLight3D spotLight = new SpotLight3D( Vector3D.normalize( 1.0, 1.0, -1.0 ), 10.0f );
 			spotLight.setIntensity( 2.0f );
 			spotLight.setFallOff( FALL_OFF );
 			spotLight.setConcentration( 32.0f );
-			target.addContentNode( "light-2", Matrix3D.getTransform( 0.0, 0.0, 10.0, -1000.0,  -1000.0,  1000.0 ), spotLight );
+			target.addContentNode( "light-2", Matrix3D.getTransform( 0.0, 0.0, 10.0, -1000.0, -1000.0, 1000.0 ), spotLight );
 		}
 	}
 
 	private static class DiffuseOnlyTemplate
-		extends DefaultTemplate
+	extends DefaultTemplate
 	{
 		@Override
 		protected void createLights( final Scene target )
@@ -340,7 +338,7 @@ public class ViewComparison
 	}
 
 	private static class AmbientOnlyTemplate
-		extends DefaultTemplate
+	extends DefaultTemplate
 	{
 		@Override
 		protected void createLights( final Scene target )
