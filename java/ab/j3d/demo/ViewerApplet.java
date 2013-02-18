@@ -347,6 +347,7 @@ public class ViewerApplet
 			}
 			else if ( !scene.hasContentNode( "model" ) )
 			{
+				System.out.println( "Loading model from: " + source );
 				try
 				{
 					final MultiResourceLoader resourceLoader = new MultiResourceLoader();
@@ -354,10 +355,12 @@ public class ViewerApplet
 					final URL sourceUrl = new URL( source );
 					resourceLoader.mount( new ZipResourceLoader( sourceUrl ) );
 
-					if ( getParameter( "textures" ) != null )
+					final String textures = getParameter( "textures" );
+					if ( textures != null )
 					{
-						final URL textures = new URL( getParameter( "textures" ) );
-						resourceLoader.mount( new URLResourceLoader( textures ) );
+						System.out.println( "Loading textures from: " + textures );
+						final URL texturesUrl = new URL( textures );
+						resourceLoader.mount( new URLResourceLoader( texturesUrl ) );
 					}
 
 					final ObjLoader objLoader = new ObjLoader( Matrix3D.IDENTITY );
@@ -378,6 +381,11 @@ public class ViewerApplet
 
 				SwingUtilities.invokeLater( new StartOnEDT() );
 			}
+			else
+			{
+				System.out.println( "Failed to load model" );
+				_statusOverlay.setStatus( "Failed to load model" );
+			}
 		}
 	}
 
@@ -389,6 +397,7 @@ public class ViewerApplet
 	{
 		public void run()
 		{
+			System.out.println( "start" );
 
 			final View3D view = _view;
 			final Scene scene = _scene;
