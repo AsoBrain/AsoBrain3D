@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
@@ -29,8 +27,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class loads a specified resource from a ZIP-archive.
  *
- * @author  Wijnand Wieskamp
- * @version $Revision$ $Date$
+ * @author Wijnand Wieskamp
  */
 public class ZipResourceLoader
 	implements ResourceLoader
@@ -93,16 +90,16 @@ public class ZipResourceLoader
 	{
 		final byte[] binaryData = _zipData;
 		InputStream result = null;
-		if ( ( binaryData != null ) && binaryData.length > 0 )
+		if ( ( binaryData == null ) || ( binaryData.length > 0 ) )
 		{
 			try
 			{
 				final ZipInputStream zis = getZipInputStream();
 				try
 				{
-					while ( true )
+					for ( ZipEntry zipEntry = zis.getNextEntry(); zipEntry != null; zipEntry = zis.getNextEntry() )
 					{
-						final ZipEntry zipEntry = zis.getNextEntry();
+						System.out.println( zipEntry.getName() );
 						if ( path.equals( zipEntry.getName() ) )
 						{
 							result = zis;
@@ -112,7 +109,10 @@ public class ZipResourceLoader
 				}
 				finally
 				{
-					zis.close();
+					if ( result == null )
+					{
+						zis.close();
+					}
 				}
 			}
 			catch ( IOException e )
