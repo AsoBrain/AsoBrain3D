@@ -560,6 +560,19 @@ extends Vector2D
 	}
 
 	/**
+	 * Test whether this vector is a non-zero vector (its length is non-zero).
+	 *
+	 * This will return {@code false} when all components of this vector are
+	 * zero or any component is {@link Double#isNaN not a number}.
+	 *
+	 * @return {@code true} if this is a non-zero vector.
+	 */
+	public boolean isNonZero()
+	{
+		return ( ( x != 0.0 ) || ( y != 0.0 ) || ( z != 0.0 ) ) && ( x == x ) && ( y == y ) && ( z == z );
+	}
+
+	/**
 	 * Calculate length of vector.
 	 *
 	 * @return Length of vector.
