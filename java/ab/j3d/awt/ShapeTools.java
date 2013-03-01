@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt;
 
@@ -37,8 +35,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class provides tools using the AsoBrain 3D toolkit with Java 2D shapes.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class ShapeTools
 {
@@ -64,12 +61,12 @@ public class ShapeTools
 	/**
 	 * Create contour(s) from a flattened {@link Shape}.
 	 *
-	 * @param   shape               Shape whose contour(s) to create.
-	 * @param   flatness            Flatness used for contours.
-	 * @param   counterClockwise    Make all contours counter-clockwise.
-	 * @param   keepOpenPaths       Keep open paths as contours.
+	 * @param shape            Shape whose contour(s) to create.
+	 * @param flatness         Flatness used for contours.
+	 * @param counterClockwise Make all contours counter-clockwise.
+	 * @param keepOpenPaths    Keep open paths as contours.
 	 *
-	 * @return  Contour(s) that were created.
+	 * @return Contour(s) that were created.
 	 */
 	@NotNull
 	public static List<Contour> createContours( @NotNull final Shape shape, final double flatness, final boolean counterClockwise, final boolean keepOpenPaths )
@@ -80,15 +77,14 @@ public class ShapeTools
 	}
 
 	/**
-	 * Add contour(s) from a {@link PathIterator}. If <code>keepOpenPaths</code>
-	 * is set to <code>true</code>, then open paths are also added, otherwise
-	 * only closed paths will be retained. The closing segment of closed shapes
-	 * is not included.
+	 * Add contour(s) from a {@link PathIterator}. If {@code keepOpenPaths} is set
+	 * to {@code true}, then open paths are also added, otherwise only closed paths
+	 * will be retained. The closing segment of closed shapes is not included.
 	 *
-	 * @param   contours                Collection to store contours in.
-	 * @param   pathIterator            Path iterator to create contour from.
-	 * @param   makeCounterClockwise    Make all contours counter-clockwise.
-	 * @param   keepOpenPaths           Keep open paths as contours.
+	 * @param contours             Collection to store contours in.
+	 * @param pathIterator         Path iterator to create contour from.
+	 * @param makeCounterClockwise Make all contours counter-clockwise.
+	 * @param keepOpenPaths        Keep open paths as contours.
 	 */
 	public static void addContours( @NotNull final Collection<Contour> contours, @NotNull final PathIterator pathIterator, final boolean makeCounterClockwise, final boolean keepOpenPaths )
 	{
@@ -100,13 +96,13 @@ public class ShapeTools
 
 		final double[] coords = new double[ 6 ];
 
-		for ( ; !pathIterator.isDone() ; pathIterator.next() )
+		for (; !pathIterator.isDone(); pathIterator.next() )
 		{
 			final int segmentType = pathIterator.currentSegment( coords );
 
 			switch ( segmentType )
 			{
-				case PathIterator.SEG_MOVETO :
+				case PathIterator.SEG_MOVETO:
 				{
 					if ( keepOpenPaths )
 					{
@@ -130,7 +126,7 @@ public class ShapeTools
 					break;
 				}
 
-				case PathIterator.SEG_LINETO :
+				case PathIterator.SEG_LINETO:
 				{
 					final int pointIndex = points.size();
 					if ( pointIndex == 0 )
@@ -162,7 +158,7 @@ public class ShapeTools
 					break;
 				}
 
-				case PathIterator.SEG_CLOSE :
+				case PathIterator.SEG_CLOSE:
 					int pointCount = points.size();
 					if ( pointCount > 2 )
 					{
@@ -214,9 +210,9 @@ public class ShapeTools
 							}
 
 							final Contour.ShapeClass shapeClass = ( positiveAngles && negativeAngles ) ? counterClockwise ? Contour.ShapeClass.CCW_CONCAVE : Contour.ShapeClass.CW_CONCAVE :
-							                              ( pointCount == 3 ) ? counterClockwise ? Contour.ShapeClass.CCW_TRIANGLE : Contour.ShapeClass.CW_TRIANGLE :
-							                              ( pointCount == 4 ) ? counterClockwise ? Contour.ShapeClass.CCW_QUAD : Contour.ShapeClass.CW_QUAD :
-							                              counterClockwise ? Contour.ShapeClass.CCW_CONVEX : Contour.ShapeClass.CW_CONVEX;
+							                                      ( pointCount == 3 ) ? counterClockwise ? Contour.ShapeClass.CCW_TRIANGLE : Contour.ShapeClass.CW_TRIANGLE :
+							                                      ( pointCount == 4 ) ? counterClockwise ? Contour.ShapeClass.CCW_QUAD : Contour.ShapeClass.CW_QUAD :
+							                                      counterClockwise ? Contour.ShapeClass.CCW_CONVEX : Contour.ShapeClass.CW_CONVEX;
 
 							contours.add( new Contour( shapeClass, vertices ) );
 						}
@@ -225,7 +221,7 @@ public class ShapeTools
 					}
 					break;
 
-				default :
+				default:
 					throw new AssertionError( segmentType + "?" );
 			}
 		}
@@ -246,13 +242,13 @@ public class ShapeTools
 	/**
 	 * Flatten shape.
 	 *
-	 * @param   shape       {@link Shape} to flatten.
-	 * @param   flatness    Flatness to apply (<code>-1</code> for normal path).
+	 * @param shape    {@link Shape} to flatten.
+	 * @param flatness Flatness to apply ({@code -1} for normal path).
 	 *
-	 * @return  <code>true</code> if the specified <code>shape</code> contains
-	 *          at least one curve (potentially, that is).
+	 * @return {@code true} if the specified {@code shape} contains at least one
+	 *         curve (potentially, that is).
 	 *
-	 * @throws  NullPointerException if a parameter is <code>null</code>.
+	 * @throws NullPointerException if a parameter is {@code null}.
 	 */
 	public static Shape flatten( final Shape shape, final double flatness )
 	{
@@ -281,12 +277,12 @@ public class ShapeTools
 	/**
 	 * Determine if {@link Shape} contains any curves.
 	 *
-	 * @param   shape   {@link Shape} to test.
+	 * @param shape {@link Shape} to test.
 	 *
-	 * @return  <code>true</code> if the specified <code>shape</code> contains
-	 *          at least one curve (potentially, that is).
+	 * @return {@code true} if the specified {@code shape} contains at least one
+	 *         curve (potentially, that is).
 	 *
-	 * @throws  NullPointerException if a parameter is <code>null</code>.
+	 * @throws NullPointerException if a parameter is {@code null}.
 	 */
 	public static boolean containsCurves( final Shape shape )
 	{
@@ -316,12 +312,12 @@ public class ShapeTools
 			result = false;
 
 			final float[] coords = new float[ 6 ];
-			 for ( PathIterator i = shape.getPathIterator( null ) ; !result && !i.isDone() ; i.next() )
+			for ( PathIterator i = shape.getPathIterator( null ); !result && !i.isDone(); i.next() )
 			{
 				switch ( i.currentSegment( coords ) )
 				{
-					case PathIterator.SEG_CUBICTO :
-					case PathIterator.SEG_QUADTO :
+					case PathIterator.SEG_CUBICTO:
+					case PathIterator.SEG_QUADTO:
 						result = true;
 				}
 			}
@@ -331,14 +327,14 @@ public class ShapeTools
 	}
 
 	/**
-	 * Create tessellator for a shape. Any curves in the shape are flattened
-	 * using the given flatness.
+	 * Create tessellator for a shape. Any curves in the shape are flattened using
+	 * the given flatness.
 	 *
-	 * @param   shape       Shape to tessellate.
-	 * @param   flatness    Maximum distance between line segments and the
-	 *                      curves they approximate.
+	 * @param shape    Shape to tessellate.
+	 * @param flatness Maximum distance between line segments and the curves they
+	 *                 approximate.
 	 *
-	 * @return  {@link Tessellator} for the shape.
+	 * @return {@link Tessellator} for the shape.
 	 */
 	public static Tessellator createTessellator( final Shape shape, final double flatness )
 	{
@@ -346,14 +342,14 @@ public class ShapeTools
 	}
 
 	/**
-	 * Create a mesh to tessellate. Any curves in the shape are flattened using
-	 * the given flatness.
+	 * Create a mesh to tessellate. Any curves in the shape are flattened using the
+	 * given flatness.
 	 *
-	 * @param   shape       Shape to tessellate.
-	 * @param   flatness    Maximum distance between line segments and the
-	 *                      curves they approximate.
+	 * @param shape    Shape to tessellate.
+	 * @param flatness Maximum distance between line segments and the curves they
+	 *                 approximate.
 	 *
-	 * @return  {@link Mesh} for the shape.
+	 * @return {@link Mesh} for the shape.
 	 */
 	private static Mesh createTessellatorMesh( @NotNull final Shape shape, final double flatness )
 	{
@@ -385,72 +381,136 @@ public class ShapeTools
 	/**
 	 * Add contour(s) from a {@link PathIterator}.
 	 *
-	 * @param   mesh            Mesh to add contours to.
-	 * @param   pathIterator    Path iterator to create contour from.
+	 * @param mesh         Mesh to add contours to.
+	 * @param pathIterator Path iterator to create contour from.
 	 */
-	private static void addPathToMesh( final Mesh mesh, @NotNull final PathIterator pathIterator )
+	public static void addPathToMesh( final Mesh mesh, @NotNull final PathIterator pathIterator )
 	{
-		final LinkedList<double[]> points = new LinkedList<double[]>();
-		double[] cur = null;
+		final DoubleArray points = new DoubleArray();
+		final double[] coords = new double[ 2 ];
+		double curX = 0.0;
+		double curY = 0.0;
 
-		for ( ; !pathIterator.isDone() ; pathIterator.next() )
+		for (; !pathIterator.isDone(); pathIterator.next() )
 		{
-			final double[] coords = new double[ 2 ];
 			switch ( pathIterator.currentSegment( coords ) )
 			{
-				case PathIterator.SEG_MOVETO :
+				case PathIterator.SEG_MOVETO:
+				{
+					curX = coords[ 0 ];
+					curY = coords[ 1 ];
+
 					points.clear();
-					points.add( coords );
-					cur = coords;
+					points.add( curX );
+					points.add( curY );
 					break;
+				}
 
-				case PathIterator.SEG_LINETO :
-					if ( ( cur == null ) || !MathTools.almostEqual( coords[ 0 ], cur[ 0 ] ) || !MathTools.almostEqual( coords[ 1 ], cur[ 1 ] ) )
+				case PathIterator.SEG_LINETO:
+				{
+					final double x = coords[ 0 ];
+					final double y = coords[ 1 ];
+					if ( !MathTools.almostEqual( x, curX ) || !MathTools.almostEqual( y, curY ) )
 					{
-						points.add( coords );
+						points.add( x );
+						points.add( y );
+						curX = x;
+						curY = y;
 					}
-					cur = coords;
 					break;
+				}
 
-				case PathIterator.SEG_CLOSE :
-					if ( points.size() > 2 )
+				case PathIterator.SEG_CLOSE:
+				{
+//					System.out.println( "SEG_CLOSE" );
+					if ( points.size() > 4 )
 					{
-						final double[] start = points.getFirst();
+						final double[] data = points.getData();
+						final int size = points.size();
 
-						final double[] last = points.getLast();
-						if ( MathTools.almostEqual( start[ 0 ], last[ 0 ] ) && MathTools.almostEqual( start[ 1 ], last[ 1 ] ) )
+						double prevX = points.get( size - 4 );
+						double prevY = points.get( size - 3 );
+						curX = points.get( size - 2 );
+						curY = points.get( size - 1 );
+						boolean begun = false;
+						double beginX = curX;
+						double beginY = curY;
+
+						for ( int i = 0; i < size; i += 2 )
 						{
-							points.removeLast();
+							final double x = data[ i ];
+							final double y = data[ i + 1 ];
+
+							// add vertex for each point that is not collinear to its predecessor and successor.
+							if ( isPlanar( prevX, prevY, curX, curY, x, y ) )
+							{
+								if ( !begun )
+								{
+									mesh.beginContour();
+									beginX = curX;
+									beginY = curY;
+									begun = true;
+								}
+								mesh.addVertex( curX, curY );
+								prevX = curX;
+								prevY = curY;
+							}
+
+							curX = x;
+							curY = y;
 						}
 
-						if ( points.size() > 2 )
+						// add start segment if necessary
+						if ( begun )
 						{
-							mesh.beginContour();
-
-							for ( final double[] point : points )
+							if ( isPlanar( prevX, prevY, curX, curY, beginX, beginY ) )
 							{
-								mesh.addVertex( point[ 0 ], point[ 1 ] );
+								mesh.addVertex( curX, curY );
 							}
 
 							mesh.endContour();
 						}
-
-						points.clear();
-						cur = start;
 					}
+
+					// reset to initial state
+					points.clear();
+					curX = 0.0;
+					curY = 0.0;
 					break;
+				}
+
 			}
 		}
 	}
 
 	/**
+	 * Test whether given three points define a plane (i.e. they are <em>not</em>
+	 * collinear).
+	 *
+	 * @param x1 X coordinate of first point.
+	 * @param y1 Y coordinate of first point.
+	 * @param x2 X coordinate of second point.
+	 * @param y2 Y coordinate of second point.
+	 * @param x3 X coordinate of third point.
+	 * @param y3 Y coordinate of third point.
+	 *
+	 * @return {@code true} if the three points define a plane; {@code false} if
+	 *         the three points are equal or collinear.
+	 */
+	private static boolean isPlanar( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3 )
+	{
+		final double cross = ( ( x2 - x1 ) * ( y3 - y1 ) - ( y2 - y1 ) * ( x3 - x1 ) );
+		return ( cross < -0.0001 ) || ( cross > 0.0001 );
+	}
+
+	/**
 	 * Get shape class.
 	 *
-	 * @param   shape   Shape to classify.
+	 * @param shape Shape to classify.
 	 *
-	 * @return  {@link Contour.ShapeClass}
+	 * @return {@link Contour.ShapeClass}
 	 *
-	 * @throws  IllegalArgumentException if parameter is <code>null</code>.
+	 * @throws IllegalArgumentException if parameter is {@code null}.
 	 */
 	public static Contour.ShapeClass getShapeClass( final Shape shape )
 	{
@@ -478,7 +538,7 @@ public class ShapeTools
 		{
 			final Line2D line = (Line2D)shape;
 
-			result = ( ( line.getX1() == line.getX2() ) && ( line.getY1() == line.getY2() ) ) ? Contour.ShapeClass.VOID :  Contour.ShapeClass.LINE_SEGMENT;
+			result = ( ( line.getX1() == line.getX2() ) && ( line.getY1() == line.getY2() ) ) ? Contour.ShapeClass.VOID : Contour.ShapeClass.LINE_SEGMENT;
 		}
 		else if ( shape instanceof Arc2D )
 		{
@@ -519,14 +579,14 @@ public class ShapeTools
 	}
 
 	/**
-	 * Get shape class from {@link PathIterator}. The iterator should be at
-	 * the initial position in order to get a useful classification.
+	 * Get shape class from {@link PathIterator}. The iterator should be at the
+	 * initial position in order to get a useful classification.
 	 *
-	 * @param   pathIterator    {@link PathIterator} to use.
+	 * @param pathIterator {@link PathIterator} to use.
 	 *
-	 * @return  {@link Contour.ShapeClass}.
+	 * @return {@link Contour.ShapeClass}.
 	 *
-	 * @throws  IllegalArgumentException if parameter is <code>null</code>.
+	 * @throws IllegalArgumentException if parameter is {@code null}.
 	 */
 	public static Contour.ShapeClass getShapeClass( final PathIterator pathIterator )
 	{
@@ -537,10 +597,10 @@ public class ShapeTools
 			throw new IllegalArgumentException( "pathIterator == null" );
 		}
 
-		int     numberOfSegments = 0;     /* number of non-void segments */
-		boolean curved           = false;
-		boolean positiveAngles   = false; /* encountered positive angles */
-		boolean negativeAngles   = false; /* encountered negative angles */
+		int numberOfSegments = 0;     /* number of non-void segments */
+		boolean curved = false;
+		boolean positiveAngles = false; /* encountered positive angles */
+		boolean negativeAngles = false; /* encountered negative angles */
 		boolean multipleSubPaths = false; /* encountered multiple subpaths */
 
 		final double[] coords = new double[ 6 ];
@@ -556,14 +616,14 @@ public class ShapeTools
 		double firstY = 0.0;
 		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
 
-		for ( ; !multipleSubPaths && !pathIterator.isDone() ; pathIterator.next() )
+		for (; !multipleSubPaths && !pathIterator.isDone(); pathIterator.next() )
 		{
 			final int segmentType = pathIterator.currentSegment( coords );
 			int numCoords = 2;
 
 			switch ( segmentType )
 			{
-				case PathIterator.SEG_MOVETO :
+				case PathIterator.SEG_MOVETO:
 					multipleSubPaths = ( numberOfSegments > 0 );
 					moveX = coords[ 0 ];
 					moveY = coords[ 1 ];
@@ -574,15 +634,15 @@ public class ShapeTools
 					needFirst = true;
 					break;
 
-				case PathIterator.SEG_CUBICTO :
+				case PathIterator.SEG_CUBICTO:
 					numCoords += 2;
 					//noinspection fallthrough
-				case PathIterator.SEG_QUADTO :
+				case PathIterator.SEG_QUADTO:
 					numCoords += 2;
 					curved = true;
 					//noinspection fallthrough
-				case PathIterator.SEG_LINETO :
-					for ( int i = 0 ; i < numCoords ; i += 2 )
+				case PathIterator.SEG_LINETO:
+					for ( int i = 0; i < numCoords; i += 2 )
 					{
 						final double nextX = coords[ i ];
 						final double nextY = coords[ i + 1 ];
@@ -610,7 +670,7 @@ public class ShapeTools
 					}
 					break;
 
-				case PathIterator.SEG_CLOSE :
+				case PathIterator.SEG_CLOSE:
 					final double firstAngle = Contour.getAngle( moveX - currentX, moveY - currentY, firstX - moveX, firstY - moveY );
 					totalAngle += firstAngle;
 					positiveAngles |= ( firstAngle > 0.0 );
@@ -631,7 +691,7 @@ public class ShapeTools
 					}
 					break;
 
-				default :
+				default:
 					throw new AssertionError( segmentType + "?" );
 			}
 		}
@@ -681,13 +741,13 @@ public class ShapeTools
 
 	/**
 	 * This utility-method calculates an approximation of an arc segment or
-	 * semicircle using quadratic B&eacute;zier curves and adds it to a
-	 * {@link Path2D}.
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a {@link
+	 * Path2D}.
 	 *
-	 * @param   path        Path to append arc to.
-	 * @param   start       Start point of arc.
-	 * @param   end         End point of arc.
-	 * @param   angle       Included angle in radians.
+	 * @param path  Path to append arc to.
+	 * @param start Start point of arc.
+	 * @param end   End point of arc.
+	 * @param angle Included angle in radians.
 	 */
 	public static void appendArcCurves( final Path2D path, final Point2D start, final Point2D end, final double angle )
 	{
@@ -696,15 +756,15 @@ public class ShapeTools
 
 	/**
 	 * This utility-method calculates an approximation of an arc segment or
-	 * semicircle using quadratic B&eacute;zier curves and adds it to a
-	 * {@link Path2D}.
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a {@link
+	 * Path2D}.
 	 *
-	 * @param   path        Path to append arc to.
-	 * @param   startX      Start X coordinate of arc.
-	 * @param   startY      Start Y coordinate of arc.
-	 * @param   endX        End X coordinate of arc.
-	 * @param   endY        End Y coordinate of arc.
-	 * @param   angle       Included angle in radians.
+	 * @param path   Path to append arc to.
+	 * @param startX Start X coordinate of arc.
+	 * @param startY Start Y coordinate of arc.
+	 * @param endX   End X coordinate of arc.
+	 * @param endY   End Y coordinate of arc.
+	 * @param angle  Included angle in radians.
 	 */
 	public static void appendArcCurves( final Path2D path, final double startX, final double startY, final double endX, final double endY, final double angle )
 	{
@@ -722,61 +782,67 @@ public class ShapeTools
 		final double centerX = chordMidX - chordDeltaY * tanApothem;
 		final double centerY = chordMidY + chordDeltaX * tanApothem;
 
-		appendArcCurves( path, centerX, centerY, radius, endX,  endY, angle );
+		appendArcCurves( path, centerX, centerY, radius, endX, endY, angle );
 	}
 
 	/**
 	 * This utility-method calculates an approximation of an arc segment or
-	 * semicircle using quadratic B&eacute;zier curves and adds it to a
-	 * {@link Path2D}.
-	 * <p />
-	 * The implementation is based on {@link ArcIterator} (most
-	 * magic is in {@link ArcIterator#btan}), and information that
-	 * was found at  <a href='http://www.afralisp.com/lisp/Bulges1.htm'>http://www.afralisp.com/lisp/Bulges1.htm</a>.
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a {@link
+	 * Path2D}.
 	 *
-	 * @param   path        Path to append arc to.
-	 * @param   center      Center of circle on which the arc is defined.
-	 * @param   radius      Radius of circle on which the arc is defined.
-	 * @param   end         End point of arc.
-	 * @param   extend      Included angle of extend (in radians, may be negative).
+	 * <p>Information about the mathematics behind polyline bulges can be found at
+	 * <a href='http://www.afralisp.net/archive/lisp/Bulges1.htm'>http://www.afralisp.net/archive/lisp/Bulges1.htm</a>
+	 * (Stig Madsen 2003).
+	 *
+	 * <p>The implementation is based on {@link ArcIterator} (most magic is in
+	 * {@link ArcIterator#btan}).
+	 *
+	 * @param path   Path to append arc to.
+	 * @param center Center of circle on which the arc is defined.
+	 * @param radius Radius of circle on which the arc is defined.
+	 * @param end    End point of arc.
+	 * @param extend Included angle of extend (in radians, may be negative).
 	 */
-	public static void appendArcCurves( final Path2D path, final Point2D center, final double radius, final Point2D end, final double extend  )
+	public static void appendArcCurves( final Path2D path, final Point2D center, final double radius, final Point2D end, final double extend )
 	{
 		appendArcCurves( path, center.getX(), center.getY(), radius, end.getX(), end.getY(), extend );
 	}
 
 	/**
 	 * This utility-method calculates an approximation of an arc segment or
-	 * semicircle using quadratic B&eacute;zier curves and adds it to a
-	 * {@link Path2D}.
-	 * <p />
-	 * The implementation is based on {@link ArcIterator} (most
-	 * magic is in {@link ArcIterator#btan}), and information that
-	 * was found at  <a href='http://www.afralisp.com/lisp/Bulges1.htm'>http://www.afralisp.com/lisp/Bulges1.htm</a>.
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a {@link
+	 * Path2D}.
 	 *
-	 * @param   path        Path to append arc to.
-	 * @param   centerX     Center of circle on which the arc is defined.
-	 * @param   centerY     Center of circle on which the arc is defined.
-	 * @param   radius      Radius of circle on which the arc is defined.
-	 * @param   endX        End point of arc.
-	 * @param   endY        End point of arc.
-	 * @param   extend      Included angle of extend (in radians, may be negative).
+	 * <p>Information about the mathematics behind polyline bulges can be found at
+	 * <a href='http://www.afralisp.net/archive/lisp/Bulges1.htm'>http://www.afralisp.net/archive/lisp/Bulges1.htm</a>
+	 * (Stig Madsen 2003).
+	 *
+	 * <p>The implementation is based on {@link ArcIterator} (most magic is in
+	 * {@link ArcIterator#btan}).
+	 *
+	 * @param path    Path to append arc to.
+	 * @param centerX Center of circle on which the arc is defined.
+	 * @param centerY Center of circle on which the arc is defined.
+	 * @param radius  Radius of circle on which the arc is defined.
+	 * @param endX    End point of arc.
+	 * @param endY    End point of arc.
+	 * @param extend  Included angle of extend (in radians, may be negative).
 	 */
-	public static void appendArcCurves( final Path2D path, final double centerX, final double centerY, final double radius, final double endX, final double endY, final double extend  )
+	public static void appendArcCurves( final Path2D path, final double centerX, final double centerY, final double radius, final double endX, final double endY, final double extend )
 	{
 		final int segmentCount = (int)Math.ceil( Math.abs( extend ) / HALF_PI );
 		if ( segmentCount > 0 )
 		{
 			final double angleIncrement = extend / (double)segmentCount;
 
-			final double bezierSegmentLength = 4.0 / 3.0 * Math.sin( angleIncrement / 2.0 ) / ( 1.0 + Math.cos( angleIncrement / 2.0  ) );
+			final double bezierSegmentLength = 4.0 / 3.0 * Math.sin( angleIncrement / 2.0 ) / ( 1.0 + Math.cos( angleIncrement / 2.0 ) );
 			if ( bezierSegmentLength != 0.0 )
 			{
 				double currentAngle = Math.atan2( endY - centerY, endX - centerX ) - extend;
 				double cos1 = Math.cos( currentAngle ) * radius;
 				double sin1 = Math.sin( currentAngle ) * radius;
 
-				for ( int i = 0 ; i < segmentCount ; i++ )
+				for ( int i = 0; i < segmentCount; i++ )
 				{
 					currentAngle += angleIncrement;
 					final double cos2 = Math.cos( currentAngle ) * radius;
@@ -808,9 +874,9 @@ public class ShapeTools
 	/**
 	 * Convert {@link Shape} to a friendly but short string format.
 	 *
-	 * @param   shape   {@link Shape} to convert.
+	 * @param shape {@link Shape} to convert.
 	 *
-	 * @return  Friendly but short string.
+	 * @return Friendly but short string.
 	 */
 	public static String toShortFriendlyString( final Shape shape )
 	{
@@ -843,7 +909,7 @@ public class ShapeTools
 			final double[] coords = new double[ 6 ];
 			boolean empty = true;
 
-			for ( final PathIterator pathIterator = shape.getPathIterator( null ); !pathIterator.isDone() ; pathIterator.next() )
+			for ( final PathIterator pathIterator = shape.getPathIterator( null ); !pathIterator.isDone(); pathIterator.next() )
 			{
 				if ( empty )
 				{
@@ -905,7 +971,7 @@ public class ShapeTools
 						sb.append( "])" );
 						break;
 
-					default :
+					default:
 						sb.append( "unknown segment" );
 				}
 			}
@@ -928,21 +994,21 @@ public class ShapeTools
 	/**
 	 * Add extruded shape without caps.
 	 *
-	 * @param   objectBuilder   3D object builder.
-	 * @param   shape           Shape to add.
-	 * @param   extrusion       Extrusion vector (control-point displacement).
-	 * @param   transform       Transform to apply.
-	 * @param   uvMap           Provides UV coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   flipTexture     Whether the side texture direction is flipped.
-	 * @param   flatness        Flatness to use.
-	 * @param   twoSided        Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals     If <code>true</code>, normals are flipped to
-	 *                          point in the opposite direction.
-	 * @param   smooth          Shape is smooth.
+	 * @param objectBuilder 3D object builder.
+	 * @param shape         Shape to add.
+	 * @param extrusion     Extrusion vector (control-point displacement).
+	 * @param transform     Transform to apply.
+	 * @param uvMap         Provides UV coordinates.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param flipTexture   Whether the side texture direction is flipped.
+	 * @param flatness      Flatness to use.
+	 * @param twoSided      Flag to indicate if extruded faces are two-sided.
+	 * @param flipNormals   If {@code true}, normals are flipped to point in the
+	 *                      opposite direction.
+	 * @param smooth        Shape is smooth.
 	 *
-	 * @throws  IllegalArgumentException if the shape is not extruded along
-	 *          the z-axis.
+	 * @throws IllegalArgumentException if the shape is not extruded along the
+	 * z-axis.
 	 */
 	public static void addExtrudedShape( final Object3DBuilder objectBuilder, @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
@@ -953,15 +1019,15 @@ public class ShapeTools
 	/**
 	 * Add filled tessellated shape.
 	 *
-	 * @param   objectBuilder   3D object builder.
-	 * @param   transform       Transforms 2D to 3D coordinates.
-	 * @param   shape           Shape to add.
-	 * @param   flatness        Flatness used to approximate curves.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Whether the bottom texture direction is flipped.
-	 * @param   flipNormals     Flip normals using CW instead of CCW triangles.
-	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 * @param objectBuilder 3D object builder.
+	 * @param transform     Transforms 2D to 3D coordinates.
+	 * @param shape         Shape to add.
+	 * @param flatness      Flatness used to approximate curves.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param uvMap         UV-map used to generate texture coordinates.
+	 * @param flipTexture   Whether the bottom texture direction is flipped.
+	 * @param flipNormals   Flip normals using CW instead of CCW triangles.
+	 * @param twoSided      Resulting face will be two-sided (has backface).
 	 */
 	public static void addFilledShape2D( final Object3DBuilder objectBuilder, @NotNull final Matrix3D transform, @NotNull final Shape shape, final double flatness, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
 	{
@@ -971,22 +1037,22 @@ public class ShapeTools
 	/**
 	 * Add text.
 	 *
-	 * @param   objectBuilder       3D object builder.
-	 * @param   transform           Transforms text to the object being build.
-	 * @param   text                Text to add.
-	 * @param   font                Font to use.
-	 * @param   scale               To apply to the font.
-	 * @param   alignX              X alignment (0=left, 0.5=left, 1=right).
-	 * @param   alignY              Y alignment (0=baseline, 0.5=center, 1=ascent).
-	 * @param   alignZ              Z alignment (0=below, 0.5=center, 1=on top).
-	 * @param   extrusion           Extrusion along Z-axis.
-	 * @param   flatness            Flatness to use for curves.
-	 * @param   topAppearance       Appearance for top surface.
-	 * @param   topMap              UV map for top surface.
-	 * @param   bottomAppearance    Appearance for bottom surface.
-	 * @param   bottomMap           UV map for bottom surface.
-	 * @param   sideAppearance      Appearance for side surfaces.
-	 * @param   sideMap             UV map for side surfaces.
+	 * @param objectBuilder    3D object builder.
+	 * @param transform        Transforms text to the object being build.
+	 * @param text             Text to add.
+	 * @param font             Font to use.
+	 * @param scale            To apply to the font.
+	 * @param alignX           X alignment (0=left, 0.5=left, 1=right).
+	 * @param alignY           Y alignment (0=baseline, 0.5=center, 1=ascent).
+	 * @param alignZ           Z alignment (0=below, 0.5=center, 1=on top).
+	 * @param extrusion        Extrusion along Z-axis.
+	 * @param flatness         Flatness to use for curves.
+	 * @param topAppearance    Appearance for top surface.
+	 * @param topMap           UV map for top surface.
+	 * @param bottomAppearance Appearance for bottom surface.
+	 * @param bottomMap        UV map for bottom surface.
+	 * @param sideAppearance   Appearance for side surfaces.
+	 * @param sideMap          UV map for side surfaces.
 	 */
 	public static void addText( final Object3DBuilder objectBuilder, final Matrix3D transform, final String text, final Font font, final double scale, final double alignX, final double alignY, final double alignZ, final double extrusion, final double flatness, final Appearance topAppearance, final BoxUVMap topMap, final Appearance bottomAppearance, final BoxUVMap bottomMap, final Appearance sideAppearance, final BoxUVMap sideMap )
 	{
@@ -997,9 +1063,9 @@ public class ShapeTools
 		final double y = visualBounds.getMaxY() - alignY * visualBounds.getHeight();
 		final double z = -alignZ * extrusion;
 
-		final Matrix3D glyphTransform = Matrix3D.multiply( scale,  0.0,  0.0, scale * x, 0.0, -scale,  0.0, scale * y, 0.0,  0.0, -scale, scale * z, transform );
+		final Matrix3D glyphTransform = Matrix3D.multiply( scale, 0.0, 0.0, scale * x, 0.0, -scale, 0.0, scale * y, 0.0, 0.0, -scale, scale * z, transform );
 		final Vector3D extrusionVector = new Vector3D( 0.0, 0.0, -extrusion );
 		final Tessellator outlineTessellator = createTessellator( glyphVector.getOutline(), flatness );
 		objectBuilder.addExtrudedShape( outlineTessellator, extrusionVector, true, glyphTransform, true, topAppearance, topMap, false, true, bottomAppearance, bottomMap, false, true, sideAppearance, sideMap, false, false, false, true );
-		}
+	}
 }
