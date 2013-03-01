@@ -1,4 +1,21 @@
 /*
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
  * License Applicability. Except to the extent portions of this file are made
  * subject to an alternative license as permitted in the SGI Free Software
  * License B, Version 1.1 (the "License"), the contents of this file are subject
@@ -57,11 +74,11 @@ class TesselationConstructor
 	/**
 	 * Constructs triangles for interior of mesh.
 	 *
-	 * @param   mesh                Mesh to build tesselation of.
-	 * @param   vertexList          List of 2D vertices to use in result.
-	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 * @param mesh             Mesh to build tesselation of.
+	 * @param vertexList       List of 2D vertices to use in result.
+	 * @param counterClockwise Construct counter-clockwise primitives.
 	 *
-	 * @return  All triangles in the mesh.
+	 * @return All triangles in the mesh.
 	 */
 	static int[] constructTriangles( final Mesh mesh, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
@@ -120,15 +137,15 @@ class TesselationConstructor
 	/**
 	 * Constructs tessellation of mesh using primitives (triangle fans, triangle
 	 * strips, and separate triangles).
-	 * <p>
-	 * A substantial effort is made to use as few rendering primitives as
+	 *
+	 * <p>A substantial effort is made to use as few rendering primitives as
 	 * possible (ie. to make the fans and strips as large as possible).
 	 *
-	 * @param   mesh                Mesh to build tesselation of.
-	 * @param   vertexList          List of 2D vertices to use in result.
-	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 * @param mesh             Mesh to build tesselation of.
+	 * @param vertexList       List of 2D vertices to use in result.
+	 * @param counterClockwise Construct counter-clockwise primitives.
 	 *
-	 * @return  List of primitives that form the tessellation.
+	 * @return List of primitives that form the tessellation.
 	 */
 	static List<TessellationPrimitive> constructPrimitives( final Mesh mesh, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
@@ -139,7 +156,7 @@ class TesselationConstructor
 
 		for ( Face face = mesh._faceListHead.next; face != mesh._faceListHead; face = face.next )
 		{
-			face.rendered = false;
+			face.rendered = isEmpty( face );
 		}
 
 		for ( Face face = mesh._faceListHead.next; face != mesh._faceListHead; face = face.next )
@@ -172,18 +189,40 @@ class TesselationConstructor
 	}
 
 	/**
+	 * Test whether the given face is empty (it has no surface area). This is true
+	 * if vertices coalesce or are collinear.
+	 *
+	 * @param face Face to test.
+	 *
+	 * @return {@code true} if face is empty.
+	 */
+	private static boolean isEmpty( final Face face )
+	{
+		final HalfEdge e1 = face.anEdge;
+		final HalfEdge e2 = e1.ccwAroundLeftFace;
+		final HalfEdge e3 = e2.ccwAroundLeftFace;
+
+		final Vector2D p1 = e1.origin.location;
+		final Vector2D p2 = e2.origin.location;
+		final Vector2D p3 = e3.origin.location;
+
+		final double cross = ( ( p2.x - p1.x ) * ( p3.y - p1.y ) - ( p2.y - p1.y ) * ( p3.x - p1.x ) );
+		return ( cross > -0.0001 ) && ( cross < 0.0001 );
+	}
+
+	/**
 	 * Construct outlines of the given mesh. An outline is created for each
 	 * boundary between the "inside" and "outside" of the mesh.
-	 * <p>
-	 * NOTE THAT THIS DELETES ALL EDGES WHICH DO NOT SEPARATE AN INTERIOR REGION
+	 *
+	 * <p>NOTE THAT THIS DELETES ALL EDGES WHICH DO NOT SEPARATE AN INTERIOR REGION
 	 * FROM AN EXTERIOR ONE, SO IT ALWAYS BE CALLED AFTER USING THE MESH FOR
 	 * TESSELLATION PURPOSES.
 	 *
-	 * @param   mesh                Mesh to build tesselation of.
-	 * @param   vertexList          List of 2D vertices to use in result.
-	 * @param   counterClockwise    Construct counter-clockwise outlines.
+	 * @param mesh             Mesh to build tesselation of.
+	 * @param vertexList       List of 2D vertices to use in result.
+	 * @param counterClockwise Construct counter-clockwise outlines.
 	 *
-	 * @return  Outlines of shape.
+	 * @return Outlines of shape.
 	 */
 	static List<int[]> constructOutlines( final Mesh mesh, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
@@ -226,19 +265,18 @@ class TesselationConstructor
 	}
 
 	/**
-	 * We want to find the largest triangle fan or strip of unmarked faces
-	 * which includes the given face fOrig.  There are 3 possible fans
-	 * passing through fOrig (one centered at each vertex), and 3 possible
-	 * strips (one for each CCW permutation of the vertices).  Our strategy
-	 * is to try all of these, and take the primitive which uses the most
-	 * triangles (a greedy approach).
+	 * We want to find the largest triangle fan or strip of unmarked faces which
+	 * includes the given face fOrig.  There are 3 possible fans passing through
+	 * fOrig (one centered at each vertex), and 3 possible strips (one for each CCW
+	 * permutation of the vertices).  Our strategy is to try all of these, and take
+	 * the primitive which uses the most triangles (a greedy approach).
 	 *
-	 * @param   face                Face to create primitive for.
-	 * @param   vertexList          List of 2D vertices to use in result.
-	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 * @param face             Face to create primitive for.
+	 * @param vertexList       List of 2D vertices to use in result.
+	 * @param counterClockwise Construct counter-clockwise primitives.
 	 *
-	 * @return  <code>TessellationPrimitive</code> that was built;
-	 *          <code>null</code> if face is a lonely triangle.
+	 * @return <code>TessellationPrimitive</code> that was built; <code>null</code>
+	 *         if face is a lonely triangle.
 	 */
 	private static TessellationPrimitive buildMaximumPrimitive( final Face face, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
@@ -282,14 +320,14 @@ class TesselationConstructor
 	}
 
 	/**
-	 * Now we render all the separate triangles which could not be
-	 * grouped into a triangle fan or strip.
+	 * Now we render all the separate triangles which could not be grouped into a
+	 * triangle fan or strip.
 	 *
-	 * @param   triangleList        Triangles to create list of.
-	 * @param   vertexList          List of 2D vertices to use in result.
-	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 * @param triangleList     Triangles to create list of.
+	 * @param vertexList       List of 2D vertices to use in result.
+	 * @param counterClockwise Construct counter-clockwise primitives.
 	 *
-	 * @return  {@link TriangleList}.
+	 * @return {@link TriangleList}.
 	 */
 	private static TriangleList createTriangleList( final Face triangleList, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
@@ -339,10 +377,10 @@ class TesselationConstructor
 	 * Get vertex index for the given vertex from a vertex list. The vertex is
 	 * added if it is not already in the list.
 	 *
-	 * @param   vertexList  List of 2D vertices.
-	 * @param   vertex      Vertex to get index of.
+	 * @param vertexList List of 2D vertices.
+	 * @param vertex     Vertex to get index of.
 	 *
-	 * @return  {@link Vertex#vertexIndex} (new index may be assigned).
+	 * @return {@link Vertex#vertexIndex} (new index may be assigned).
 	 */
 	protected static int getVertexIndex( final HashList<Vector2D> vertexList, final Vertex vertex )
 	{
@@ -358,10 +396,10 @@ class TesselationConstructor
 	/**
 	 * This pushes a face on a render stack.
 	 *
-	 * @param   stack   Previous top element of stack (may be <code>null</code>).
-	 * @param   face    Face to push on the stack.
+	 * @param stack Previous top element of stack (may be <code>null</code>).
+	 * @param face  Face to push on the stack.
 	 *
-	 * @return  New top element of stack (this is the given <code>face</code>).
+	 * @return New top element of stack (this is the given <code>face</code>).
 	 */
 	private static Face markRenderedAndPushOnStack( final Face stack, final Face face )
 	{
@@ -373,7 +411,7 @@ class TesselationConstructor
 	/**
 	 * Clear render stack. This clears the {@link Face#rendered} flag
 	 *
-	 * @param   stack   Top element of stack (<code>null</code> if empty).
+	 * @param stack Top element of stack (<code>null</code> if empty).
 	 */
 	private static void clearRenderStack( final Face stack )
 	{
@@ -389,8 +427,8 @@ class TesselationConstructor
 
 	/**
 	 * This interface encapsulates a method for rendering a primitive. It
-	 * determines the number of triangles that will be in the created primitive,
-	 * so it can be used to decide which the rendering method that produces a
+	 * determines the number of triangles that will be in the created primitive, so
+	 * it can be used to decide which the rendering method that produces a
 	 * primitive with the most triangles.
 	 */
 	private interface PrimitiveFactoryMethod
@@ -398,16 +436,16 @@ class TesselationConstructor
 		/**
 		 * Get number of triangles in the primitive that will be created.
 		 *
-		 * @return  Number of triangles.
+		 * @return Number of triangles.
 		 */
 		int getTriangleCount();
 
 		/**
 		 * Create primitive for tessellation.
 		 *
-		 * @param   vertexList  List of 2D vertices to use in result.
+		 * @param vertexList List of 2D vertices to use in result.
 		 *
-		 * @return  {@link TessellationPrimitive}.
+		 * @return {@link TessellationPrimitive}.
 		 */
 		TessellationPrimitive createPrimitive( final HashList<Vector2D> vertexList );
 	}
@@ -416,7 +454,7 @@ class TesselationConstructor
 	 * This creates a {@link TriangleFan}.
 	 */
 	private static class TriangleFanMethod
-		implements PrimitiveFactoryMethod
+	implements PrimitiveFactoryMethod
 	{
 		/**
 		 * Resulting primitive will be counter-clockwise vs. clockwise.
@@ -436,8 +474,8 @@ class TesselationConstructor
 		/**
 		 * Construct factory for primitive that includes the given edge.
 		 *
-		 * @param   anEdge              Edge to create primitive from.
-		 * @param   counterClockwise    Create counter-clockwise primitive.
+		 * @param anEdge           Edge to create primitive from.
+		 * @param counterClockwise Create counter-clockwise primitive.
 		 */
 		TriangleFanMethod( final HalfEdge anEdge, final boolean counterClockwise )
 		{
@@ -492,7 +530,7 @@ class TesselationConstructor
 			int vertexIndex = 0;
 
 			HalfEdge edge = _startEdge;
-			vertices[ vertexIndex++ ] = getVertexIndex( vertexList, edge.origin);
+			vertices[ vertexIndex++ ] = getVertexIndex( vertexList, edge.origin );
 			vertices[ vertexIndex++ ] = getVertexIndex( vertexList, edge.symmetric.origin );
 
 			if ( _counterClockwise )
@@ -534,7 +572,7 @@ class TesselationConstructor
 	 * This creates a {@link TriangleStrip}.
 	 */
 	private static class TriangleStripMethod
-		implements PrimitiveFactoryMethod
+	implements PrimitiveFactoryMethod
 	{
 		/**
 		 * Resulting primitive will be counter-clockwise vs. clockwise.
@@ -554,15 +592,15 @@ class TesselationConstructor
 		/**
 		 * Construct factory for primitive that includes the given edge.
 		 *
-		 * @param   anEdge              Edge to create primitive from.
-		 * @param   counterClockwise    Create counter-clockwise primitive.
+		 * @param anEdge           Edge to create primitive from.
+		 * @param counterClockwise Create counter-clockwise primitive.
 		 */
 		TriangleStripMethod( final HalfEdge anEdge, final boolean counterClockwise )
 		{
 			/*
 			 * Here we are looking for a maximal strip starting at a given edge.
-			 * <p/>
-			 * We walk forward and backward as far as possible. However for
+			 *
+			 * <p>We walk forward and backward as far as possible. However for
 			 * strips there is a twist: to get the correct CW/CCW orientations,
 			 * there must be an *even* number of triangles in the strip on one
 			 * side of <code>anEdge</code>.
@@ -634,7 +672,7 @@ class TesselationConstructor
 			_counterClockwise = counterClockwise;
 			_startEdge = startEdge;
 			_triangleCount = triangleCount;
-	}
+		}
 
 		public int getTriangleCount()
 		{
