@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -29,18 +27,45 @@ import ab.j3d.geom.*;
 /**
  * This class defines a 3D box.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @author Peter S. Heijnen
  */
 public class Box3D
-	extends Object3D
+extends Object3D
 {
-	/** Vertices for front face.  */ private static final int[] FRONT_VERTICES  = { 0 , 4 , 5 , 1 };
-	/** Vertices for rear face.   */ private static final int[] REAR_VERTICES   = { 2 , 6 , 7 , 3 };
-	/** Vertices for right face.  */ private static final int[] RIGHT_VERTICES  = { 1 , 5 , 6 , 2 };
-	/** Vertices for left face.   */ private static final int[] LEFT_VERTICES   = { 3 , 7 , 4 , 0 };
-	/** Vertices for top face.    */ private static final int[] TOP_VERTICES    = { 4 , 7 , 6 , 5 };
-	/** Vertices for bottom face. */ private static final int[] BOTTOM_VERTICES = { 1 , 2 , 3 , 0 };
+	/**
+	 * Vertices for front face.
+	 */
+	private static final int[] FACE_0451 = { 0, 4, 5, 1 };
+
+	/**
+	 * Vertices for rear face.
+	 */
+	private static final int[] FACE_3267 = { 3, 2, 6, 7 };
+
+	/**
+	 * Vertices for right face.
+	 */
+	private static final int[] FACE_1562 = { 1, 5, 6, 2 };
+
+	/**
+	 * Vertices for left face.
+	 */
+	private static final int[] FACE_0374 = { 0, 3, 7, 4 };
+
+	/**
+	 * Vertices for top face.
+	 */
+	private static final int[] FACE_7654 = { 7, 6, 5, 4 };
+
+	/**
+	 * Vertices for bottom face.
+	 */
+	private static final int[] FACE_0123 = { 0, 1, 2, 3 };
+
+	/**
+	 * Vertices for top face when box is flat (dz=0).
+	 */
+	private static final int[] FACE_3210 = { 3, 2, 1, 0 };
 
 	/**
 	 * Width of box (x-axis).
@@ -62,145 +87,229 @@ public class Box3D
 	 * on all sides, mapped according to the given UV map. At least one of the
 	 * box's dimensions must be non-zero.
 	 *
-	 * @param   dx              Width of box (x-axis).
-	 * @param   dy              Height of box (y-axis).
-	 * @param   dz              Depth of box (z-axis).
-	 * @param   uvMap           UV mapping to use.
-	 * @param   appearance        Appearance applied to all sides of the box.
+	 * @param dx         Width of box (x-axis).
+	 * @param dy         Height of box (y-axis).
+	 * @param dz         Depth of box (z-axis).
+	 * @param uvMap      UV mapping to use.
+	 * @param appearance Appearance applied to all sides of the box.
 	 *
-	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
-	 *          <code>dz</code> are all zero.
+	 * @throws IllegalArgumentException if {@code dx}, {@code dy} and {@code dz}
+	 * are all zero.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Appearance appearance  )
+	public Box3D( final double dx, final double dy, final double dz, final UVMap uvMap, final Appearance appearance )
 	{
-		this( dx , dy , dz , uvMap , appearance , appearance , appearance , appearance , appearance , appearance );
+		this( dx, dy, dz, uvMap, appearance, appearance, appearance, appearance, appearance, appearance );
 	}
 
 	/**
-	 * Constructs a new box with the specified dimensions and the given
-	 * appearances on their respective sides, mapped according to the given UV
-	 * map. At least one of the box's dimensions must be non-zero.
+	 * Constructs a new box with the specified dimensions and the given appearances
+	 * on their respective sides, mapped according to the given UV map. At least
+	 * one of the box's dimensions must be non-zero.
 	 *
-	 * @param   dx              Width of box (x-axis).
-	 * @param   dy              Height of box (y-axis).
-	 * @param   dz              Depth of box (z-axis).
-	 * @param   uvMap           UV mapping to use.
-	 * @param   frontAppearance   Appearance applied to the front of the box.
-	 * @param   rearAppearance    Appearance applied to the rear of the box.
-	 * @param   rightAppearance   Appearance applied to the right of the box.
-	 * @param   leftAppearance    Appearance applied to the left of the box.
-	 * @param   topAppearance     Appearance applied to the top of the box.
-	 * @param   bottomAppearance  Appearance applied to the bottom of the box.
+	 * @param dx               Width of box (x-axis).
+	 * @param dy               Height of box (y-axis).
+	 * @param dz               Depth of box (z-axis).
+	 * @param uvMap            UV mapping to use.
+	 * @param frontAppearance  Appearance applied to the front of the box.
+	 * @param rearAppearance   Appearance applied to the rear of the box.
+	 * @param rightAppearance  Appearance applied to the right of the box.
+	 * @param leftAppearance   Appearance applied to the left of the box.
+	 * @param topAppearance    Appearance applied to the top of the box.
+	 * @param bottomAppearance Appearance applied to the bottom of the box.
 	 *
-	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
-	 *          <code>dz</code> are all zero.
+	 * @throws IllegalArgumentException if {@code dx}, {@code dy} and {@code dz}
+	 * are all zero.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Appearance frontAppearance , final Appearance rearAppearance , final Appearance rightAppearance , final Appearance leftAppearance , final Appearance topAppearance , final Appearance bottomAppearance )
+	public Box3D( final double dx, final double dy, final double dz, final UVMap uvMap, final Appearance frontAppearance, final Appearance rearAppearance, final Appearance rightAppearance, final Appearance leftAppearance, final Appearance topAppearance, final Appearance bottomAppearance )
 	{
-		this( dx , dy , dz , frontAppearance , uvMap , rearAppearance , uvMap , rightAppearance , uvMap , leftAppearance , uvMap , topAppearance , uvMap , bottomAppearance , uvMap );
+		this( dx, dy, dz, frontAppearance, uvMap, rearAppearance, uvMap, rightAppearance, uvMap, leftAppearance, uvMap, topAppearance, uvMap, bottomAppearance, uvMap );
 	}
 
 	/**
-	 * Constructs a new box with the specified dimensions and the given
-	 * appearances on their respective sides, mapped according to the given UV
-	 * map. At least one of the box's dimensions must be non-zero.
+	 * Constructs a new box with the specified dimensions and the given appearances
+	 * on their respective sides, mapped according to the given UV map. At least
+	 * one of the box's dimensions must be non-zero.
 	 *
-	 * @param   dx              Width of box (x-axis).
-	 * @param   dy              Height of box (y-axis).
-	 * @param   dz              Depth of box (z-axis).
-	 * @param   frontAppearance   Appearance applied to the front of the box.
-	 * @param   frontMap        UV-mapping to use for the front of the box.
-	 * @param   rearAppearance    Appearance applied to the rear of the box.
-	 * @param   rearMap         UV-mapping to use for the rear of the box.
-	 * @param   rightAppearance   Appearance applied to the right of the box.
-	 * @param   rightMap        UV-mapping to use for the right of the box.
-	 * @param   leftAppearance    Appearance applied to the left of the box.
-	 * @param   leftMap         UV-mapping to use for the left of the box.
-	 * @param   topAppearance     Appearance applied to the top of the box.
-	 * @param   topMap          UV-mapping to use for the top of the box.
-	 * @param   bottomAppearance  Appearance applied to the bottom of the box.
-	 * @param   bottomMap       UV-mapping to use for the bottom of the box.
+	 * @param dx               Width of box (x-axis).
+	 * @param dy               Height of box (y-axis).
+	 * @param dz               Depth of box (z-axis).
+	 * @param frontAppearance  Appearance applied to the front of the box.
+	 * @param frontMap         UV-mapping to use for the front of the box.
+	 * @param rearAppearance   Appearance applied to the rear of the box.
+	 * @param rearMap          UV-mapping to use for the rear of the box.
+	 * @param rightAppearance  Appearance applied to the right of the box.
+	 * @param rightMap         UV-mapping to use for the right of the box.
+	 * @param leftAppearance   Appearance applied to the left of the box.
+	 * @param leftMap          UV-mapping to use for the left of the box.
+	 * @param topAppearance    Appearance applied to the top of the box.
+	 * @param topMap           UV-mapping to use for the top of the box.
+	 * @param bottomAppearance Appearance applied to the bottom of the box.
+	 * @param bottomMap        UV-mapping to use for the bottom of the box.
 	 *
-	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
-	 *          <code>dz</code> are all zero.
+	 * @throws IllegalArgumentException if {@code dx}, {@code dy} and {@code dz}
+	 * are all zero.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final Appearance frontAppearance , final UVMap frontMap , final Appearance rearAppearance , final UVMap rearMap , final Appearance rightAppearance , final UVMap rightMap , final Appearance leftAppearance , final UVMap leftMap , final Appearance topAppearance , final UVMap topMap , final Appearance bottomAppearance , final UVMap bottomMap )
+	public Box3D( final double dx, final double dy, final double dz, final Appearance frontAppearance, final UVMap frontMap, final Appearance rearAppearance, final UVMap rearMap, final Appearance rightAppearance, final UVMap rightMap, final Appearance leftAppearance, final UVMap leftMap, final Appearance topAppearance, final UVMap topMap, final Appearance bottomAppearance, final UVMap bottomMap )
 	{
-		final double size = Vector3D.length( dx, dy, dz );
-		if ( size <= 0.0 )
+		final boolean zeroDx = ( dx == 0.0 );
+		final boolean zeroDy = ( dy == 0.0 );
+		final boolean zeroDz = ( dz == 0.0 );
+
+		if ( ( ( dx < 0.0 ) || ( dy < 0.0 ) || ( dz < 0.0 ) ) || ( zeroDx && zeroDy ) || ( zeroDx && zeroDz ) || ( zeroDy && zeroDz ) )
 		{
-			throw new IllegalArgumentException( dx + " x " + dy + " x " + dz );
+			throw new IllegalArgumentException( "Invalid box dimensions: " + dx + " x " + dy + " x " + dz );
 		}
 
 		_dx = dx;
 		_dy = dy;
 		_dz = dz;
 
-		final double nx = dx / size;
-		final double ny = dy / size;
-		final double nz = dz / size;
-
-		/*
-		 * Create vertex coordinates and normals.
-		 */
-		setVertexCoordinates( Arrays.asList(
-			Vector3D.ZERO ,    // 0        7------6
-			new Vector3D(  dx , 0.0 , 0.0 ) ,    // 1       /:     /|
-			new Vector3D(  dx ,  dy , 0.0 ) ,    // 2      4------5 |
-			new Vector3D( 0.0 ,  dy , 0.0 ) ,    // 3      | :    | |
-			new Vector3D( 0.0 , 0.0 ,  dz ) ,    // 4      | :    | |
-			new Vector3D(  dx , 0.0 ,  dz ) ,    // 5      | 3....|.2
-			new Vector3D(  dx ,  dy ,  dz ) ,    // 6      |.     |/
-			new Vector3D( 0.0 ,  dy ,  dz ) ) ); // 7      0------1
-
-		// TODO: Why does a cube have normals that make it appear spherical?
-		final Vector3D[] vertexNormals =
+		if ( zeroDx )
 		{
-			/* 0 */ new Vector3D( -nx , -ny , -nz ) ,
-			/* 1 */ new Vector3D(  nx , -ny , -nz ) ,
-			/* 2 */ new Vector3D(  nx ,  ny , -nz ) ,
-			/* 3 */ new Vector3D( -nx ,  ny , -nz ) ,
-			/* 4 */ new Vector3D( -nx , -ny ,  nz ) ,
-			/* 5 */ new Vector3D(  nx , -ny ,  nz ) ,
-			/* 6 */ new Vector3D(  nx ,  ny ,  nz ) ,
-			/* 7 */ new Vector3D( -nx ,  ny ,  nz )
-		};
+			/*
+			 * Define mesh with following vertices and normals:
+			 *      2
+			 *     /|
+			 *   /  |     right  = 3, 2, 1, 0  X+
+			 *  3   |     left   = 0, 1, 2, 3  X-
+			 *  |   1
+			 *  |  /
+			 *  |/
+			 *  0
+			 */
+			setVertexCoordinates( Arrays.asList( Vector3D.ZERO,
+			                                     new Vector3D( 0.0, dy, 0.0 ),
+			                                     new Vector3D( 0.0, dy, dz ),
+			                                     new Vector3D( 0.0, 0.0, dz ) ) );
 
-		addFace( FRONT_VERTICES  , vertexNormals , frontAppearance  , frontMap  );
-		addFace( REAR_VERTICES   , vertexNormals , rearAppearance   , rearMap   );
-		addFace( RIGHT_VERTICES  , vertexNormals , rightAppearance  , rightMap  );
-		addFace( LEFT_VERTICES   , vertexNormals , leftAppearance   , leftMap   );
-		addFace( TOP_VERTICES    , vertexNormals , topAppearance    , topMap    );
-		addFace( BOTTOM_VERTICES , vertexNormals , bottomAppearance , bottomMap );
+			if ( ( leftAppearance == rightAppearance ) && ( leftMap == rightMap ) )
+			{
+				addFace( FACE_3210, Vector3D.POSITIVE_X_AXIS, rightAppearance, rightMap, true );
+			}
+			else
+			{
+				addFace( FACE_3210, Vector3D.POSITIVE_X_AXIS, rightAppearance, rightMap, false );
+				addFace( FACE_0123, Vector3D.NEGATIVE_Y_AXIS, leftAppearance, leftMap, false );
+			}
+		}
+		else if ( zeroDy )
+		{
+			/*
+			 * Define mesh with following vertices and normals:
+			 *  3-----2
+			 *  |     |    front  = 0, 1, 2, 3  Y-
+			 *  |     |    rear   = 3, 2, 1, 0  Y+
+			 *  0-----1
+			 */
+			setVertexCoordinates( Arrays.asList( Vector3D.ZERO,
+			                                     new Vector3D( dx, 0.0, 0.0 ),
+			                                     new Vector3D( dx, 0.0, dz ),
+			                                     new Vector3D( 0.0, 0.0, dz ) ) );
+
+			if ( ( frontAppearance == rearAppearance ) && ( frontMap == rearMap ) )
+			{
+				addFace( FACE_3210, Vector3D.NEGATIVE_Y_AXIS, frontAppearance, frontMap, true );
+			}
+			else
+			{
+				addFace( FACE_3210, Vector3D.NEGATIVE_Y_AXIS, frontAppearance, frontMap, false );
+				addFace( FACE_0123, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
+			}
+		}
+		else if ( zeroDz )
+		{
+			/*
+			 * Define mesh with following vertices and normals:
+			 *    3------2
+			 *   /      /      top    = 3, 2, 1, 0  Z+
+			 *  0------1       bottom = 0, 1, 2, 3  Z-
+			 */
+			setVertexCoordinates( Arrays.asList( Vector3D.ZERO,
+			                                     new Vector3D( dx, 0.0, 0.0 ),
+			                                     new Vector3D( dx, dy, 0.0 ),
+			                                     new Vector3D( 0.0, dy, 0.0 ) ) );
+
+			if ( ( topAppearance == bottomAppearance ) && ( topMap == bottomMap ) )
+			{
+				addFace( FACE_3210, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, true );
+			}
+			else
+			{
+				addFace( FACE_3210, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, false );
+				addFace( FACE_0123, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
+			}
+		}
+		else
+		{
+			/*
+			 * Define mesh with following vertices and normals:
+			 *    7------6
+			 *   /:     /|     front  = 0, 4, 5, 1  Y-
+			 *  4------5 |     rear   = 2, 6, 7, 3  Y+
+			 *  | :    | |     right  = 1, 5, 6, 2  X+
+			 *  | :    | |     left   = 3, 7, 4, 0  X-
+			 *  | 3....|.2     top    = 4, 7, 6, 5  Z+
+			 *  |.     |/      bottom = 0, 1, 2, 3  Z-
+			 *  0------1
+			 */
+			setVertexCoordinates( Arrays.asList(
+			Vector3D.ZERO,
+			new Vector3D( dx, 0.0, 0.0 ),
+			new Vector3D( dx, dy, 0.0 ),
+			new Vector3D( 0.0, dy, 0.0 ),
+			new Vector3D( 0.0, 0.0, dz ),
+			new Vector3D( dx, 0.0, dz ),
+			new Vector3D( dx, dy, dz ),
+			new Vector3D( 0.0, dy, dz ) ) );
+
+			addFace( FACE_0451, Vector3D.NEGATIVE_Y_AXIS, frontAppearance, frontMap, false );
+			addFace( FACE_3267, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
+			addFace( FACE_1562, Vector3D.POSITIVE_X_AXIS, rightAppearance, rightMap, false );
+			addFace( FACE_0374, Vector3D.NEGATIVE_Y_AXIS, leftAppearance, leftMap, false );
+			addFace( FACE_7654, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, false );
+			addFace( FACE_0123, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
+		}
 	}
 
 	/**
 	 * Helper method to add a texture mapped face.
 	 *
-	 * @param   vertexCoordinates   Vertices that define the face.
-	 * @param   normals             Normals by vertex coordinate index.
-	 * @param   appearance          Appearance to use for the face.
-	 * @param   uvMap               UV map to use.
+	 * @param vertexIndices Mesh vertex index for each face vertex.
+	 * @param normal        Face normal.
+	 * @param appearance    Appearance to use for the face.
+	 * @param uvMap         UV map to use.
+	 * @param twoSided      Create two-sided face.
 	 */
-	private void addFace( final int[] vertexCoordinates , final Vector3D[] normals , final Appearance appearance , final UVMap uvMap )
+	private void addFace( final int[] vertexIndices, final Vector3D normal, final Appearance appearance, final UVMap uvMap, final boolean twoSided )
 	{
-		final TextureMap colorMap = ( appearance == null ) ? null : appearance.getColorMap();
-		final float[] textureCoordinates = ( uvMap != null ) ? uvMap.generate( colorMap, getVertexCoordinates(), vertexCoordinates, false ) : null;
+		final List<Vector3D> vertexCoordinates = getVertexCoordinates();
 
-		final List<Vertex3D> vertices = Face3D.createVertices( this, vertexCoordinates, textureCoordinates, null );
-		for ( final Vertex3D vertex : vertices )
+		final double planeDistance = Vector3D.dot( vertexCoordinates.get( vertexIndices[ 0 ] ), normal );
+
+		final UVGenerator uvGenerator = UVGenerator.getColorMapInstance( appearance, uvMap, normal, false );
+		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( vertexIndices.length );
+		for ( final int vertexIndex : vertexIndices )
 		{
-			vertex.normal = normals[ vertex.vertexCoordinateIndex ];
+			final Vertex3D vertex = new Vertex3D( vertexCoordinates, vertexIndex );
+			uvGenerator.generate( vertex.point );
+			vertex.colorMapU = uvGenerator.getU();
+			vertex.colorMapV = uvGenerator.getV();
+			vertex.normal = normal;
+			vertices.add( vertex );
 		}
 
-		final FaceGroup faceGroup = getFaceGroup( appearance, false, false );
-		faceGroup.addFace( new Face3D( vertices, null ) );
+		final List<int[]> outlines = Collections.singletonList( vertexIndices );
+		final List<TessellationPrimitive> primitives = Collections.<TessellationPrimitive>singletonList( new QuadList( vertexIndices ) );
+		final Tessellation tessellation = new Tessellation( outlines, primitives );
+
+		final FaceGroup faceGroup = getFaceGroup( appearance, false, twoSided );
+		faceGroup.addFace( new Face3D( normal, planeDistance, vertices, tessellation ) );
 	}
 
 	/**
 	 * Get width of box (x-axis).
 	 *
-	 * @return  Width of box (x-axis).
+	 * @return Width of box (x-axis).
 	 */
 	public double getDX()
 	{
@@ -210,7 +319,7 @@ public class Box3D
 	/**
 	 * Get height of box (y-axis).
 	 *
-	 * @return  Height of box (y-axis).
+	 * @return Height of box (y-axis).
 	 */
 	public double getDY()
 	{
@@ -220,7 +329,7 @@ public class Box3D
 	/**
 	 * Get depth of box (z-axis).
 	 *
-	 * @return  Depth of box (z-axis).
+	 * @return Depth of box (z-axis).
 	 */
 	public double getDZ()
 	{
@@ -240,7 +349,7 @@ public class Box3D
 
 		if ( other instanceof Box3D ) /* box vs. box */
 		{
-			final Bounds3D thisOrientedBoundingBox  = getOrientedBoundingBox();
+			final Bounds3D thisOrientedBoundingBox = getOrientedBoundingBox();
 			final Bounds3D otherOrientedBoundingBox = other.getOrientedBoundingBox();
 
 			result = ( ( thisOrientedBoundingBox != null ) && ( otherOrientedBoundingBox != null ) && GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox, fromOtherToThis, otherOrientedBoundingBox ) );
