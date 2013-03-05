@@ -1,6 +1,4 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2013 Peter S. Heijnen
  *
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
@@ -75,6 +72,11 @@ public class ObjWriter
 	 */
 	public String addAppearance( final Appearance appearance )
 	{
+		if ( appearance == null )
+		{
+			throw new IllegalArgumentException( "can't add 'null' appearance" );
+		}
+
 		final Map<Appearance, String> appearanceNames = _appearanceNames;
 
 		String result = appearanceNames.get( appearance );
@@ -355,7 +357,7 @@ public class ObjWriter
 			}
 			catch ( IOException e )
 			{
-				throw new RuntimeException( e );
+				throw new RuntimeException( e + "\n\t@ " + path.toString( "\n\t/ " ), e );
 			}
 
 			return true;
@@ -382,6 +384,11 @@ public class ObjWriter
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
 			{
 				final Appearance appearance = faceGroup.getAppearance();
+				if ( appearance == null )
+				{
+					throw new IOException( "Can't write null-appearance of object " + object );
+				}
+
 				if ( appearance != currentAppearance )
 				{
 					final String materialName = addAppearance( appearance );
