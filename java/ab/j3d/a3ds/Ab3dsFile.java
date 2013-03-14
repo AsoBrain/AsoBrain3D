@@ -1,5 +1,4 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2012 Peter S. Heijnen
  *
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.a3ds;
 
@@ -31,14 +29,19 @@ import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This is a representation of a .3ds file it contains the main entrance to
- * all chunks inside (the main3DS chunk).
+ * This is a representation of a .3ds file it contains the main entrance to all
+ * chunks inside (the main3DS chunk).
  *
- * @author  Sjoerd Bouwman
- * @version $Revision$ $Date$
+ * @author Sjoerd Bouwman
  */
 public class Ab3dsFile
 {
+	/**
+	 * Tessellation for a face with a single triangle whose vertices are defined in
+	 * counter-clockwise order.
+	 */
+	private static final Tessellation CCW_TRIANGLE_TESSELLATION = new Tessellation( Collections.singletonList( new int[] { 0, 1, 2, 0 } ), Collections.<TessellationPrimitive>singletonList( new TriangleList( new int[] { 0, 1, 2 } ) ) );
+
 	/**
 	 * Set to true to receive debugging to console.
 	 */
@@ -75,7 +78,7 @@ public class Ab3dsFile
 	/**
 	 * Gets the edit chunk from the model.
 	 *
-	 * @return  Edit chunk.
+	 * @return Edit chunk.
 	 */
 	@Nullable
 	public HierarchyChunk getEditChunk()
@@ -87,7 +90,7 @@ public class Ab3dsFile
 	/**
 	 * Gets the main3DS chunk from the model.
 	 *
-	 * @return  the main chunk.
+	 * @return the main chunk.
 	 */
 	@Nullable
 	public HierarchyChunk getMainChunk()
@@ -98,12 +101,12 @@ public class Ab3dsFile
 	/**
 	 * Loads a 3DS model from a file.
 	 *
-	 * @param   file    File to be loaded.
+	 * @param file File to be loaded.
 	 *
-	 * @throws  IOException if an I/O error occurs.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public void load( @NotNull final File file )
-		throws IOException
+	throws IOException
 	{
 		final FileInputStream fis = new FileInputStream( file );
 		try
@@ -119,12 +122,12 @@ public class Ab3dsFile
 	/**
 	 * Loads a 3DS model from the given stream.
 	 *
-	 * @param   in  Stream to load from.
+	 * @param in Stream to load from.
 	 *
-	 * @throws  IOException if an I/O error occurs.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public void load( @NotNull final InputStream in )
-		throws IOException
+	throws IOException
 	{
 		final Ab3dsInputStream is = new Ab3dsInputStream( in );
 
@@ -152,7 +155,7 @@ public class Ab3dsFile
 	/**
 	 * Saves the current hierarchy as a 3DS file.
 	 *
-	 * @param   file    File to save to.
+	 * @param file File to save to.
 	 */
 	public void save( final File file )
 	{
@@ -177,12 +180,12 @@ public class Ab3dsFile
 	/**
 	 * Saves the current 3DS hierarchy to the given stream.
 	 *
-	 * @param   out     Stream to write to.
+	 * @param out Stream to write to.
 	 *
-	 * @throws  IOException if an I/O error occurs.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	private void save( @NotNull final OutputStream out )
-		throws IOException
+	throws IOException
 	{
 		final Ab3dsOutputStream os = new Ab3dsOutputStream( out );
 
@@ -200,12 +203,12 @@ public class Ab3dsFile
 	}
 
 	/**
-	 * Creates a 3D model from the loaded 3DS file. Since no context information
-	 * is provided, textures are not included in the created model.
+	 * Creates a 3D model from the loaded 3DS file. Since no context information is
+	 * provided, textures are not included in the created model.
 	 *
-	 * @return  Root node of 3D model.
+	 * @return Root node of 3D model.
 	 *
-	 * @throws  IllegalStateException if no model is loaded.
+	 * @throws IllegalStateException if no model is loaded.
 	 */
 	@NotNull
 	public Node3D createModel()
@@ -237,11 +240,11 @@ public class Ab3dsFile
 	/**
 	 * Creates a 3D model from the loaded 3DS file.
 	 *
-	 * @param   context     Directory used to resolve relative paths.
+	 * @param context Directory used to resolve relative paths.
 	 *
-	 * @return  Root node of 3D model.
+	 * @return Root node of 3D model.
 	 *
-	 * @throws  IllegalStateException if no model is loaded.
+	 * @throws IllegalStateException if no model is loaded.
 	 */
 	@NotNull
 	public Node3D createModel( @NotNull final File context )
@@ -282,11 +285,11 @@ public class Ab3dsFile
 	/**
 	 * Creates a 3D model from the loaded 3DS file.
 	 *
-	 * @param   resourceLoader  Resource loader to be used.
+	 * @param resourceLoader Resource loader to be used.
 	 *
-	 * @return  Root node of 3D model.
+	 * @return Root node of 3D model.
 	 *
-	 * @throws  IllegalStateException if no model is loaded.
+	 * @throws IllegalStateException if no model is loaded.
 	 */
 	@NotNull
 	public Node3D createModel( @NotNull final ResourceLoader resourceLoader )
@@ -328,7 +331,7 @@ public class Ab3dsFile
 	/**
 	 * Get main chunk of 3DS file.
 	 *
-	 * @return  Main chunk of 3DS file.
+	 * @return Main chunk of 3DS file.
 	 */
 	public HierarchyChunk getMain()
 	{
@@ -340,7 +343,7 @@ public class Ab3dsFile
 	 *
 	 * This is only valid for the last time {@link #createModel} was called.
 	 *
-	 * @return  Map from material names in the last loaded model to appearances.
+	 * @return Map from material names in the last loaded model to appearances.
 	 */
 	public Map<String, Appearance> getAppearancesByName()
 	{
@@ -353,8 +356,8 @@ public class Ab3dsFile
 	 *
 	 * This is only valid for the last time {@link #createModel} was called.
 	 *
-	 * @return  Map from material names in the last loaded model to 3DS material
-	 *          chunks.
+	 * @return Map from material names in the last loaded model to 3DS material
+	 *         chunks.
 	 */
 	public Map<String, Ab3dsMaterial> getMaterialsByName()
 	{
@@ -365,9 +368,9 @@ public class Ab3dsFile
 	 * Creates a basic appearance from the given material chunk, excluding any
 	 * texture maps.
 	 *
-	 * @param   materialChunk   Material chunk.
+	 * @param materialChunk Material chunk.
 	 *
-	 * @return  Appearance.
+	 * @return Appearance.
 	 */
 	private static BasicAppearance createAppearance( @NotNull final Ab3dsMaterial materialChunk )
 	{
@@ -387,15 +390,14 @@ public class Ab3dsFile
 	}
 
 	/**
-	 * Creates a 3D model from the 3DS file, using the given material
-	 * information.
+	 * Creates a 3D model from the 3DS file, using the given material information.
 	 *
-	 * @param   materials       Materials by material name.
-	 * @param   materialChunks  Material chunks by material name.
+	 * @param materials      Materials by material name.
+	 * @param materialChunks Material chunks by material name.
 	 *
-	 * @return  Root node of 3D model.
+	 * @return Root node of 3D model.
 	 *
-	 * @throws  IllegalStateException if no model is loaded.
+	 * @throws IllegalStateException if no model is loaded.
 	 */
 	@NotNull
 	private Node3D createModel( @NotNull final Map<String, Appearance> materials, @NotNull final Map<String, Ab3dsMaterial> materialChunks )
@@ -480,9 +482,6 @@ public class Ab3dsFile
 					// TODO: Support standard mappings. (e.g. spherical)
 //					final StandardMapping standardMapping = (StandardMapping)hierarchyChunk.getFirstChunkByID( Chunk.TRI_MAP_STAND );
 
-					final List<TessellationPrimitive> singleTriangle = Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2 } ) );
-					final List<int[]> singleTriangleOutline = Collections.singletonList( new int[] { 0, 1, 2, 0 } );
-
 					for ( int faceIndex = 0; faceIndex < faceList.getFaceCount(); faceIndex++ )
 					{
 						final FaceList.Triangle face = faceList.getFace( faceIndex );
@@ -561,17 +560,15 @@ public class Ab3dsFile
 							vertices.add( vertex );
 						}
 
-						final Tessellation tessellation = new Tessellation( singleTriangleOutline, singleTriangle );
-
 						final Ab3dsMaterial materialChunk = materialChunkByFace.get( faceIndex );
 
 						final Appearance appearance = appearanceByFace.get( faceIndex );
 						final boolean twoSided = ( materialChunk != null ) && materialChunk.isTwoSided();
 
-						builder.addFace( vertices, tessellation, appearance, false, twoSided );
+						builder.addFace( vertices, CCW_TRIANGLE_TESSELLATION, appearance, false, twoSided );
 					}
 
-					final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexList.getVertexCount() );
+					final Collection<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexList.getVertexCount() );
 					for ( int i = 0; i < vertexList.getVertexCount(); i++ )
 					{
 						vertexCoordinates.add( vertexList.getVertex( i ) );
@@ -591,15 +588,15 @@ public class Ab3dsFile
 	/**
 	 * Loads a 3DS model from the given stream.
 	 *
-	 * @param   resourceLoader  Resource loader to be used.
-	 * @param   in              Stream to read from.
+	 * @param resourceLoader Resource loader to be used.
+	 * @param in             Stream to read from.
 	 *
-	 * @return  Root node of 3D model.
+	 * @return Root node of 3D model.
 	 *
-	 * @throws  IOException if an I/O error occurs.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public static Node3D load( @NotNull final ResourceLoader resourceLoader, @NotNull final InputStream in )
-		throws IOException
+	throws IOException
 	{
 		final Ab3dsFile file = new Ab3dsFile();
 		file.load( in );

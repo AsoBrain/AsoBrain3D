@@ -68,6 +68,11 @@ extends Object3D
 	private static final int[] FACE_3210 = { 3, 2, 1, 0 };
 
 	/**
+	 * Tessellation that is shared by all faces.
+	 */
+	private static final Tessellation TESSELLATION = new Tessellation( Collections.singletonList( new int[] { 3, 2, 1, 0, 3 } ), Collections.<TessellationPrimitive>singletonList( new QuadList( new int[] { 3, 2, 1, 0 } ) ) );
+
+	/**
 	 * Width of box (x-axis).
 	 */
 	private final double _dx;
@@ -298,12 +303,8 @@ extends Object3D
 			vertices.add( vertex );
 		}
 
-		final List<int[]> outlines = Collections.singletonList( FACE_3210 );
-		final List<TessellationPrimitive> primitives = Collections.<TessellationPrimitive>singletonList( new QuadList( FACE_3210 ) );
-		final Tessellation tessellation = new Tessellation( outlines, primitives );
-
 		final FaceGroup faceGroup = getFaceGroup( appearance, false, twoSided );
-		faceGroup.addFace( new Face3D( normal, planeDistance, vertices, tessellation ) );
+		faceGroup.addFace( new Face3D( normal, planeDistance, vertices, TESSELLATION ) );
 	}
 
 	/**
