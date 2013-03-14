@@ -265,7 +265,7 @@ extends Object3D
 			addFace( FACE_0451, Vector3D.NEGATIVE_Y_AXIS, frontAppearance, frontMap, false );
 			addFace( FACE_3267, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
 			addFace( FACE_1562, Vector3D.POSITIVE_X_AXIS, rightAppearance, rightMap, false );
-			addFace( FACE_0374, Vector3D.NEGATIVE_Y_AXIS, leftAppearance, leftMap, false );
+			addFace( FACE_0374, Vector3D.NEGATIVE_X_AXIS, leftAppearance, leftMap, false );
 			addFace( FACE_7654, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, false );
 			addFace( FACE_0123, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
 		}
@@ -298,8 +298,8 @@ extends Object3D
 			vertices.add( vertex );
 		}
 
-		final List<int[]> outlines = Collections.singletonList( vertexIndices );
-		final List<TessellationPrimitive> primitives = Collections.<TessellationPrimitive>singletonList( new QuadList( vertexIndices ) );
+		final List<int[]> outlines = Collections.singletonList( FACE_3210 );
+		final List<TessellationPrimitive> primitives = Collections.<TessellationPrimitive>singletonList( new QuadList( FACE_3210 ) );
 		final Tessellation tessellation = new Tessellation( outlines, primitives );
 
 		final FaceGroup faceGroup = getFaceGroup( appearance, false, twoSided );
