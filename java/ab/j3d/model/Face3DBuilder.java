@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -26,11 +24,10 @@ import ab.j3d.*;
 import ab.j3d.geom.*;
 
 /**
- * This class can be used together with an {@link Object3D} to build
- * {@link Face3D} instances.
+ * This class can be used together with an {@link Object3D} to build {@link
+ * Face3D} instances.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class Face3DBuilder
 {
@@ -54,7 +51,7 @@ public class Face3DBuilder
 	/**
 	 * Independent triangles.
 	 */
-	private final IntArray _triangles = new IntArray( 24  );
+	private final IntArray _triangles = new IntArray( 24 );
 
 	/**
 	 * Independent quads.
@@ -62,8 +59,8 @@ public class Face3DBuilder
 	private final IntArray _quads = new IntArray( 32 );
 
 	/**
-	 * Tessellation primitives. The independent triangles and quads will be
-	 * added to this list when the actual face is build.
+	 * Tessellation primitives. The independent triangles and quads will be added
+	 * to this list when the actual face is build.
 	 */
 	private final Collection<TessellationPrimitive> _primitives = new ArrayList<TessellationPrimitive>();
 
@@ -73,8 +70,8 @@ public class Face3DBuilder
 	private Vector3D _normal = null;
 
 	/**
-	 * Create uninitialized 3D face builder. The caller must still call the
-	 * {@link #initialize} before starting the build process.
+	 * Create uninitialized 3D face builder. The caller must still call the {@link
+	 * #initialize} before starting the build process.
 	 */
 	public Face3DBuilder()
 	{
@@ -83,8 +80,8 @@ public class Face3DBuilder
 	/**
 	 * Create 3D face builder for the given object and face normal.
 	 *
-	 * @param   object  3D object to build face(s) for.
-	 * @param   normal  Face normal ({@code null} => derive from vertices).
+	 * @param object 3D object to build face(s) for.
+	 * @param normal Face normal ({@code null} => derive from vertices).
 	 */
 	public Face3DBuilder( final Object3D object, final Vector3D normal )
 	{
@@ -94,7 +91,7 @@ public class Face3DBuilder
 	/**
 	 * Add outline to this face.
 	 *
-	 * @param   outline   Outline to add to this face.
+	 * @param outline Outline to add to this face.
 	 */
 	public void addOutline( final int[] outline )
 	{
@@ -104,10 +101,10 @@ public class Face3DBuilder
 	/**
 	 * Add primitive to this face.
 	 *
-	 * Note that triangle lists are not added directly, but are added to a
-	 * shared triangle list. The same is done for quad lists.
+	 * Note that triangle lists are not added directly, but are added to a shared
+	 * triangle list. The same is done for quad lists.
 	 *
-	 * @param   primitive   Primitive to add to this face.
+	 * @param primitive Primitive to add to this face.
 	 */
 	public void addPrimitive( final TessellationPrimitive primitive )
 	{
@@ -128,10 +125,10 @@ public class Face3DBuilder
 	/**
 	 * Add single untextured quad to this face.
 	 *
-	 * @param   p1  Coordinates of first vertex of quad.
-	 * @param   p2  Coordinates of second vertex of quad.
-	 * @param   p3  Coordinates of third vertex of quad.
-	 * @param   p4  Coordinates of fourth vertex of quad.
+	 * @param p1 Coordinates of first vertex of quad.
+	 * @param p2 Coordinates of second vertex of quad.
+	 * @param p3 Coordinates of third vertex of quad.
+	 * @param p4 Coordinates of fourth vertex of quad.
 	 */
 	public void addQuad( final Vector3D p1, final Vector3D p2, final Vector3D p3, final Vector3D p4 )
 	{
@@ -141,18 +138,18 @@ public class Face3DBuilder
 	/**
 	 * Add single quad to this face.
 	 *
-	 * @param   p1  Coordinates of first vertex of quad.
-	 * @param   u1  Texture coordinate U of first vertex of quad.
-	 * @param   v1  Texture coordinate V of first vertex of quad.
-	 * @param   p2  Coordinates of second vertex of quad.
-	 * @param   u2  Texture coordinate U of second vertex of quad.
-	 * @param   v2  Texture coordinate V of second vertex of quad.
-	 * @param   p3  Coordinates of third vertex of quad.
-	 * @param   u3  Texture coordinate U of third vertex of quad.
-	 * @param   v3  Texture coordinate V of third vertex of quad.
-	 * @param   p4  Coordinates of fourth vertex of quad.
-	 * @param   u4  Texture coordinate U of fourth vertex of quad.
-	 * @param   v4  Texture coordinate V of fourth vertex of quad.
+	 * @param p1 Coordinates of first vertex of quad.
+	 * @param u1 Texture coordinate U of first vertex of quad.
+	 * @param v1 Texture coordinate V of first vertex of quad.
+	 * @param p2 Coordinates of second vertex of quad.
+	 * @param u2 Texture coordinate U of second vertex of quad.
+	 * @param v2 Texture coordinate V of second vertex of quad.
+	 * @param p3 Coordinates of third vertex of quad.
+	 * @param u3 Texture coordinate U of third vertex of quad.
+	 * @param v3 Texture coordinate V of third vertex of quad.
+	 * @param p4 Coordinates of fourth vertex of quad.
+	 * @param u4 Texture coordinate U of fourth vertex of quad.
+	 * @param v4 Texture coordinate V of fourth vertex of quad.
 	 */
 	public void addQuad( final Vector3D p1, final float u1, final float v1,
 	                     final Vector3D p2, final float u2, final float v2,
@@ -165,10 +162,10 @@ public class Face3DBuilder
 	/**
 	 * Add single quad to this face.
 	 *
-	 * @param   v1  First vertex of quad.
-	 * @param   v2  Second vertex of quad.
-	 * @param   v3  Third vertex of quad.
-	 * @param   v4  Fourth vertex of quad.
+	 * @param v1 First vertex of quad.
+	 * @param v2 Second vertex of quad.
+	 * @param v3 Third vertex of quad.
+	 * @param v4 Fourth vertex of quad.
 	 */
 	public void addQuad( final int v1, final int v2, final int v3, final int v4 )
 	{
@@ -183,7 +180,7 @@ public class Face3DBuilder
 	/**
 	 * Add multiple quads to this face.
 	 *
-	 * @param   vertices    Quad vertices (length must be multiple of 4).
+	 * @param vertices Quad vertices (length must be multiple of 4).
 	 */
 	public void addQuads( final int... vertices )
 	{
@@ -193,9 +190,9 @@ public class Face3DBuilder
 	/**
 	 * Add single untextured triangle to this face.
 	 *
-	 * @param   p1  Coordinates of first vertex of triangle.
-	 * @param   p2  Coordinates of second vertex of triangle.
-	 * @param   p3  Coordinates of third vertex of triangle.
+	 * @param p1 Coordinates of first vertex of triangle.
+	 * @param p2 Coordinates of second vertex of triangle.
+	 * @param p3 Coordinates of third vertex of triangle.
 	 */
 	public void addTriangle( final Vector3D p1, final Vector3D p2, final Vector3D p3 )
 	{
@@ -205,15 +202,15 @@ public class Face3DBuilder
 	/**
 	 * Add single triangle to this face.
 	 *
-	 * @param   p1  Coordinates of first vertex of triangle.
-	 * @param   u1  Texture coordinate U of first vertex of triangle.
-	 * @param   v1  Texture coordinate V of first vertex of triangle.
-	 * @param   p2  Coordinates of second vertex of triangle.
-	 * @param   u2  Texture coordinate U of second vertex of triangle.
-	 * @param   v2  Texture coordinate V of second vertex of triangle.
-	 * @param   p3  Coordinates of third vertex of triangle.
-	 * @param   u3  Texture coordinate U of third vertex of triangle.
-	 * @param   v3  Texture coordinate V of third vertex of triangle.
+	 * @param p1 Coordinates of first vertex of triangle.
+	 * @param u1 Texture coordinate U of first vertex of triangle.
+	 * @param v1 Texture coordinate V of first vertex of triangle.
+	 * @param p2 Coordinates of second vertex of triangle.
+	 * @param u2 Texture coordinate U of second vertex of triangle.
+	 * @param v2 Texture coordinate V of second vertex of triangle.
+	 * @param p3 Coordinates of third vertex of triangle.
+	 * @param u3 Texture coordinate U of third vertex of triangle.
+	 * @param v3 Texture coordinate V of third vertex of triangle.
 	 */
 	public void addTriangle( final Vector3D p1, final float u1, final float v1,
 	                         final Vector3D p2, final float u2, final float v2,
@@ -225,9 +222,9 @@ public class Face3DBuilder
 	/**
 	 * Add single triangle to this face.
 	 *
-	 * @param   v1  First vertex of triangle.
-	 * @param   v2  Second vertex of triangle.
-	 * @param   v3  Third vertex of triangle.
+	 * @param v1 First vertex of triangle.
+	 * @param v2 Second vertex of triangle.
+	 * @param v3 Third vertex of triangle.
 	 */
 	public void addTriangle( final int v1, final int v2, final int v3 )
 	{
@@ -241,7 +238,7 @@ public class Face3DBuilder
 	/**
 	 * Add multiple triangles to this face.
 	 *
-	 * @param   vertices    Triangle vertices (length must be multiple of 3).
+	 * @param vertices Triangle vertices (length must be multiple of 3).
 	 */
 	public void addTriangles( final int... vertices )
 	{
@@ -251,7 +248,7 @@ public class Face3DBuilder
 	/**
 	 * Build the actual face.
 	 *
-	 * @return  {@link Face3D} that was created.
+	 * @return {@link Face3D} that was created.
 	 */
 	public Face3D buildFace3D()
 	{
@@ -260,14 +257,31 @@ public class Face3DBuilder
 			throw new IllegalStateException( "can't build face from nothing" );
 		}
 
-		return new Face3D( getNormal(), createVertices(), new Tessellation( createOutlines(), createPrimitives() ) );
+		final List<Vertex3D> vertices = createVertices();
+		final Tessellation tessellation = new Tessellation( createOutlines(), createPrimitives() );
+
+		final Face3D result;
+
+		final Vector3D normal = getNormal();
+		if ( normal != null )
+		{
+			final Vector3D anyPoint = vertices.get( 0 ).point;
+			final double planeDistance = Vector3D.dot( normal, anyPoint );
+			result = new Face3D( normal, planeDistance, vertices, tessellation );
+		}
+		else
+		{
+			result = new Face3D( vertices, tessellation );
+		}
+
+		return result;
 	}
 
 	/**
 	 * This method is used by {@link #buildFace3D()} to create the result
 	 * outlines.
 	 *
-	 * @return  Outlines.
+	 * @return Outlines.
 	 */
 	protected List<int[]> createOutlines()
 	{
@@ -278,7 +292,7 @@ public class Face3DBuilder
 	 * This method is used by {@link #buildFace3D()} to create the result
 	 * primitives.
 	 *
-	 * @return  Primitives.
+	 * @return Primitives.
 	 */
 	protected List<TessellationPrimitive> createPrimitives()
 	{
@@ -322,7 +336,7 @@ public class Face3DBuilder
 	 * This method is used by {@link #buildFace3D()} to create the result
 	 * vertices.
 	 *
-	 * @return  Outlines.
+	 * @return Outlines.
 	 */
 	protected List<Vertex3D> createVertices()
 	{
@@ -332,7 +346,7 @@ public class Face3DBuilder
 	/**
 	 * Get face normal.
 	 *
-	 * @return  Face normal ({@code null} => derive from vertices).
+	 * @return Face normal ({@code null} => derive from vertices).
 	 */
 	public Vector3D getNormal()
 	{
@@ -342,7 +356,7 @@ public class Face3DBuilder
 	/**
 	 * Get 3D object for which face(s) are built.
 	 *
-	 * @return  3D object for which face(s) are built.
+	 * @return 3D object for which face(s) are built.
 	 */
 	public Object3D getObject()
 	{
@@ -353,11 +367,11 @@ public class Face3DBuilder
 	 * Get index of vertex. If this face did not already contain the vertex, it
 	 * will be added; otherwise, the index of the existing vertex is returned.
 	 *
-	 * @param   point       Coordinates of vertex.
-	 * @param   colorMapU   Color map U coordinate.
-	 * @param   colorMapV   Color map V coordinate.
+	 * @param point     Coordinates of vertex.
+	 * @param colorMapU Color map U coordinate.
+	 * @param colorMapV Color map V coordinate.
 	 *
-	 * @return  Vertex index.
+	 * @return Vertex index.
 	 */
 	public int getVertexIndex( final Vector3D point, final float colorMapU, final float colorMapV )
 	{
@@ -368,12 +382,12 @@ public class Face3DBuilder
 	 * Get index of vertex. If this face did not already contain the vertex, it
 	 * will be added; otherwise, the index of the existing vertex is returned.
 	 *
-	 * @param   point               Coordinates of vertex.
-	 * @param   objectVertexIndex   Vertex index in target object.
-	 * @param   colorMapU           Color map U coordinate.
-	 * @param   colorMapV           Color map V coordinate.
+	 * @param point             Coordinates of vertex.
+	 * @param objectVertexIndex Vertex index in target object.
+	 * @param colorMapU         Color map U coordinate.
+	 * @param colorMapV         Color map V coordinate.
 	 *
-	 * @return  Vertex index.
+	 * @return Vertex index.
 	 */
 	public int getVertexIndex( final Vector3D point, final int objectVertexIndex, final float colorMapU, final float colorMapV )
 	{
@@ -381,11 +395,11 @@ public class Face3DBuilder
 	}
 
 	/**
-	 * Re-initialize the builder. This can be used after {@link #buildFace3D}
-	 * to start building another face.
+	 * Re-initialize the builder. This can be used after {@link #buildFace3D} to
+	 * start building another face.
 	 *
-	 * @param   object  3D object to build face(s) for.
-	 * @param   normal  Face normal ({@code null} => derive from vertices).
+	 * @param object 3D object to build face(s) for.
+	 * @param normal Face normal ({@code null} => derive from vertices).
 	 */
 	public void initialize( final Object3D object, final Vector3D normal )
 	{
@@ -397,8 +411,8 @@ public class Face3DBuilder
 	/**
 	 * Test whether there is something to build a face from or not.
 	 *
-	 * @return  {@code true} if there is nothing to build;
-	 *          {@code false} if face can be build.
+	 * @return {@code true} if there is nothing to build; {@code false} if face can
+	 *         be build.
 	 */
 	public boolean isEmpty()
 	{
@@ -406,8 +420,8 @@ public class Face3DBuilder
 	}
 
 	/**
-	 * Resets the builder. This should be called after {@link #buildFace3D} so
-	 * the builder can be used to build another face.
+	 * Resets the builder. This should be called after {@link #buildFace3D} so the
+	 * builder can be used to build another face.
 	 */
 	public void reset()
 	{
@@ -421,7 +435,7 @@ public class Face3DBuilder
 	/**
 	 * Set face normal.
 	 *
-	 * @param   normal  Face normal ({@code null} => derive from vertices).
+	 * @param normal Face normal ({@code null} => derive from vertices).
 	 */
 	public void setNormal( final Vector3D normal )
 	{
@@ -432,7 +446,7 @@ public class Face3DBuilder
 	 * Set 3D object to build face(s) for. Only used for vertex coordinate
 	 * indices.
 	 *
-	 * @param   object  3D object to build face(s) for.
+	 * @param object 3D object to build face(s) for.
 	 *
 	 * @see Object3D#getVertexIndex
 	 */
