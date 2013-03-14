@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,23 +15,22 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.xml;
 
+import java.math.*;
 import java.util.*;
 import javax.xml.datatype.*;
 
 /**
- * Provides conversion of Java types to XML syntax. Replacement for
- * <code>javax.xml.bind.DatatypeConverter</code>, which is not available on
- * all target platforms.
+ * Provides conversion of Java types to XML syntax. Replacement for {@code
+ * javax.xml.bind.DatatypeConverter}, which is not available on all target
+ * platforms.
  *
- * <p>This implementation uses the <code>javax.xml.datatype</code> package.
- * On Android, this requires at least API Level 8 (Android 2.2).
+ * <p>This implementation uses the {@code javax.xml.datatype} package. On
+ * Android, this requires at least API Level 8 (Android 2.2).
  *
- * @author  G. Meinders
- * @version $Revision$ $Date$
+ * @author G. Meinders
  */
 public class DatatypeConverter
 {
@@ -45,7 +42,7 @@ public class DatatypeConverter
 	/**
 	 * Returns a datatype factory.
 	 *
-	 * @return  Datatype factory instance.
+	 * @return Datatype factory instance.
 	 */
 	private static DatatypeFactory getDatatypeFactory()
 	{
@@ -66,12 +63,12 @@ public class DatatypeConverter
 	}
 
 	/**
-	 * Converts the given calendar's date and time into a valid lexical value
-	 * for the XML Schema <code>dateTime</code> data type.
+	 * Converts the given calendar's date and time into a valid lexical value for
+	 * the XML Schema {@code dateTime} data type.
 	 *
-	 * @param   calendar    Calendar to be converted.
+	 * @param calendar Calendar to be converted.
 	 *
-	 * @return  String representation of the calendar's date and time.
+	 * @return String representation of the calendar's date and time.
 	 */
 	public static String printDateTime( final Calendar calendar )
 	{
@@ -91,13 +88,12 @@ public class DatatypeConverter
 	}
 
 	/**
-	 * Converts the given data-time value to a calendar instance. The given
-	 * value must be a valid lexical value of the XML Schema
-	 * <code>dateTime</code> data type.
+	 * Converts the given data-time value to a calendar instance. The given value
+	 * must be a valid lexical value of the XML Schema {@code dateTime} data type.
 	 *
-	 * @param   value   Value to be parsed.
+	 * @param value Value to be parsed.
 	 *
-	 * @return  String representation of the calendar's date and time.
+	 * @return String representation of the calendar's date and time.
 	 */
 	public static Calendar parseDateTime( final String value )
 	{
@@ -107,12 +103,28 @@ public class DatatypeConverter
 	}
 
 	/**
+	 * Converts the given data-time value to a {@link BigDecimal} instance. The
+	 * given value must be a valid lexical value of the XML Schema {@code decimal}
+	 * data type.
+	 *
+	 * @param value Value to be parsed.
+	 *
+	 * @return {@link BigDecimal}.
+	 *
+	 * @throws NumberFormatException {@code value} is not properly formatted.
+	 */
+	public static BigDecimal parseDecimal( final String value )
+	{
+		return new BigDecimal( value.trim() );
+	}
+
+	/**
 	 * Converts the given value into a valid lexical value for the XML Schema
-	 * <code>int</code> data type.
+	 * {@code int} data type.
 	 *
-	 * @param   v   Value to be converted.
+	 * @param v Value to be converted.
 	 *
-	 * @return  String representation of the value.
+	 * @return String representation of the value.
 	 */
 	public static String printInt( final int v )
 	{
@@ -121,11 +133,11 @@ public class DatatypeConverter
 
 	/**
 	 * Converts the given value into a valid lexical value for the XML Schema
-	 * <code>float</code> data type.
+	 * {@code float} data type.
 	 *
-	 * @param   v   Value to be converted.
+	 * @param v Value to be converted.
 	 *
-	 * @return  String representation of the value.
+	 * @return String representation of the value.
 	 */
 	public static String printFloat( final float v )
 	{
@@ -151,11 +163,11 @@ public class DatatypeConverter
 
 	/**
 	 * Converts the given value into a valid lexical value for the XML Schema
-	 * <code>double</code> data type.
+	 * {@code double} data type.
 	 *
-	 * @param   v   Value to be converted.
+	 * @param v Value to be converted.
 	 *
-	 * @return  String representation of the value.
+	 * @return String representation of the value.
 	 */
 	public static String printDouble( final double v )
 	{
@@ -178,4 +190,18 @@ public class DatatypeConverter
 		}
 		return result;
 	}
+
+	/**
+	 * Converts a {@link BigDecimal} value the lexical value of the XML Schema
+	 * {@code decimal} data type.
+	 *
+	 * @param value Value to print.
+	 *
+	 * @return String with lexical representation of {@code decimal}.
+	 */
+	public static String printDecimal( final BigDecimal value )
+	{
+		return value.toPlainString();
+	}
+
 }
