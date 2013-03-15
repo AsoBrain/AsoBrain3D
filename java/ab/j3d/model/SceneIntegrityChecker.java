@@ -148,6 +148,7 @@ public class SceneIntegrityChecker
 	public void checkObject3D( final Object3D object )
 	{
 		final List<FaceGroup> faceGroups = object.getFaceGroups();
+		final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
 		for ( int faceGroupIndex = 0; faceGroupIndex < faceGroups.size(); faceGroupIndex++ )
 		{
 			final FaceGroup faceGroup = faceGroups.get( faceGroupIndex );
@@ -156,24 +157,58 @@ public class SceneIntegrityChecker
 			for ( int faceIndex = 0; faceIndex < faces.size(); faceIndex++ )
 			{
 				final Face3D face = faces.get( faceIndex );
-				final Vector3D faceNormal = face.getNormal();
-				final List<Vertex3D> vertices = face.getVertices();
+				final List<Vertex3D> faceVertices = face.getVertices();
 				final Tessellation tessellation = face.getTessellation();
 				final List<TessellationPrimitive> primitives = tessellation.getPrimitives();
 				final List<int[]> outlines = tessellation.getOutlines();
 
 				final StringBuilder error = new StringBuilder();
 
-				final boolean badFaceNormal = !faceNormal.isNonZero();
-				if ( badFaceNormal )
+				Vector3D faceCross;
+				try
 				{
-					error.append( "\n\tface has bad (zero/NaN) normal: " );
-					error.append( faceNormal );
+					faceCross = face.getCross();
+				}
+				catch ( Exception e )
+				{
+					error.append( "\n\tFailed to determine face cross-product: " );
+					error.append( e );
+					faceCross = null;
 				}
 
-				for ( int vertexIndex = 0; vertexIndex < vertices.size(); vertexIndex++ )
+				Vector3D faceNormal = null;
+				boolean badFaceNormal = true;
+				try
 				{
-					final Vertex3D vertex = vertices.get( vertexIndex );
+					faceNormal = face.getNormal();
+					badFaceNormal = ( faceNormal == null ) || !faceNormal.isNonZero();
+					if ( badFaceNormal )
+					{
+						error.append( "\n\tface has bad (zero/NaN) normal: " );
+						error.append( faceNormal );
+					}
+// The following code makes sure the face normal matches the vertices (cross aligned with normal), but may fail due to rounding errors
+//					else if ( ( cross != null ) && cross.isNonZero() )
+//					{
+//						final Vector3D normalizedCross = cross.normalize();
+//						if ( !normalizedCross.almostEquals( faceNormal ) )
+//						{
+//							error.append( "\n\tface normal " );
+//							error.append( faceNormal.toFriendlyString() );
+//							error.append( " is not aligned with cross: " );
+//							error.append( normalizedCross.toFriendlyString() );
+//						}
+//					}
+				}
+				catch ( Exception e )
+				{
+					error.append( "\n\tFailed to determine face normal: " );
+					error.append( e );
+				}
+
+				for ( int vertexIndex = 0; vertexIndex < faceVertices.size(); vertexIndex++ )
+				{
+					final Vertex3D vertex = faceVertices.get( vertexIndex );
 					final Vector3D point = vertex.point;
 
 					if ( Double.isNaN( point.x ) || Double.isNaN( point.y ) || Double.isNaN( point.z ) )
@@ -182,6 +217,16 @@ public class SceneIntegrityChecker
 						error.append( vertexIndex );
 						error.append( "] has bad (NaN) point: " );
 						error.append( point );
+					}
+					else if ( ( vertex.vertexCoordinateIndex < 0 ) || ( vertex.vertexCoordinateIndex >= vertexCoordinates.size() ) )
+					{
+						error.append( "\n\tvertices[" );
+						error.append( vertexIndex );
+						error.append( "] has invalid 'vertexCoordinateIndex' " );
+						error.append( vertex.vertexCoordinateIndex );
+						error.append( " (must be between 0 and " );
+						error.append( vertexCoordinates.size() - 1 );
+						error.append( ')' );
 					}
 
 					if ( !badFaceNormal )
@@ -201,15 +246,50 @@ public class SceneIntegrityChecker
 				{
 					final TessellationPrimitive primitive = primitives.get( primitiveIndex );
 
+					final int[] primitiveVertices = primitive.getVertices();
+					for ( int vertexIndex = 0; vertexIndex < primitiveVertices.length; vertexIndex++ )
+					{
+						final int faceVertexIndex = primitiveVertices[ vertexIndex ];
+						if ( ( faceVertexIndex < 0 ) || ( faceVertexIndex >= faceVertices.size() ) )
+						{
+							error.append( "\n\ttesselation.primitives[" );
+							error.append( primitiveIndex );
+							error.append( "].vertices[" );
+							error.append( vertexIndex );
+							error.append( "] has invalid vertex index " );
+							error.append( faceVertexIndex );
+							error.append( " (must be between 0 and " );
+							error.append( faceVertices.size() - 1 );
+							error.append( ')' );
+						}
+					}
+
 					final int[] triangles = primitive.getTriangles();
 					if ( ( triangles.length == 0 ) || ( ( triangles.length % 3 ) != 0 ) )
 					{
-						error.append( "\n\ttesselation.primitives[ " );
+						error.append( "\n\ttesselation.primitives[" );
 						error.append( primitiveIndex );
 						error.append( "] has invalid triangle list length " );
 						error.append( triangles.length );
 						error.append( " (must be non-zero multiple of 3) in " );
 						error.append( primitive );
+					}
+
+					for ( int triangleIndex = 0; triangleIndex < triangles.length; triangleIndex++ )
+					{
+						final int faceVertexIndex = triangles[ triangleIndex ];
+						if ( ( faceVertexIndex < 0 ) || ( faceVertexIndex >= faceVertices.size() ) )
+						{
+							error.append( "\n\ttesselation.primitives[" );
+							error.append( primitiveIndex );
+							error.append( "].triangles[" );
+							error.append( triangleIndex );
+							error.append( "] has invalid vertex index " );
+							error.append( faceVertexIndex );
+							error.append( " (must be between 0 and " );
+							error.append( faceVertices.size() - 1 );
+							error.append( ')' );
+						}
 					}
 				}
 
@@ -219,7 +299,7 @@ public class SceneIntegrityChecker
 
 					error.append( "\nFace properties:" );
 					error.append( "\n\tvertex count    = " );
-					error.append( vertices.size() );
+					error.append( faceVertices.size() );
 					error.append( "\n\tprimitive count = " );
 					error.append( primitives.size() );
 					error.append( "\n\toutline count   = " );
@@ -227,11 +307,18 @@ public class SceneIntegrityChecker
 					error.append( "\n\ttwo-sided       = " );
 					error.append( face.isTwoSided() );
 					error.append( "\n\tcross           = " );
-					error.append( face.getCross() );
+					error.append( faceCross );
 					error.append( "\n\tnormal          = " );
-					error.append( face.getNormal() );
+					error.append( faceNormal );
 					error.append( "\n\tdistance        = " );
-					error.append( face.getDistance() );
+					try
+					{
+						error.append( face.getDistance() );
+					}
+					catch ( Exception e )
+					{
+						error.append( e );
+					}
 
 					error.append( "\n\tPrimitives:" );
 					for ( int i = 0; i < primitives.size(); i++ )
@@ -256,9 +343,9 @@ public class SceneIntegrityChecker
 					}
 
 					error.append( "\n\tVertices:" );
-					for ( int i = 0; i < vertices.size(); i++ )
+					for ( int i = 0; i < faceVertices.size(); i++ )
 					{
-						final Vertex3D vertex = vertices.get( i );
+						final Vertex3D vertex = faceVertices.get( i );
 						error.append( "\n\t\t[" );
 						error.append( i );
 						error.append( "]: point=" );
