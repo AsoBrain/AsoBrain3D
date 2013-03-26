@@ -40,7 +40,7 @@ extends Object3D
 	/**
 	 * Vertices for rear face.
 	 */
-	private static final int[] FACE_3267 = { 3, 2, 6, 7 };
+	private static final int[] FACE_2673 = { 2, 6, 7, 3 };
 
 	/**
 	 * Vertices for right face.
@@ -50,17 +50,17 @@ extends Object3D
 	/**
 	 * Vertices for left face.
 	 */
-	private static final int[] FACE_0374 = { 0, 3, 7, 4 };
+	private static final int[] FACE_3740 = { 3, 7, 4, 0 };
 
 	/**
 	 * Vertices for top face.
 	 */
-	private static final int[] FACE_7654 = { 7, 6, 5, 4 };
+	private static final int[] FACE_4765 = { 4, 7, 6, 5 };
 
 	/**
 	 * Vertices for bottom face.
 	 */
-	private static final int[] FACE_0123 = { 0, 1, 2, 3 };
+	private static final int[] FACE_1230 = { 1, 2, 3, 0 };
 
 	/**
 	 * Vertices for top face when box is flat (dz=0).
@@ -194,7 +194,7 @@ extends Object3D
 			else
 			{
 				addFace( FACE_3210, Vector3D.POSITIVE_X_AXIS, rightAppearance, rightMap, false );
-				addFace( FACE_0123, Vector3D.NEGATIVE_Y_AXIS, leftAppearance, leftMap, false );
+				addFace( FACE_1230, Vector3D.NEGATIVE_Y_AXIS, leftAppearance, leftMap, false );
 			}
 		}
 		else if ( zeroDy )
@@ -218,7 +218,7 @@ extends Object3D
 			else
 			{
 				addFace( FACE_3210, Vector3D.NEGATIVE_Y_AXIS, frontAppearance, frontMap, false );
-				addFace( FACE_0123, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
+				addFace( FACE_1230, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
 			}
 		}
 		else if ( zeroDz )
@@ -241,7 +241,7 @@ extends Object3D
 			else
 			{
 				addFace( FACE_3210, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, false );
-				addFace( FACE_0123, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
+				addFace( FACE_1230, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
 			}
 		}
 		else
@@ -268,11 +268,11 @@ extends Object3D
 			new Vector3D( 0.0, dy, dz ) ) );
 
 			addFace( FACE_0451, Vector3D.NEGATIVE_Y_AXIS, frontAppearance, frontMap, false );
-			addFace( FACE_3267, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
+			addFace( FACE_2673, Vector3D.POSITIVE_Y_AXIS, rearAppearance, rearMap, false );
 			addFace( FACE_1562, Vector3D.POSITIVE_X_AXIS, rightAppearance, rightMap, false );
-			addFace( FACE_0374, Vector3D.NEGATIVE_X_AXIS, leftAppearance, leftMap, false );
-			addFace( FACE_7654, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, false );
-			addFace( FACE_0123, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
+			addFace( FACE_3740, Vector3D.NEGATIVE_X_AXIS, leftAppearance, leftMap, false );
+			addFace( FACE_4765, Vector3D.POSITIVE_Z_AXIS, topAppearance, topMap, false );
+			addFace( FACE_1230, Vector3D.NEGATIVE_Z_AXIS, bottomAppearance, bottomMap, false );
 		}
 	}
 
