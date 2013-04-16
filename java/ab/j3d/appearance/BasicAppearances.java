@@ -51,6 +51,7 @@ public class BasicAppearances
 	public static final Appearance TRANSPARENT;
 	public static final Appearance GLASS;
 	public static final Appearance GLASS_WHITE;
+	public static final Appearance GLASS_GRAY;
 	public static final Appearance METAL;
 	public static final Appearance GOLD;
 	public static final Appearance CHROME;
@@ -203,13 +204,23 @@ public class BasicAppearances
 
 		final BasicAppearance glassWhite = new BasicAppearance();
 		glassWhite.setAmbientColor( new Color4f( 0.2f, 0.2f, 0.2f ) );
-		glassWhite.setDiffuseColor( new Color4f( 0.3f, 0.3f, 0.3f, 0.5f ) );
+		glassWhite.setDiffuseColor( new Color4f( 1.0f, 1.0f, 1.0f, 0.7f ) );
 		glassWhite.setSpecularColor( new Color4f( 0.3f, 0.3f, 0.3f ) );
 		glassWhite.setShininess( 32 );
 		glassWhite.setReflectionMap( reflectionMap );
 		glassWhite.setReflectionMin( 0.0f );
-		glassWhite.setReflectionMax( 0.5f );
+		glassWhite.setReflectionMax( 0.8f );
 		GLASS_WHITE = glassWhite; // "glass_white"
+
+		final BasicAppearance glassGray = new BasicAppearance();
+		glassGray.setAmbientColor( new Color4f( 0.2f, 0.2f, 0.2f ) );
+		glassGray.setDiffuseColor( new Color4f( 0.5f, 0.5f, 0.5f, 0.7f ) );
+		glassGray.setSpecularColor( new Color4f( 0.3f, 0.3f, 0.3f ) );
+		glassGray.setShininess( 32 );
+		glassGray.setReflectionMap( reflectionMap );
+		glassGray.setReflectionMin( 0.0f );
+		glassGray.setReflectionMax( 0.8f );
+		GLASS_GRAY = glassGray; // "glass_gray"
 
 		final BasicAppearance metal = new BasicAppearance();
 		metal.setAmbientColor( new Color4f( 0.13f, 0.13f, 0.13f ) );
