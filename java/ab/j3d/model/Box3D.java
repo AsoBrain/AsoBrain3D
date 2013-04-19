@@ -23,6 +23,7 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a 3D box.
@@ -344,7 +345,7 @@ extends Object3D
 	}
 
 	@Override
-	public boolean collidesWith( final Matrix3D fromOtherToThis, final Object3D other )
+	public boolean collidesWith( @NotNull final Matrix3D fromOtherToThis, @NotNull final Object3D other )
 	{
 		final boolean result;
 
@@ -361,7 +362,7 @@ extends Object3D
 			final double centerX = fromOtherToThis.transformX( 0.0, 0.0, 0.0 );
 			final double centerY = fromOtherToThis.transformY( 0.0, 0.0, 0.0 );
 			final double centerZ = fromOtherToThis.transformZ( 0.0, 0.0, 0.0 );
-			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, sphere._radius, 0.0, 0.0, 0.0, getDX(), getDY(), getDZ() );
+			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, sphere.getRadius(), 0.0, 0.0, 0.0, getDX(), getDY(), getDZ() );
 		}
 		else
 		{
