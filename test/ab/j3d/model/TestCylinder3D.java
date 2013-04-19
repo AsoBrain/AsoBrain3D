@@ -54,17 +54,18 @@ extends TestCase
 		appearance.setSpecularColor( Color4.WHITE );
 		appearance.setColorMap( new FileTextureMap( new URL( "file:test" ), 123.0f, 456.0f ) );
 
-		final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
+		final UVMap uvMap = new BoxUVMap( Scene.MM );
 
-		for ( int i = 0; i <= 0x3F; i++ )
+		for ( int i = 0; i <= 0x7F; i++ )
 		{
-			final Cylinder3D cylinder3d = new Cylinder3D( 50.0, 100.0, 32,
-			                                              ( ( i & 0x01 ) == 0 ) ? appearance : null,
-			                                              ( ( i & 0x02 ) == 0 ) ? uvMap : null, false,
-			                                              ( ( i & 0x04 ) == 0 ) ? appearance : null,
-			                                              ( ( i & 0x08 ) == 0 ) ? uvMap : null,
-			                                              ( ( i & 0x10 ) == 0 ) ? appearance : null,
-			                                              ( ( i & 0x20 ) == 0 ) ? uvMap : null, false );
+			final Cylinder3D cylinder3d = new Cylinder3D( ( ( i & 0x01 ) == 0 ) ? 50.0 : 0.0, 100.0, 19,
+			                                              ( ( i & 0x02 ) == 0 ) ? appearance : null,
+			                                              ( ( i & 0x04 ) == 0 ) ? uvMap : null, false,
+			                                              ( ( i & 0x08 ) == 0 ) ? appearance : null,
+			                                              ( ( i & 0x10 ) == 0 ) ? uvMap : null,
+			                                              ( ( i & 0x20 ) == 0 ) ? appearance : null,
+			                                              ( ( i & 0x40 ) == 0 ) ? uvMap : null, false );
+
 			SceneIntegrityChecker.ensureIntegrity( cylinder3d );
 		}
 	}
@@ -77,15 +78,17 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testNormals()" );
 
+		System.out.println( " - Regular normals" );
 		final Cylinder3D regularCylinder = new Cylinder3D( 1.0, 2.0, 4, null, null, true, null, null, null, null, false );
-		final Vector3D[] regularNormals = { Vector3D.NEGATIVE_Y_AXIS, Vector3D.POSITIVE_X_AXIS, Vector3D.POSITIVE_Y_AXIS, Vector3D.NEGATIVE_X_AXIS };
-		assertNormals( "regular cylinder", regularNormals, regularCylinder );
+		final Vector3D[] regularNormals = { Vector3D.POSITIVE_Y_AXIS, Vector3D.POSITIVE_X_AXIS, Vector3D.NEGATIVE_Y_AXIS, Vector3D.NEGATIVE_X_AXIS };
 		SceneIntegrityChecker.ensureIntegrity( regularCylinder );
+		assertNormals( "regular cylinder", regularNormals, regularCylinder );
 
+		System.out.println( " - Flipped normals" );
 		final Cylinder3D flippedCylinder = new Cylinder3D( 1.0, 2.0, 4, null, null, true, null, null, null, null, true );
-		final Vector3D[] flippedNormals = { Vector3D.POSITIVE_Y_AXIS, Vector3D.NEGATIVE_X_AXIS, Vector3D.NEGATIVE_Y_AXIS, Vector3D.POSITIVE_X_AXIS };
-		assertNormals( "flipped cylinder", flippedNormals, flippedCylinder );
+		final Vector3D[] flippedNormals = { Vector3D.NEGATIVE_Y_AXIS, Vector3D.POSITIVE_X_AXIS, Vector3D.POSITIVE_Y_AXIS, Vector3D.NEGATIVE_X_AXIS };
 		SceneIntegrityChecker.ensureIntegrity( flippedCylinder );
+		assertNormals( "flipped cylinder", flippedNormals, flippedCylinder );
 	}
 
 	/**
