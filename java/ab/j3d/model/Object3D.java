@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -25,17 +23,17 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
  * vertices, edges, and faces.
  *
- * @author  Peter S. Heijnen
- * @author  G.B.M. Rupert
- * @version $Revision$ ($Date$, $Author$)
+ * @author Peter S. Heijnen
+ * @author G.B.M. Rupert
  */
 public class Object3D
-	extends Node3D
+extends Node3D
 {
 	/**
 	 * List of face groups in this object.
@@ -43,8 +41,8 @@ public class Object3D
 	private final List<FaceGroup> _faceGroups;
 
 	/**
-	 * Coordinates of vertex coordinates in object. Vertex coordinates are
-	 * stored in an array of doubles with a triplet for each vertex.
+	 * Coordinates of vertex coordinates in object. Vertex coordinates are stored
+	 * in an array of doubles with a triplet for each vertex.
 	 */
 	private final HashList<Vector3D> _vertices;
 
@@ -56,7 +54,7 @@ public class Object3D
 	/**
 	 * Bounding box of object in the local coordinate system.
 	 *
-	 * @see     #getOrientedBoundingBox()
+	 * @see #getOrientedBoundingBox()
 	 */
 	private Bounds3D _orientedBoundingBox;
 
@@ -66,10 +64,10 @@ public class Object3D
 	private Node3D _lowDetail = null;
 
 	/**
-	 * Threshold value for using the low-detail representation of
-	 * the object, specified as the area in pixels occupied by the
-	 * object in image space. If the approximated area occupied by the object
-	 * is smaller, the low-detail representation will be rendered instead.
+	 * Threshold value for using the low-detail representation of the object,
+	 * specified as the area in pixels occupied by the object in image space. If
+	 * the approximated area occupied by the object is smaller, the low-detail
+	 * representation will be rendered instead.
 	 */
 	private double _lowDetailThreshold = 0.0;
 
@@ -88,9 +86,9 @@ public class Object3D
 	 * Construct base object. Additional properties need to be set to make the
 	 * object usable.
 	 *
-	 * @param   vertices    Object vertices.
+	 * @param vertices Object vertices.
 	 */
-	public Object3D( final List<Vector3D> vertices )
+	public Object3D( @NotNull final Collection<Vector3D> vertices )
 	{
 		this();
 		setVertexCoordinates( vertices );
@@ -99,8 +97,9 @@ public class Object3D
 	/**
 	 * Returns a builder for creating the geometry of this object.
 	 *
-	 * @return  3D object builder.
+	 * @return 3D object builder.
 	 */
+	@NotNull
 	public Object3DBuilder getBuilder()
 	{
 		return new Object3DBuilder( this );
@@ -110,10 +109,10 @@ public class Object3D
 	 * Calculates vertex normals and removes edges based on the angles between
 	 * adjacent faces.
 	 *
-	 * @param   maximumSmoothAngle  Maximum smoothing angle, in degrees.
-	 * @param   maximumEdgeAngle    Maximum angle for which edges are removed.
-	 * @param   separateMaterials   <code>true</code> to treat faces with
-	 *                              different materials as not adjacent.
+	 * @param maximumSmoothAngle Maximum smoothing angle, in degrees.
+	 * @param maximumEdgeAngle   Maximum angle for which edges are removed.
+	 * @param separateMaterials  {@code true} to treat faces with different
+	 *                           materials as not adjacent.
 	 */
 	public void smooth( final double maximumSmoothAngle, final double maximumEdgeAngle, final boolean separateMaterials )
 	{
@@ -135,212 +134,237 @@ public class Object3D
 	 * Calculates vertex normals and removes edges based on the angles between
 	 * adjacent faces.
 	 *
-	 * @param   faceGroups          Face groups to be smoothed.
-	 * @param   maximumSmoothAngle  Maximum smoothing angle, in degrees.
-	 * @param   maximumEdgeAngle    Maximum angle for which edges are removed.
-	 * @param   vertexCount         Number of vertex coordinates stored in the
-	 *                              object containing the faces.
+	 * @param faceGroups         Face groups to be smoothed.
+	 * @param maximumSmoothAngle Maximum smoothing angle, in degrees.
+	 * @param maximumEdgeAngle   Maximum angle for which edges are removed.
+	 * @param vertexCount        Number of vertex coordinates stored in the object
+	 *                           containing the faces.
 	 */
-	private static void smooth( final List<FaceGroup> faceGroups, final double maximumSmoothAngle, final double maximumEdgeAngle, final int vertexCount )
+	private static void smooth( @NotNull final Iterable<FaceGroup> faceGroups, final double maximumSmoothAngle, final double maximumEdgeAngle, final int vertexCount )
 	{
-		final boolean smoothing = maximumSmoothAngle > 0.0;
-		final boolean edgeRemoval = maximumEdgeAngle > 0.0;
+		final boolean smoothFaces = maximumSmoothAngle > 0.0;
+		final boolean smoothEdges = maximumEdgeAngle > 0.0;
 
-		/*
-		 * Map faces by vertex coordinate.
-		 */
-		final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( vertexCount, Collections.<Face3D>emptyList() ) );
-		for ( final FaceGroup faceGroup : faceGroups )
-		{
-			faceGroup.setSmooth( smoothing );
-			for ( final Face3D face : faceGroup.getFaces() )
-			{
-				for ( final Vertex3D vertex : face.getVertices() )
-				{
-					List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
-					if ( faceList.isEmpty() )
-					{
-						faceList = new ArrayList<Face3D>();
-						facesByVertexCoordinate.set( vertex.vertexCoordinateIndex, faceList );
-					}
-					faceList.add( face );
-				}
-			}
-		}
-
-		if ( edgeRemoval )
+		if ( smoothEdges || smoothFaces )
 		{
 			/*
-			 * Remove outline segments between smoothed faces.
+			 * Map faces by vertex coordinate.
 			 */
-			final double minCosEdges = Math.cos( Math.toRadians( maximumEdgeAngle ) );
-			final List<int[]> outlines = new LinkedList<int[]>();
+			final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( vertexCount, Collections.<Face3D>emptyList() ) );
 			for ( final FaceGroup faceGroup : faceGroups )
 			{
+				faceGroup.setSmooth( smoothFaces );
 				for ( final Face3D face : faceGroup.getFaces() )
 				{
-					boolean outlinesModified = false;
-					outlines.clear();
-
-					for ( final int[] outline : face.getOutlines() )
+					for ( final Vertex3D vertex : face.getVertices() )
 					{
-						int outlineStart = 0;
-						final List<Vertex3D> faceVertices = face.getVertices();
-						List<Face3D> startFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ 0 ] ).vertexCoordinateIndex );
-
-						for ( int i = 1; i < outline.length; i++ )
+						List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
+						if ( faceList.isEmpty() )
 						{
-							final List<Face3D> endFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ i ] ).vertexCoordinateIndex );
+							faceList = new ArrayList<Face3D>();
+							facesByVertexCoordinate.set( vertex.vertexCoordinateIndex, faceList );
+						}
+						faceList.add( face );
+					}
+				}
+			}
 
-							/*
-							 * Find face on the opposite side of this edge.
-							 */
-							Face3D symmetric = null;
-							for ( final Face3D startFace : startFaces )
+			if ( smoothEdges )
+			{
+				smoothEdges( faceGroups, facesByVertexCoordinate, maximumEdgeAngle );
+			}
+
+			if ( smoothFaces )
+			{
+				smoothFaces( facesByVertexCoordinate, maximumSmoothAngle );
+			}
+		}
+	}
+
+	/**
+	 * Remove 'smooth' edges based on the angles between adjacent faces.
+	 *
+	 * @param faceGroups              Face groups to be smoothed.
+	 * @param facesByVertexCoordinate Faces per object vertex coordinate.
+	 * @param maximumEdgeAngle        Maximum angle for which edges are removed.
+	 */
+	private static void smoothEdges( @NotNull final Iterable<FaceGroup> faceGroups, final List<List<Face3D>> facesByVertexCoordinate, final double maximumEdgeAngle )
+	{
+		final double minCosEdges = Math.cos( Math.toRadians( maximumEdgeAngle ) );
+		final List<int[]> outlines = new LinkedList<int[]>();
+
+		for ( final FaceGroup faceGroup : faceGroups )
+		{
+			for ( final Face3D face : faceGroup.getFaces() )
+			{
+				boolean outlinesModified = false;
+				outlines.clear();
+
+				for ( final int[] outline : face.getOutlines() )
+				{
+					int outlineStart = 0;
+					final List<Vertex3D> faceVertices = face.getVertices();
+					List<Face3D> startFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ 0 ] ).vertexCoordinateIndex );
+
+					for ( int i = 1; i < outline.length; i++ )
+					{
+						final List<Face3D> endFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ i ] ).vertexCoordinateIndex );
+
+						/*
+						 * Find face on the opposite side of this edge.
+						 */
+						Face3D symmetric = null;
+						for ( final Face3D startFace : startFaces )
+						{
+							if ( endFaces.contains( startFace ) )
 							{
-								if ( endFaces.contains( startFace ) )
+								symmetric = startFace;
+								break;
+							}
+						}
+
+						/*
+						 * If requested, apply only to faces with the same
+						 * material.
+						 */
+						if ( symmetric != null )
+						{
+							final double cos = Vector3D.dot( face.getNormal(), symmetric.getNormal() );
+							if ( cos >= minCosEdges )
+							{
+								if ( i - outlineStart > 1 )
 								{
-									symmetric = startFace;
-									break;
+									final int[] fragment = new int[ i - outlineStart ];
+									System.arraycopy( outline, outlineStart, fragment, 0, i - outlineStart );
+									outlines.add( fragment );
 								}
-							}
 
-							/*
-							 * If requested, apply only to faces with the same
-							 * material.
-							 */
-							if ( symmetric != null )
-							{
-								final double cos = Vector3D.dot( face.getNormal(), symmetric.getNormal() );
-								if ( cos >= minCosEdges )
-								{
-									if ( i - outlineStart > 1 )
-									{
-										final int[] fragment = new int[ i - outlineStart ];
-										System.arraycopy( outline, outlineStart, fragment, 0, i - outlineStart );
-										outlines.add( fragment );
-									}
-
-									outlineStart = i;
-								}
-							}
-
-							startFaces = endFaces;
-						}
-
-						if ( outlineStart == 0 )
-						{
-							outlines.add( outline );
-						}
-						else
-						{
-							outlinesModified = true;
-							if ( outline.length - outlineStart > 1 )
-							{
-								final int[] fragment = new int[ outline.length - outlineStart ];
-								System.arraycopy( outline, outlineStart, fragment, 0, outline.length - outlineStart );
-								outlines.add( fragment );
+								outlineStart = i;
 							}
 						}
+
+						startFaces = endFaces;
 					}
 
-					if ( outlinesModified )
+					if ( outlineStart == 0 )
 					{
-						final Tessellation tessellation = face.getTessellation();
-						switch ( outlines.size() )
+						outlines.add( outline );
+					}
+					else
+					{
+						outlinesModified = true;
+						if ( outline.length - outlineStart > 1 )
 						{
-							case 0:
-								face.setTessellation( new Tessellation( Collections.<int[]>emptyList(), tessellation.getPrimitives() ) );
-								break;
-							case 1:
-								face.setTessellation( new Tessellation( Collections.singletonList( outlines.get( 0 ) ), tessellation.getPrimitives() ) );
-								break;
-							default:
-								face.setTessellation( new Tessellation( new ArrayList<int[]>( outlines ), tessellation.getPrimitives() ) );
+							final int[] fragment = new int[ outline.length - outlineStart ];
+							System.arraycopy( outline, outlineStart, fragment, 0, outline.length - outlineStart );
+							outlines.add( fragment );
 						}
+					}
+				}
+
+				if ( outlinesModified )
+				{
+					final Tessellation tessellation = face.getTessellation();
+					switch ( outlines.size() )
+					{
+						case 0:
+							face.setTessellation( new Tessellation( Collections.<int[]>emptyList(), tessellation.getPrimitives() ) );
+							break;
+
+						case 1:
+							face.setTessellation( new Tessellation( Collections.singletonList( outlines.get( 0 ) ), tessellation.getPrimitives() ) );
+							break;
+
+						default:
+							face.setTessellation( new Tessellation( new ArrayList<int[]>( outlines ), tessellation.getPrimitives() ) );
 					}
 				}
 			}
 		}
+	}
 
-		if ( smoothing )
+	/**
+	 * Apply smoothing to faces. This determine smoothing groups and applies
+	 * smoothing to them.
+	 *
+	 * @param facesByVertexCoordinate Faces per object vertex coordinate.
+	 * @param maximumSmoothAngle      Maximum smoothing angle, in degrees.
+	 */
+	private static void smoothFaces( final List<List<Face3D>> facesByVertexCoordinate, final double maximumSmoothAngle )
+	{
+		final List<Face3D> visited = new ArrayList<Face3D>();
+		final double minCosSmooth = Math.cos( Math.toRadians( maximumSmoothAngle ) );
+		for ( int i = 0; i < facesByVertexCoordinate.size(); i++ )
 		{
-			/*
-			 * Determine smoothing groups and apply smoothing.
-			 */
-			final List<Face3D> visited = new ArrayList<Face3D>();
-			final double minCosSmooth = Math.cos( Math.toRadians( maximumSmoothAngle ) );
-			for ( int i = 0; i < facesByVertexCoordinate.size(); i++ )
+			final List<Face3D> faceList = facesByVertexCoordinate.get( i );
+			for ( final Face3D face1 : faceList )
 			{
-				final List<Face3D> faceList = facesByVertexCoordinate.get( i );
-				for ( final Face3D face1 : faceList )
+				if ( !visited.contains( face1 ) )
 				{
-					if ( !visited.contains( face1 ) )
+					/*
+					 * Find other faces in the same smoothing group.
+					 */
+					final int groupStart = visited.size();
+					visited.add( face1 );
+					for ( final Face3D face2 : faceList )
 					{
 						/*
-						 * Find other faces in the same smoothing group.
+						 * If requested, place different materials in
+						 * different smoothing groups.
 						 */
-						final int groupStart = visited.size();
-						visited.add( face1 );
-						for ( final Face3D face2 : faceList )
+						if ( !visited.contains( face2 ) )
 						{
-							/*
-							 * If requested, place different materials in
-							 * different smoothing groups.
-							 */
-							if ( !visited.contains( face2 ) )
+							final double cos = Vector3D.dot( face1.getNormal(), face2.getNormal() );
+							if ( cos >= minCosSmooth )
 							{
-								final double cos = Vector3D.dot( face1.getNormal(), face2.getNormal() );
-								if ( cos >= minCosSmooth )
-								{
-									visited.add( face2 );
-								}
+								visited.add( face2 );
 							}
 						}
-						final int groupEnd = visited.size();
+					}
+					final int groupEnd = visited.size();
 
-						/*
-						 * Calculate smooth normal.
-						 */
-						double normalX = 0.0;
-						double normalY = 0.0;
-						double normalZ = 0.0;
-						for ( int j = groupStart; j < groupEnd; j++ )
-						{
-							final Face3D face = visited.get( j );
-							final Vector3D cross = face.getCross();
-							normalX += cross.x;
-							normalY += cross.y;
-							normalZ += cross.z;
-						}
-						final Vector3D normal = Vector3D.normalize( normalX, normalY, normalZ );
+					/*
+					 * Calculate smooth normal.
+					 */
+					double normalX = 0.0;
+					double normalY = 0.0;
+					double normalZ = 0.0;
+					for ( int j = groupStart; j < groupEnd; j++ )
+					{
+						final Face3D face = visited.get( j );
+						final Vector3D cross = face.getCross();
+						normalX += cross.x;
+						normalY += cross.y;
+						normalZ += cross.z;
+					}
+					final Vector3D normal = Vector3D.normalize( normalX, normalY, normalZ );
 
-						/*
-						 * Set vertex normals.
-						 */
-						for ( int j = groupStart; j < groupEnd; j++ )
+					/*
+					 * Set vertex normals.
+					 */
+					for ( int j = groupStart; j < groupEnd; j++ )
+					{
+						final Face3D face = visited.get( j );
+						for ( final Vertex3D vertex : face.getVertices() )
 						{
-							final Face3D face = visited.get( j );
-							for ( final Vertex3D vertex : face.getVertices() )
+							if ( vertex.vertexCoordinateIndex == i )
 							{
-								if ( vertex.vertexCoordinateIndex == i )
-								{
-									vertex.setNormal( normal );
-								}
+								vertex.setNormal( normal );
 							}
 						}
 					}
 				}
-				visited.clear();
 			}
+			visited.clear();
 		}
 	}
 
 	/**
 	 * Returns the face groups in this object.
 	 *
-	 * @return  Face groups in this object.
+	 * @return Face groups in this object.
 	 */
+	@NotNull
 	public List<FaceGroup> getFaceGroups()
 	{
 		return Collections.unmodifiableList( _faceGroups );
@@ -349,9 +373,9 @@ public class Object3D
 	/**
 	 * Add a face group to this object.
 	 *
-	 * @param   faceGroup    Face group to add.
+	 * @param faceGroup Face group to add.
 	 */
-	public final void addFaceGroup( final FaceGroup faceGroup )
+	public void addFaceGroup( @NotNull final FaceGroup faceGroup )
 	{
 		_faceGroups.add( faceGroup );
 	}
@@ -359,9 +383,9 @@ public class Object3D
 	/**
 	 * Sets the face groups for this object.
 	 *
-	 * @param   faceGroups  Face groups to be set.
+	 * @param faceGroups Face groups to be set.
 	 */
-	public void setFaceGroups( final List<FaceGroup> faceGroups )
+	public void setFaceGroups( @NotNull final Collection<FaceGroup> faceGroups )
 	{
 		_faceGroups.clear();
 		_faceGroups.addAll( faceGroups );
@@ -371,13 +395,12 @@ public class Object3D
 	 * Test collision between two scene (sub)graphs. Note that an object can
 	 * collide with itself.
 	 *
-	 * @param   subTree1    First scene (sub)graph to test.
-	 * @param   subTree2    Second scene (sub)graph to test.
+	 * @param subTree1 First scene (sub)graph to test.
+	 * @param subTree2 Second scene (sub)graph to test.
 	 *
-	 * @return  <code>true</code> if the two graphs collide;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the two graphs collide; {@code false} otherwise.
 	 */
-	public static boolean testCollision( final Node3D subTree1, final Node3D subTree2 )
+	public static boolean testCollision( @Nullable final Node3D subTree1, @Nullable final Node3D subTree2 )
 	{
 		boolean result = false;
 
@@ -397,12 +420,12 @@ public class Object3D
 				{
 					for ( final Node3DPath path1 : objects1 )
 					{
-						final Object3D object1 = (Object3D) path1.getNode();
+						final Object3D object1 = (Object3D)path1.getNode();
 						final Matrix3D object1ToWcs = path1.getTransform();
 
 						for ( final Node3DPath path2 : objects2 )
 						{
-							final Object3D object2 = (Object3D) path2.getNode();
+							final Object3D object2 = (Object3D)path2.getNode();
 							final Matrix3D object2ToWcs = path2.getTransform();
 							final Matrix3D object2to1 = object2ToWcs.multiplyInverse( object1ToWcs );
 
@@ -428,17 +451,16 @@ public class Object3D
 	/**
 	 * Test if this object collides with another.
 	 *
-	 * @param   fromOtherToThis     Transformation from other object to this.
-	 * @param   other         Object to test collision with.
+	 * @param fromOtherToThis Transformation from other object to this.
+	 * @param other           Object to test collision with.
 	 *
-	 * @return  <code>true</code> if the objects collide;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the objects collide; {@code false} otherwise.
 	 */
-	public boolean collidesWith( final Matrix3D fromOtherToThis, final Object3D other )
+	public boolean collidesWith( @NotNull final Matrix3D fromOtherToThis, @NotNull final Object3D other )
 	{
 		final boolean result;
 
-		final Bounds3D thisOrientedBoundingBox  = getOrientedBoundingBox();
+		final Bounds3D thisOrientedBoundingBox = getOrientedBoundingBox();
 		final Bounds3D otherOrientedBoundingBox = other.getOrientedBoundingBox();
 
 		if ( ( thisOrientedBoundingBox != null ) && ( otherOrientedBoundingBox != null ) && GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox, fromOtherToThis, otherOrientedBoundingBox ) )
@@ -460,8 +482,9 @@ public class Object3D
 	/**
 	 * Get helper for collision tests.
 	 *
-	 * @return  Helper for collision tests.
+	 * @return Helper for collision tests.
 	 */
+	@Nullable
 	private CollisionNode getCollisionNode()
 	{
 		CollisionNode result = _collisionNode;
@@ -501,7 +524,7 @@ public class Object3D
 						}
 
 						final int[] primitiveTriangles = primitive.getTriangles();
-						for ( int i = 0 ; i < primitiveTriangles.length; i += 3 )
+						for ( int i = 0; i < primitiveTriangles.length; i += 3 )
 						{
 							final Vertex3D v1 = faceVertices.get( primitiveTriangles[ i ] );
 							final Vertex3D v2 = faceVertices.get( primitiveTriangles[ i + 1 ] );
@@ -513,6 +536,7 @@ public class Object3D
 				}
 			}
 
+			// TODO Maybe cache 'null' result here as well
 			result = triangles.isEmpty() ? null : new CollisionNode( triangles, 0, triangles.size() );
 
 			_collisionNode = result;
@@ -523,9 +547,10 @@ public class Object3D
 	/**
 	 * Get bounding box of this object in the object coordinate system (OCS).
 	 *
-	 * @return  Bounding box in the object coordinate system (OCS);
-	 *          <code>null</code> if object is empty.
+	 * @return Bounding box in the object coordinate system (OCS); {@code null} if
+	 *         object is empty.
 	 */
+	@Nullable
 	public Bounds3D getOrientedBoundingBox()
 	{
 		Bounds3D result = _orientedBoundingBox;
@@ -541,9 +566,10 @@ public class Object3D
 	/**
 	 * Get bounding box of this object in the object coordinate system (OCS).
 	 *
-	 * @return  Bounding box in the object coordinate system (OCS);
-	 *          <code>null</code> if object is empty.
+	 * @return Bounding box in the object coordinate system (OCS); {@code null} if
+	 *         object is empty.
 	 */
+	@Nullable
 	protected Bounds3D calculateOrientedBoundingBox()
 	{
 		Bounds3D result = null;
@@ -567,12 +593,12 @@ public class Object3D
 	/**
 	 * Add bounds of this object to a {@link Bounds3DBuilder}. Optionally.
 	 *
-	 * @param   bounds3DBuilder     Builder to add bounds to.
-	 * @param   transform           Transform to apply to vertex coordinates.
+	 * @param bounds3DBuilder Builder to add bounds to.
+	 * @param transform       Transform to apply to vertex coordinates.
 	 */
 	public void addBounds( final Bounds3DBuilder bounds3DBuilder, final Matrix3D transform )
 	{
-		if ( ( transform != null ) && ( transform != Matrix3D.IDENTITY ) && ( !Matrix3D.IDENTITY.equals( transform ) ) )
+		if ( ( transform != null ) && !Matrix3D.IDENTITY.equals( transform ) )
 		{
 			final List<Vector3D> vertexCoordinates = _vertices;
 			if ( !vertexCoordinates.isEmpty() )
@@ -594,31 +620,30 @@ public class Object3D
 	}
 
 	/**
-	 * Find intersections between this object and the specified ray. The ray
-	 * starts at <code>rayOrigin</code> and points in <code>rayDirection</code>.
-	 * The intersections are returned as a {@link List} containing
-	 *  {@link Face3DIntersection} instances, but may well be empty.
-	 * <p>
-	 * Note that the arguments are specified in world coordinates (WCS) and the
-	 * <code>object2world</code> transformation matrix must be specified to
-	 * define this object's place in the world.
+	 * Find intersections between this object and the specified ray. The ray starts
+	 * at {@code rayOrigin} and points in {@code rayDirection}. The intersections
+	 * are returned as a {@link List} containing {@link Face3DIntersection}
+	 * instances, but may well be empty. <p> Note that the arguments are specified
+	 * in world coordinates (WCS) and the {@code object2world} transformation
+	 * matrix must be specified to define this object's place in the world.
 	 *
-	 * @param   dest            Destination for found intersections (<code>null</code> => create new).
-	 * @param   sortResult      Perform insertion sort in list.
-	 * @param   objectID        ID of object to test for intersections.
-	 * @param   path            Path in scene graph to this object.
-	 * @param   object2world    Transformation from object to world coordinates (OCS->WCS).
-	 * @param   ray             Ray expression in world coordinates (WCS).
+	 * @param dest         Destination for found intersections ({@code null} =>
+	 *                     create new).
+	 * @param sortResult   Perform insertion sort in list.
+	 * @param objectID     ID of object to test for intersections.
+	 * @param path         Path in scene graph to this object.
+	 * @param object2world Transforms object to world coordinates (OCS->WCS).
+	 * @param ray          Ray expression in world coordinates (WCS).
 	 *
-	 * @return  List containing found intersection (never <code>null</code>,
-	 *          same as <code>dest</code> argument if it was non-<code>null</code>).
+	 * @return List containing found intersection (never {@code null}, same as
+	 *         {@code dest} argument if it was non-{@code null}).
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws NullPointerException if a required input argument is {@code null}.
 	 */
 	public List<Face3DIntersection> getIntersectionsWithRay( final List<Face3DIntersection> dest, final boolean sortResult, final Object objectID, final Node3DPath path, final Matrix3D object2world, final Ray3D ray )
 	{
 		final Matrix3D world2object = object2world.inverse();
-		final Ray3D    ocsRay       = new BasicRay3D( world2object, ray );
+		final Ray3D ocsRay = new BasicRay3D( world2object, ray );
 
 		final List<Face3DIntersection> result = ( dest != null ) ? dest : new ArrayList<Face3DIntersection>();
 
@@ -650,9 +675,9 @@ public class Object3D
 	/**
 	 * Get vertex with the given index from this object.
 	 *
-	 * @param   index   Vertex index.
+	 * @param index Vertex index.
 	 *
-	 * @return  Vertex (coordinates).
+	 * @return Vertex (coordinates).
 	 */
 	public Vector3D getVertex( final int index )
 	{
@@ -663,9 +688,9 @@ public class Object3D
 	 * Get index of vertex at the specified point. If no vertex was found at the
 	 * specified point, a new one is created.
 	 *
-	 * @param   point   Coordinates of vertex get vertex index of.
+	 * @param point Coordinates of vertex get vertex index of.
 	 *
-	 * @return  Vertex index.
+	 * @return Vertex index.
 	 */
 	public int getVertexIndex( final Vector3D point )
 	{
@@ -675,9 +700,9 @@ public class Object3D
 	/**
 	 * Add vertex for the given point and return its index.
 	 *
-	 * @param   point   Coordinates of vertex to add.
+	 * @param point Coordinates of vertex to add.
 	 *
-	 * @return  Vertex index.
+	 * @return Vertex index.
 	 */
 	public int addVertex( final Vector3D point )
 	{
@@ -690,9 +715,9 @@ public class Object3D
 	/**
 	 * Get coordinates of all vertices in this object.
 	 *
-	 * @return  Point coordinates (one triplet per vertex).
+	 * @return Point coordinates (one triplet per vertex).
 	 */
-	public final List<Vector3D> getVertexCoordinates()
+	public List<Vector3D> getVertexCoordinates()
 	{
 		return Collections.unmodifiableList( _vertices );
 	}
@@ -702,9 +727,9 @@ public class Object3D
 	 * reduce the number of transformations required (vertices have an average
 	 * usage count that approaches 3, so the gain is significant).
 	 *
-	 * @return  Number of vertices.
+	 * @return Number of vertices.
 	 */
-	public final int getVertexCount()
+	public int getVertexCount()
 	{
 		return _vertices.size();
 	}
@@ -719,15 +744,14 @@ public class Object3D
 	}
 
 	/**
-	 * Set coordinates of all vertices in this object. This is only allowed when
-	 * no faces have been added yet, since the object integrity is otherwise
-	 * lost.
+	 * Set coordinates of all vertices in this object. This is only allowed when no
+	 * faces have been added yet, since the object integrity is otherwise lost.
 	 *
-	 * @param   vertexCoordinates   Vertex coordinates (one triplet per vertex).
+	 * @param vertexCoordinates Vertex coordinates (one triplet per vertex).
 	 *
 	 * @throws IllegalStateException if faces have been added to the object.
 	 */
-	public final void setVertexCoordinates( final Collection<Vector3D> vertexCoordinates )
+	public void setVertexCoordinates( @NotNull final Collection<Vector3D> vertexCoordinates )
 	{
 		_vertices.clear();
 		_vertices.addAll( vertexCoordinates );
@@ -737,10 +761,10 @@ public class Object3D
 	/**
 	 * Add {@link Face3D} to this object.
 	 *
-	 * @param   appearance  Appearance.
-	 * @param   smooth      Smoothing flag.
-	 * @param   twoSided    Two-sided flag.
-	 * @param   face        Face to add.
+	 * @param appearance Appearance.
+	 * @param smooth     Smoothing flag.
+	 * @param twoSided   Two-sided flag.
+	 * @param face       Face to add.
 	 */
 	public void addFace( final Appearance appearance, final boolean smooth, final boolean twoSided, final Face3D face )
 	{
@@ -752,18 +776,19 @@ public class Object3D
 	 * Returns a face group with the given properties. If there an existing face
 	 * group is found, it is returned. Otherwise a new face group is created.
 	 *
-	 * @param   appearance  Appearance.
-	 * @param   smooth      Smoothing flag.
-	 * @param   twoSided    Two-sided flag.
+	 * @param appearance Appearance.
+	 * @param smooth     Smoothing flag.
+	 * @param twoSided   Two-sided flag.
 	 *
-	 * @return  Face group.
+	 * @return Face group.
 	 */
-	public FaceGroup getFaceGroup( final Appearance appearance, final boolean smooth, final boolean twoSided )
+	public FaceGroup getFaceGroup( @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
 		FaceGroup result = null;
 
 		for ( final FaceGroup faceGroup : _faceGroups )
 		{
+			//noinspection ObjectEquality
 			if ( ( faceGroup.getAppearance() == appearance ) &&
 			     ( faceGroup.isSmooth() == smooth ) &&
 			     ( faceGroup.isTwoSided() == twoSided ) )
@@ -786,24 +811,23 @@ public class Object3D
 	 * Returns a low-detail representation of the object or the object itself,
 	 * based on the visual size of the object.
 	 *
-	 * @param   area    Approximate visual size of the object, in pixels.
+	 * @param area Approximate visual size of the object, in pixels.
 	 *
-	 * @return  Object suitable for the specified visual size.
+	 * @return Object suitable for the specified visual size.
 	 */
 	public Node3D getLevelOfDetail( final double area )
 	{
 		final Node3D lowDetail = _lowDetail;
-		return ( area >= getLowDetailThreshold() ) ? this :
-		       ( ( lowDetail instanceof Object3D ) && ( lowDetail != this ) ) ? ( (Object3D)lowDetail ).getLevelOfDetail( area ) : lowDetail;
+		//noinspection ObjectEquality
+		return ( area >= getLowDetailThreshold() ) ? this : ( ( lowDetail instanceof Object3D ) && ( lowDetail != this ) ) ? ( (Object3D)lowDetail ).getLevelOfDetail( area ) : lowDetail;
 	}
 
 	/**
-	 * Returns a low-detail representation of the object. If <code>null</code>
-	 * is returned, the object will not be rendered at low detail levels.
-	 * Objects that should always be rendered at full detail may return
-	 * <code>this</code>.
+	 * Returns a low-detail representation of the object. If {@code null} is
+	 * returned, the object will not be rendered at low detail levels. Objects that
+	 * should always be rendered at full detail may return {@code this}.
 	 *
-	 * @return  Low-detail representation of the object.
+	 * @return Low-detail representation of the object.
 	 */
 	public Node3D getLowDetail()
 	{
@@ -811,12 +835,12 @@ public class Object3D
 	}
 
 	/**
-	 * Sets the low-detail representation of the object. If <code>null</code>
-	 * is returned, the object will not be rendered below the {@link #getLowDetailThreshold()
-	 * low-detail threshold}. Objects that should always be rendered at full
-	 * detail may return <code>this</code>.
+	 * Sets the low-detail representation of the object. If {@code null} is
+	 * returned, the object will not be rendered below the {@link
+	 * #getLowDetailThreshold() low-detail threshold}. Objects that should always
+	 * be rendered at full detail may return {@code this}.
 	 *
-	 * @param   lowDetail   Low-detail representation of the object.
+	 * @param lowDetail Low-detail representation of the object.
 	 */
 	public void setLowDetail( final Node3D lowDetail )
 	{
@@ -824,12 +848,12 @@ public class Object3D
 	}
 
 	/**
-	 * Returns the threshold value for using the low-detail representation of
-	 * the object, specified as the area in pixels occupied by the
-	 * object in image space. If the approximated area occupied by the object
-	 * is smaller, the low-detail representation will be rendered instead.
+	 * Returns the threshold value for using the low-detail representation of the
+	 * object, specified as the area in pixels occupied by the object in image
+	 * space. If the approximated area occupied by the object is smaller, the
+	 * low-detail representation will be rendered instead.
 	 *
-	 * @return  Low-detail threshold, in pixels.
+	 * @return Low-detail threshold, in pixels.
 	 */
 	public double getLowDetailThreshold()
 	{
@@ -837,12 +861,12 @@ public class Object3D
 	}
 
 	/**
-	 * Sets the threshold value for using the low-detail representation of
-	 * the object, specified as the area in pixels occupied by the
-	 * object in image space. If the approximated area occupied by the object
-	 * is smaller, the low-detail representation will be rendered instead.
+	 * Sets the threshold value for using the low-detail representation of the
+	 * object, specified as the area in pixels occupied by the object in image
+	 * space. If the approximated area occupied by the object is smaller, the
+	 * low-detail representation will be rendered instead.
 	 *
-	 * @param   lowDetailThreshold  Low-detail threshold, in pixels.
+	 * @param lowDetailThreshold Low-detail threshold, in pixels.
 	 */
 	public void setLowDetailThreshold( final double lowDetailThreshold )
 	{
@@ -852,18 +876,20 @@ public class Object3D
 	/**
 	 * Returns whether this object provides a low-detail version.
 	 *
-	 * @return  <code>true</code> if a low-detail version is available.
+	 * @return {@code true} if a low-detail version is available.
 	 */
 	public boolean isLowDetailAvailable()
 	{
+		//noinspection ObjectEquality
 		return ( getLowDetail() != this ) && ( getLowDetailThreshold() > 0.0 );
 	}
 
 	/**
 	 * Low-detail representation of the object, consisting of a bounding box.
 	 */
+	@SuppressWarnings ( "UnusedDeclaration" )
 	protected static class LowDetailObject3D
-		extends Object3D
+	extends Object3D
 	{
 		/**
 		 * Bounding box.
@@ -878,8 +904,8 @@ public class Object3D
 		/**
 		 * Constructs a new instance.
 		 *
-		 * @param   bounds      Bounding box.
-		 * @param   appearance  Appearance.
+		 * @param bounds     Bounding box.
+		 * @param appearance Appearance.
 		 */
 		protected LowDetailObject3D( final Bounds3D bounds, final Appearance appearance )
 		{
@@ -896,7 +922,7 @@ public class Object3D
 			final Vector3D p8 = new Vector3D( bounds.v2.x, bounds.v2.y, bounds.v2.z );
 
 			final Object3DBuilder builder = getBuilder();
-			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
+			final UVMap uvMap = new BoxUVMap( Scene.MM );
 			builder.addQuad( p1, p3, p7, p5, appearance, uvMap, false );
 			builder.addQuad( p2, p6, p8, p4, appearance, uvMap, false );
 			builder.addQuad( p1, p5, p6, p2, appearance, uvMap, false );
