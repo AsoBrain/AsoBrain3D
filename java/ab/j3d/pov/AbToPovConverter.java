@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
@@ -29,11 +27,10 @@ import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This class can be used to convert a 3D scene from <code>ab.j3d.model</code>
- * into a POV-Ray scene ({@link PovScene}).
+ * This class can be used to convert a 3D scene from {@code ab.j3d.model} into a
+ * POV-Ray scene ({@link PovScene}).
  *
- * @author  Rob Veneberg
- * @version $Revision$ $Date$
+ * @author Rob Veneberg
  */
 public class AbToPovConverter
 {
@@ -44,7 +41,6 @@ public class AbToPovConverter
 
 	/**
 	 * Construct new converter and set the image map directory.
-	 *
 	 */
 	public AbToPovConverter()
 	{
@@ -56,11 +52,10 @@ public class AbToPovConverter
 	 * Method to check if an {@link Object3D} contains multiple materials and/or
 	 * maps.
 	 *
-	 * @param   object  The {@link Object3D} to inspect.
+	 * @param object The {@link Object3D} to inspect.
 	 *
-	 * @return  <code>true</code> if the {@link Object3D} contains multiple
-	 *          materials and/or maps;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the {@link Object3D} contains multiple materials
+	 *         and/or maps; {@code false} otherwise.
 	 */
 	private static boolean containsMultipleMaterialsOrMaps( final Object3D object )
 	{
@@ -86,14 +81,13 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * Work horse of the converter. Takes a {@link Scene} and then
-	 * converts all individual nodes. Objects with texture mapping and/or
-	 * multiple textures and extruded objects are converted as
-	 * {@link Object3D}'s.
+	 * Work horse of the converter. Takes a {@link Scene} and then converts all
+	 * individual nodes. Objects with texture mapping and/or multiple textures and
+	 * extruded objects are converted as {@link Object3D}'s.
 	 *
-	 * @param   scene   Scene containing the nodes.
+	 * @param scene Scene containing the nodes.
 	 *
-	 * @return  The resulting {@link PovScene} object.
+	 * @return The resulting {@link PovScene} object.
 	 */
 	public PovScene convert( final Scene scene )
 	{
@@ -106,11 +100,11 @@ public class AbToPovConverter
 	/**
 	 * This method constructs a {@link PovBox} from a {@link Box3D} object.
 	 *
-	 * @param   box2wcs     Transform to apply to node.
-	 * @param   box         The {@link Box3D} to be converted.
+	 * @param box2wcs Transform to apply to node.
+	 * @param box     The {@link Box3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object;
-	 *          {@code null} if the object did not produce any geometry.
+	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
+	 *         did not produce any geometry.
 	 */
 	public PovGeometry convertBox3D( final Matrix3D box2wcs, final Box3D box )
 	{
@@ -145,14 +139,13 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method constructs a {@link PovCylinder} from a {@link Cone3D}
-	 * object.
+	 * This method constructs a {@link PovCylinder} from a {@link Cone3D} object.
 	 *
-	 * @param   transform   Transform to apply to node.
-	 * @param   cone    The {@link Cone3D} to be converted.
+	 * @param transform Transform to apply to node.
+	 * @param cone      The {@link Cone3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object;
-	 *          {@code null} if the object did not produce any geometry.
+	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
+	 *         did not produce any geometry.
 	 */
 	public PovGeometry convertCone3D( final Matrix3D transform, final Cone3D cone )
 	{
@@ -188,11 +181,11 @@ public class AbToPovConverter
 	 * This method constructs a {@link PovCylinder} from a {@link Cylinder3D}
 	 * object.
 	 *
-	 * @param   transform   Transform to apply to node.
-	 * @param   cylinder    The {@link Cylinder3D} to be converted.
+	 * @param transform Transform to apply to node.
+	 * @param cylinder  The {@link Cylinder3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object;
-	 *          {@code null} if the object did not produce any geometry.
+	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
+	 *         did not produce any geometry.
 	 */
 	public PovGeometry convertCylinder3D( final Matrix3D transform, final Cylinder3D cylinder )
 	{
@@ -212,7 +205,7 @@ public class AbToPovConverter
 				final String name = ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null;
 				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
-				result = new PovCylinder( name, 0.0, 0.0, 0.0, cylinder.height, cylinder.radius, cylinder.radius, texture );
+				result = new PovCylinder( name, 0.0, 0.0, 0.0, cylinder.getHeight(), cylinder.getRadius(), cylinder.getRadius(), texture );
 				result.setTransform( new PovMatrix( transform ) );
 			}
 			else
@@ -225,13 +218,12 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method converts a {@link Light3D} object to a {@link PovLight}
-	 * object.
+	 * This method converts a {@link Light3D} object to a {@link PovLight} object.
 	 *
-	 * @param   transform   Transform to apply to node.
-	 * @param   light       The {@link Light3D} object to be converted.
+	 * @param transform Transform to apply to node.
+	 * @param light     The {@link Light3D} object to be converted.
 	 *
-	 * @return  The resulting {@link PovLight} object.
+	 * @return The resulting {@link PovLight} object.
 	 */
 	public static PovLight convertLight3D( final Matrix3D transform, final Light3D light )
 	{
@@ -291,10 +283,10 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method converts an {@link Object3D} to a {@link PovMesh2}.
-	 * All faces are converted to one or more mesh triangles and the face
-	 * textures are uv-mapped to the triangles. For every triangle the first
-	 * vertex is the same (a {@link Face3D} is always convex).
+	 * This method converts an {@link Object3D} to a {@link PovMesh2}. All faces
+	 * are converted to one or more mesh triangles and the face textures are
+	 * uv-mapped to the triangles. For every triangle the first vertex is the same
+	 * (a {@link Face3D} is always convex).
 	 * <pre>
 	 *  0  _________ 1
 	 *    |\        |
@@ -308,14 +300,13 @@ public class AbToPovConverter
 	 *  3 |________\| 2
 	 *
 	 * </pre>
-	 * Triangle 1: ( 0, 1, 2 )<br>
-	 * Triangle 2: ( 0, 2, 3 )
+	 * Triangle 1: ( 0, 1, 2 )<br> Triangle 2: ( 0, 2, 3 )
 	 *
-	 * @param   transform   Transform to apply to node.
-	 * @param   object      The {@link Object3D} to be converted.
+	 * @param transform Transform to apply to node.
+	 * @param object    The {@link Object3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovMesh2} object;
-	 *          {@code null} if the object did not produce any geometry.
+	 * @return The resulting {@link PovMesh2} object; {@code null} if the object
+	 *         did not produce any geometry.
 	 */
 	public PovMesh2 convertObject3D( final Matrix3D transform, final Object3D object )
 	{
@@ -325,7 +316,7 @@ public class AbToPovConverter
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			if ( faceGroup.getAppearance() != null)
+			if ( faceGroup.getAppearance() != null )
 			{
 				for ( final Face3D face : faceGroup.getFaces() )
 				{
@@ -356,8 +347,8 @@ public class AbToPovConverter
 			mesh.setVertexVectors( vertexVectors );
 
 			List<PovVector> vertexNormals = null;
-			int      textureIndex  = 0;
-			boolean  uvMapping     = false;
+			int textureIndex = 0;
+			boolean uvMapping = false;
 
 			int smoothVertexCount = 0;
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
@@ -391,7 +382,7 @@ public class AbToPovConverter
 					 */
 					if ( appearance != lastAppearance )
 					{
-						uvMapping    = ( appearance.getColorMap() != null );
+						uvMapping = ( appearance.getColorMap() != null );
 						textureIndex = mesh.getOrAddTextureIndex( convertMaterialToPovTexture( appearance ) );
 						lastAppearance = appearance;
 					}
@@ -408,17 +399,17 @@ public class AbToPovConverter
 							for ( int j = 0; j < triangles.length; j += 3 )
 							{
 								final Vertex3D vertex0 = face.getVertex( triangles[ j ] );
-								final int v1  = vertex0.vertexCoordinateIndex;
+								final int v1 = vertex0.vertexCoordinateIndex;
 								final int vn1 = smooth ? normalIndex++ : 0;
 								final int uv1 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
 
 								final Vertex3D vertex1 = face.getVertex( triangles[ j + 1 ] );
-								final int v2  = vertex1.vertexCoordinateIndex;
+								final int v2 = vertex1.vertexCoordinateIndex;
 								final int vn2 = smooth ? normalIndex++ : 0;
 								final int uv2 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
 
 								final Vertex3D vertex2 = face.getVertex( triangles[ j + 2 ] );
-								final int v3  = vertex2.vertexCoordinateIndex;
+								final int v3 = vertex2.vertexCoordinateIndex;
 								final int vn3 = smooth ? normalIndex++ : 0;
 								final int uv3 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex2.colorMapU, (double)vertex2.colorMapV, 0.0 ) ) : -1;
 
@@ -453,11 +444,11 @@ public class AbToPovConverter
 	/**
 	 * This method constructs a {@link PovSphere} from a {@link Sphere3D} object.
 	 *
-	 * @param   transform   Transform to apply to node.
-	 * @param   sphere      The {@link Sphere3D} to be converted.
+	 * @param transform Transform to apply to node.
+	 * @param sphere    The {@link Sphere3D} to be converted.
 	 *
-	 * @return  The resulting {@link PovGeometry} object;
-	 *          {@code null} if the object did not produce any geometry.
+	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
+	 *         did not produce any geometry.
 	 */
 	public PovGeometry convertSphere3D( final Matrix3D transform, final Sphere3D sphere )
 	{
@@ -476,7 +467,7 @@ public class AbToPovConverter
 			{
 				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
-				result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.ZERO, sphere._radius, texture );
+				result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.ZERO, sphere.getRadius(), texture );
 				result.setTransform( new PovMatrix( transform ) );
 			}
 			else
@@ -491,9 +482,9 @@ public class AbToPovConverter
 	/**
 	 * Convert a {@link Appearance} to a {@link PovTexture} object.
 	 *
-	 * @param   appearance  The {@link Appearance} object to convert.
+	 * @param appearance The {@link Appearance} object to convert.
 	 *
-	 * @return  The resulting {@link PovTexture}.
+	 * @return The resulting {@link PovTexture}.
 	 */
 	@Nullable
 	private PovTexture convertMaterialToPovTexture( final Appearance appearance )
@@ -515,11 +506,11 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This {@link Node3DTreeWalker} calls conversion methods for all
-	 * convertible {@link Node3D} instances it encounters.
+	 * This {@link Node3DTreeWalker} calls conversion methods for all convertible
+	 * {@link Node3D} instances it encounters.
 	 */
 	private class ConvertingVisitor
-		implements Node3DVisitor
+	implements Node3DVisitor
 	{
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{

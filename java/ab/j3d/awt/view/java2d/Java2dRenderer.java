@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.java2d;
 
@@ -34,8 +32,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class can render a 3D scene directly to a {@link Graphics2D} context.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class Java2dRenderer
 {
@@ -47,15 +44,17 @@ public class Java2dRenderer
 	}
 
 	/**
-	 * Paint 2D representation of 3D objects at this node and its child nodes
-	 * using the specified render style.
+	 * Paint 2D representation of 3D objects at this node and its child nodes using
+	 * the specified render style.
 	 *
-	 * @param   g                   Graphics2D context.
-	 * @param   view2image          Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   node2view           Transformation from node's to view coordinate system.
-	 * @param   node                Node to paint.
-	 * @param   renderStyle         Render style.
-	 * @param   renderStyleFilter   Render style filter.
+	 * @param g                 Graphics2D context.
+	 * @param view2image        Projection transform for Graphics2D context
+	 *                          (3D->2D, pan, sale).
+	 * @param node2view         Transformation from node's to view coordinate
+	 *                          system.
+	 * @param node              Node to paint.
+	 * @param renderStyle       Render style.
+	 * @param renderStyleFilter Render style filter.
 	 */
 	public static void paintNode( @NotNull final Graphics2D g, @NotNull final Matrix3D view2image, @NotNull final Matrix3D node2view, @NotNull final Node3D node, @NotNull final RenderStyle renderStyle, @Nullable final RenderStyleFilter renderStyleFilter )
 	{
@@ -89,7 +88,7 @@ public class Java2dRenderer
 
 			if ( renderedNode instanceof Transform3D )
 			{
-				final Matrix3D transformTransform = ((Transform3D)renderedNode).getTransform();
+				final Matrix3D transformTransform = ( (Transform3D)renderedNode ).getTransform();
 				object2view = transformTransform.multiply( node2view );
 			}
 			else
@@ -105,20 +104,22 @@ public class Java2dRenderer
 
 			if ( renderedNode instanceof Object3D )
 			{
-				final Object3D object = (Object3D) renderedNode;
+				final Object3D object = (Object3D)renderedNode;
 				paintObject( g, view2image, object2view, object, nodeStyle );
 			}
 
 			final int childCount = renderedNode.getChildCount();
 
-			for ( int i = 0 ; i < childCount ; i++ )
+			for ( int i = 0; i < childCount; i++ )
 			{
 				paintNode( g, view2image, object2view, renderedNode.getChild( i ), nodeStyle, renderStyleFilter );
 			}
 		}
 	}
 
-	/** @noinspection JavaDoc*/
+	/**
+	 * @noinspection JavaDoc
+	 */
 	private static void paintObject( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Object3D object, final RenderStyle renderStyle )
 	{
 		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
@@ -135,7 +136,7 @@ public class Java2dRenderer
 			}
 			else if ( object instanceof Cylinder3D )
 			{
-				if ( !paintConeOrCylinder( g, view2image, object2view, ( (Cylinder3D)object ).height, ( (Cylinder3D)object ).radius, ( (Cylinder3D)object ).radius, renderStyle ) )
+				if ( !paintConeOrCylinder( g, view2image, object2view, ( (Cylinder3D)object ).getHeight(), ( (Cylinder3D)object ).getRadius(), ( (Cylinder3D)object ).getRadius(), renderStyle ) )
 				{
 					paintMesh( g, view2image, object2view, object, renderStyle );
 				}
@@ -161,7 +162,9 @@ public class Java2dRenderer
 		}
 	}
 
-	/** @noinspection JavaDoc*/
+	/**
+	 * @noinspection JavaDoc
+	 */
 	private static void paintMesh( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Object3D object, final RenderStyle renderStyle )
 	{
 		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
@@ -253,9 +256,9 @@ public class Java2dRenderer
 							{
 								path.reset();
 
-								for ( int i = 0 ; i < triangles.length ; i += 3 )
+								for ( int i = 0; i < triangles.length; i += 3 )
 								{
-									final Vector3D p1 = vertices.get( triangles[ i     ] ).point;
+									final Vector3D p1 = vertices.get( triangles[ i ] ).point;
 									final Vector3D p2 = vertices.get( triangles[ i + 1 ] ).point;
 									final Vector3D p3 = vertices.get( triangles[ i + 2 ] ).point;
 
@@ -292,7 +295,7 @@ public class Java2dRenderer
 						{
 							path.reset();
 
-							for ( int p = 0 ; p < outline.length ; p++ )
+							for ( int p = 0; p < outline.length; p++ )
 							{
 								final Vector3D p3d = vertices.get( outline[ p ] ).point;
 								if ( p == 0 )
@@ -320,39 +323,39 @@ public class Java2dRenderer
 	/**
 	 * Fills the given rectangle using lines at a fixed distance from each other.
 	 *
-	 * @param   g   Graphics context.
-	 * @param   x1  Minimum X-coordinate.
-	 * @param   y1  Minimum Y-coordinate.
-	 * @param   x2  Maximum X-coordinate.
-	 * @param   y2  Maximum Y-coordinate.
+	 * @param g  Graphics context.
+	 * @param x1 Minimum X-coordinate.
+	 * @param y1 Minimum Y-coordinate.
+	 * @param x2 Maximum X-coordinate.
+	 * @param y2 Maximum Y-coordinate.
 	 */
 	private static void fillEtched( final Graphics2D g, final double x1, final double y1, final double x2, final double y2 )
 	{
 		final int step = 16;
 
 		final int cMin = ( (int)( x1 + y1 ) / step + 1 ) * step;
-		final int cMax =   (int)( x2 + y2 ) / step       * step;
+		final int cMax = (int)( x2 + y2 ) / step * step;
 
-		for ( int c = cMin; c <= cMax; c += step )
+		for ( int i = cMin; i <= cMax; i += step )
 		{
-			final int lineX1 = Math.min( (int)x2, c - (int)y1 );
-			final int lineY1 = c - lineX1;
-			final int lineY2 = Math.min( (int)y2, c - (int)x1 );
-			final int lineX2 = c - lineY2;
+			final int lineX1 = Math.min( (int)x2, i - (int)y1 );
+			final int lineY1 = i - lineX1;
+			final int lineY2 = Math.min( (int)y2, i - (int)x1 );
+			final int lineX2 = i - lineY2;
 			g.drawLine( lineX1, lineY1, lineX2, lineY2 );
 		}
 	}
 
 	/**
 	 * Returns whether the given triangles are a rectangle. This implementation
-	 * performs a rough check to see if the triangles are a rectangle formed
-	 * by a triangle fan. As such, this method may return false negatives.
+	 * performs a rough check to see if the triangles are a rectangle formed by a
+	 * triangle fan. As such, this method may return false negatives.
 	 *
-	 * @param   object2image    Object to image transformation.
-	 * @param   vertices        Vertices.
-	 * @param   triangles       Vertex indices of each triangle.
+	 * @param object2image Object to image transformation.
+	 * @param vertices     Vertices.
+	 * @param triangles    Vertex indices of each triangle.
 	 *
-	 * @return  <code>true</code> if the triangles form a rectangle.
+	 * @return {@code true} if the triangles form a rectangle.
 	 */
 	private static boolean isRectangle( final Matrix3D object2image, final List<Vertex3D> vertices, final int[] triangles )
 	{
@@ -383,16 +386,16 @@ public class Java2dRenderer
 	 * Paints the given extruded shape using the 2D shape it contains, if
 	 * possible.
 	 *
-	 * @param   g               Graphics context to paint to.
-	 * @param   view2image      Transformation from view coordinates to graphics
-	 *                          context coordinates.
-	 * @param   object2view     Transformation from object-local coordinates to
-	 *                          view coordinates.
-	 * @param   object          Extruded shape to be painted.
-	 * @param   renderStyle     Render style to use.
+	 * @param g           Graphics context to paint to.
+	 * @param view2image  Transformation from view coordinates to graphics context
+	 *                    coordinates.
+	 * @param object2view Transformation from object-local coordinates to view
+	 *                    coordinates.
+	 * @param object      Extruded shape to be painted.
+	 * @param renderStyle Render style to use.
 	 *
-	 * @return  <code>true</code> if the shape was painted; <code>false</code>
-	 *          if the shape should be painted by some other means.
+	 * @return {@code true} if the shape was painted; {@code false} if the shape
+	 *         should be painted by some other means.
 	 */
 	private static boolean paintExtrudedShape( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final ExtrudedObject2D object, final RenderStyle renderStyle )
 	{
@@ -417,7 +420,7 @@ public class Java2dRenderer
 			final Matrix3D object2graphics = object2view.multiply( view2image );
 
 			final Vector3D v1 = object2graphics.transform( bounds.getMinX(), bounds.getMinY(), 0.0 );
-			final Vector3D v2 = object2graphics.transform( bounds.getMaxX(), bounds.getMaxY(), object.extrusion.z  );
+			final Vector3D v2 = object2graphics.transform( bounds.getMaxX(), bounds.getMaxY(), object.extrusion.z );
 
 			final double minX = Math.min( v1.x, v2.x );
 			final double minY = Math.min( v1.y, v2.y );
@@ -445,9 +448,9 @@ public class Java2dRenderer
 			final Matrix3D object2image = object2view.multiply( view2image );
 
 			final AffineTransform object2graphics2D = new AffineTransform(
-					object2image.xx, object2image.yx,
-					object2image.xy, object2image.yy,
-					object2image.xo, object2image.yo );
+			object2image.xx, object2image.yx,
+			object2image.xy, object2image.yy,
+			object2image.xo, object2image.yo );
 
 			final Path2D viewShape = new Path2D.Float();
 			viewShape.append( shape.getPathIterator( object2graphics2D ), false );
@@ -476,7 +479,9 @@ public class Java2dRenderer
 		return result;
 	}
 
-	/** @noinspection JavaDoc*/
+	/**
+	 * @noinspection JavaDoc
+	 */
 	private static boolean paintConeOrCylinder( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final double height, final double radiusBottom, final double radiusTop, final RenderStyle renderStyle )
 	{
 		final boolean result;
@@ -506,14 +511,14 @@ public class Java2dRenderer
 			// (xz,yz) = direction of cone Z-axis in XY plane
 			// (xo,yo,zo) = view coordinate of cone bottom centeroid
 
-			final double p1x = xo  + yz * radiusBottom;            // p1 = bottom left,
-			final double p1y = yo  - xz * radiusBottom;
-			final double p2x = xo  + yz * radiusTop + xz * height; // p2 = top left
-			final double p2y = yo  - xz * radiusTop + yz * height;
-			final double p3x = xo  - yz * radiusTop + xz * height; // p3 = top right
-			final double p3y = yo  + xz * radiusTop + yz * height;
-			final double p4x = xo  - yz * radiusBottom;            // p4 = bottom right
-			final double p4y = yo  + xz * radiusBottom;
+			final double p1x = xo + yz * radiusBottom;            // p1 = bottom left,
+			final double p1y = yo - xz * radiusBottom;
+			final double p2x = xo + yz * radiusTop + xz * height; // p2 = top left
+			final double p2y = yo - xz * radiusTop + yz * height;
+			final double p3x = xo - yz * radiusTop + xz * height; // p3 = top right
+			final double p3y = yo + xz * radiusTop + yz * height;
+			final double p4x = xo - yz * radiusBottom;            // p4 = bottom right
+			final double p4y = yo + xz * radiusBottom;
 
 			/*
 			 * Project and draw trapezoid.
@@ -567,9 +572,9 @@ public class Java2dRenderer
 		{
 			final Matrix3D combinedTransform = object2view.multiply( view2image );
 
-			final float x         = (float)combinedTransform.xo;
-			final float y         = (float)combinedTransform.yo;
-			final float botZ      = (float)combinedTransform.zo;
+			final float x = (float)combinedTransform.xo;
+			final float y = (float)combinedTransform.yo;
+			final float botZ = (float)combinedTransform.zo;
 			final float botRadius;
 			{
 				final double dx = combinedTransform.xx * radiusBottom;
@@ -691,8 +696,10 @@ public class Java2dRenderer
 		return result;
 	}
 
-	/** @noinspection JavaDoc*/
-	private static boolean paintSphere( final Graphics2D g, final Matrix3D view2image, final Matrix3D sphere2view, final Sphere3D sphere, final RenderStyle renderStyle  )
+	/**
+	 * @noinspection JavaDoc
+	 */
+	private static boolean paintSphere( final Graphics2D g, final Matrix3D view2image, final Matrix3D sphere2view, final Sphere3D sphere, final RenderStyle renderStyle )
 	{
 		final boolean result;
 
@@ -700,9 +707,9 @@ public class Java2dRenderer
 		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
 
-		final double radius = sphere._radius;
+		final double radius = sphere.getRadius();
 
-		final Matrix3D viewBase          = sphere2view;
+		final Matrix3D viewBase = sphere2view;
 		final Matrix3D combinedTransform = viewBase.multiply( view2image );
 
 		final float x = (float)combinedTransform.xo;
@@ -725,9 +732,9 @@ public class Java2dRenderer
 			if ( applyLighting && ( outlineColor != null ) )
 			{
 				final float goldenRatio = 0.6180339f;
-				final float highlight   = ( goldenRatio - 0.5f ) * r;
+				final float highlight = ( goldenRatio - 0.5f ) * r;
 
-				paint = new GradientPaint( x + highlight, y - highlight, new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ), x -r, y + r, new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ), true );
+				paint = new GradientPaint( x + highlight, y - highlight, new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ), x - r, y + r, new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ), true );
 			}
 			else
 			{

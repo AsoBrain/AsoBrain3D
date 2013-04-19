@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -38,9 +36,8 @@ import org.jetbrains.annotations.*;
 /**
  * Renderer implemented using JOGL.
  *
- * @author  Peter S. Heijnen
- * @author  G. Meinders
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
+ * @author G. Meinders
  */
 public class JOGLRenderer
 {
@@ -95,14 +92,14 @@ public class JOGLRenderer
 	private Matrix3D _viewToScene;
 
 	/**
-	 * Scene to view transformation, excluding any translation components.
-	 * This transformation is used for the sky box.
+	 * Scene to view transformation, excluding any translation components. This
+	 * transformation is used for the sky box.
 	 */
 	private Matrix3D _sceneToViewRotation;
 
 	/**
-	 * View to scene transformation, excluding any translation components.
-	 * This transformation is used for environment mapping.
+	 * View to scene transformation, excluding any translation components. This
+	 * transformation is used for environment mapping.
 	 */
 	private Matrix3D _viewToSceneRotation;
 
@@ -112,8 +109,8 @@ public class JOGLRenderer
 	private ShaderManager _shaderManager;
 
 	/**
-	 * Specifies which objects should be rendered during the current rendering
-	 * pass when performing multi-pass rendering.
+	 * Specifies which objects should be rendered during the current rendering pass
+	 * when performing multi-pass rendering.
 	 */
 	private MultiPassRenderMode _renderMode = MultiPassRenderMode.ALL;
 
@@ -133,7 +130,7 @@ public class JOGLRenderer
 	private final int _shadowSize = 512;
 
 	/**
-	 * Set to <code>true</code> while a shadow map is being rendered.
+	 * Set to {@code true} while a shadow map is being rendered.
 	 */
 	private boolean _shadowPass;
 
@@ -156,7 +153,7 @@ public class JOGLRenderer
 
 	/**
 	 * Indicates whether the first lighting pass is currently being rendered.
-	 * Always <code>true</code> when using single-pass lighting.
+	 * Always {@code true} when using single-pass lighting.
 	 */
 	private boolean _renderUnlit = false;
 
@@ -171,19 +168,30 @@ public class JOGLRenderer
 	private View3D _view;
 
 	/**
-	 * Specifies which objects should be rendered during the current rendering
-	 * pass when performing multi-pass rendering.
+	 * Specifies which objects should be rendered during the current rendering pass
+	 * when performing multi-pass rendering.
 	 */
 	private enum MultiPassRenderMode
 	{
-		/** Render all faces.              */ ALL,
-		/** Render only opaque faces.      */ OPAQUE_ONLY,
-		/** Render only transparent faces. */ TRANSPARENT_ONLY
+		/**
+		 * Render all faces.
+		 */
+		ALL,
+
+		/**
+		 * Render only opaque faces.
+		 */
+		OPAQUE_ONLY,
+
+		/**
+		 * Render only transparent faces.
+		 */
+		TRANSPARENT_ONLY
 	}
 
 	/**
-	 * Flag used during multi-pass rendering to disable reflections in all but
-	 * the first rendering pass.
+	 * Flag used during multi-pass rendering to disable reflections in all but the
+	 * first rendering pass.
 	 */
 	private boolean _multiPassReflectionsDisabled;
 
@@ -201,11 +209,11 @@ public class JOGLRenderer
 	/**
 	 * Construct new JOGL renderer.
 	 *
-	 * @param   gl              GL pipeline.
-	 * @param   configuration   Specifies which OpenGL capabilities should be
-	 *                          used, if available.
-	 * @param   textureCache    Map containing {@link Texture}s used in the scene.
-	 * @param   view            View to be rendered.
+	 * @param gl            GL pipeline.
+	 * @param configuration Specifies which OpenGL capabilities should be used, if
+	 *                      available.
+	 * @param textureCache  Map containing {@link Texture}s used in the scene.
+	 * @param view          View to be rendered.
 	 */
 	public JOGLRenderer( final GL gl, final JOGLConfiguration configuration, final TextureCache textureCache, final View3D view )
 	{
@@ -241,9 +249,9 @@ public class JOGLRenderer
 	/**
 	 * Creates the OpenGL state helper for the renderer.
 	 *
-	 * @param   gl  OpenGL interface.
+	 * @param gl OpenGL interface.
 	 *
-	 * @return  Create helper.
+	 * @return Create helper.
 	 */
 	private static GLStateHelper createGLStateHelper( final GL gl )
 	{
@@ -262,7 +270,7 @@ public class JOGLRenderer
 		/* Enable depth buffering. */
 		state.setEnabled( GL.GL_DEPTH_TEST, true );
 		gl.glDepthMask( true );
-		gl.glDepthFunc ( GL.GL_LEQUAL );
+		gl.glDepthFunc( GL.GL_LEQUAL );
 
 		/* Enable polygon offsets. */
 		state.setEnabled( GL.GL_POLYGON_OFFSET_FILL, true );
@@ -275,7 +283,7 @@ public class JOGLRenderer
 		_textureCache.init();
 
 		final JOGLConfiguration configuration = _configuration;
-		final JOGLCapabilities  capabilities  = new JOGLCapabilities( GLContext.getCurrent() );
+		final JOGLCapabilities capabilities = new JOGLCapabilities( GLContext.getCurrent() );
 		capabilities.printSummary( System.out );
 		_capabilities = capabilities;
 
@@ -341,7 +349,7 @@ public class JOGLRenderer
 	/**
 	 * Returns the shader manager.
 	 *
-	 * @return  Shader manager.
+	 * @return Shader manager.
 	 */
 	public ShaderManager getShaderManager()
 	{
@@ -352,7 +360,7 @@ public class JOGLRenderer
 	 * Returns statistics about the rendering process. Statistics are only kept
 	 * once this method has been called.
 	 *
-	 * @return  Rendering statistics.
+	 * @return Rendering statistics.
 	 */
 	@Nullable
 	public RenderStatistics getStatistics()
@@ -371,7 +379,7 @@ public class JOGLRenderer
 	 * Returns whether reflections are requested and the required OpenGL
 	 * capabilities are supported.
 	 *
-	 * @return  <code>true</code> if reflections are enabled.
+	 * @return {@code true} if reflections are enabled.
 	 */
 	private boolean isReflectionsEnabled()
 	{
@@ -384,7 +392,7 @@ public class JOGLRenderer
 	/**
 	 * Returns whether multi-pass lighting is supported and enabled.
 	 *
-	 * @return  <code>true</code> if multi-pass lighting is enabled.
+	 * @return {@code true} if multi-pass lighting is enabled.
 	 */
 	private boolean isMultiPassLightingEnabled()
 	{
@@ -397,9 +405,9 @@ public class JOGLRenderer
 	/**
 	 * Returns whether any light in the given scene is casting shadows.
 	 *
-	 * @param   scene   Scene to be checked.
+	 * @param scene Scene to be checked.
 	 *
-	 * @return  <code>true</code> if there is at least one shadow casting light.
+	 * @return {@code true} if there is at least one shadow casting light.
 	 */
 	public static boolean isAnyLightCastingShadows( final Scene scene )
 	{
@@ -407,24 +415,24 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * This visitor is used by {@link #isAnyLightCastingShadows} to detect
-	 * lights that cast a shadow. It aborts if such a light is encountered.
+	 * This visitor is used by {@link #isAnyLightCastingShadows} to detect lights
+	 * that cast a shadow. It aborts if such a light is encountered.
 	 */
 	private static final Node3DVisitor SHADOW_CASTING_LIGHT_VISITOR = new Node3DVisitor()
 	{
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();
-			return !( ( node instanceof Light3D ) && ( (Light3D) node ).isCastingShadows() );
+			return !( ( node instanceof Light3D ) && ( (Light3D)node ).isCastingShadows() );
 		}
 	};
 
 	/**
-	 * Sets the scene to view transformation. The inverse of this transformation
-	 * is used for environment mapping, i.e. to make the environment stationary
-	 * with respect the the world instead of the camera.
+	 * Sets the scene to view transformation. The inverse of this transformation is
+	 * used for environment mapping, i.e. to make the environment stationary with
+	 * respect the the world instead of the camera.
 	 *
-	 * @param   sceneToView     Scene to view transformation.
+	 * @param sceneToView Scene to view transformation.
 	 */
 	public void setSceneToViewTransform( final Matrix3D sceneToView )
 	{
@@ -449,11 +457,11 @@ public class JOGLRenderer
 	/**
 	 * Render a scene.
 	 *
-	 * @param   scene           Scene to be rendered.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
-	 * @param   background      Background to be rendered.
-	 * @param   grid            Grid to be rendered (when enabled).
+	 * @param scene        Scene to be rendered.
+	 * @param styleFilters Style filters to apply.
+	 * @param sceneStyle   Render style to use as base for scene.
+	 * @param background   Background to be rendered.
+	 * @param grid         Grid to be rendered (when enabled).
 	 */
 	public void renderScene( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
@@ -489,11 +497,11 @@ public class JOGLRenderer
 	/**
 	 * Render a scene, with lights rendered in multiple passes.
 	 *
-	 * @param   scene           Scene to be rendered.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
-	 * @param   background      Background to be rendered.
-	 * @param   grid            Grid to be rendered (when enabled).
+	 * @param scene        Scene to be rendered.
+	 * @param styleFilters Style filters to apply.
+	 * @param sceneStyle   Render style to use as base for scene.
+	 * @param background   Background to be rendered.
+	 * @param grid         Grid to be rendered (when enabled).
 	 */
 	public void renderSceneMultiPass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
@@ -508,7 +516,7 @@ public class JOGLRenderer
 		if ( shaderManager.isShaderSupportAvailable() || isReflectionsEnabled() )
 		{
 			gl.glMatrixMode( GL.GL_TEXTURE );
-			for ( int i = 2 ; i >= 0 ; i-- )
+			for ( int i = 2; i >= 0; i-- )
 			{
 				gl.glActiveTexture( GL.GL_TEXTURE0 + i );
 				gl.glLoadIdentity();
@@ -521,7 +529,7 @@ public class JOGLRenderer
 		 */
 		final int[] viewport = new int[ 4 ];
 		gl.glGetIntegerv( GL.GL_VIEWPORT, viewport, 0 );
-		final int width  = viewport[ 2 ];
+		final int width = viewport[ 2 ];
 		final int height = viewport[ 3 ];
 
 		int accumulationTexture = _accumulationTexture;
@@ -529,7 +537,7 @@ public class JOGLRenderer
 
 		if ( !createAccumulationTexture )
 		{
-			final int[] textureWidthHeight = new int[2];
+			final int[] textureWidthHeight = new int[ 2 ];
 			gl.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL.GL_TEXTURE_WIDTH, textureWidthHeight, 0 );
 			gl.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL.GL_TEXTURE_HEIGHT, textureWidthHeight, 1 );
 			createAccumulationTexture = ( ( textureWidthHeight[ 0 ] != width ) || ( textureWidthHeight[ 1 ] != height ) );
@@ -575,7 +583,7 @@ public class JOGLRenderer
 			_renderUnlit = ( i == 0 );
 
 			final Node3DPath path = lightPaths.get( i );
-			final Light3D light = (Light3D) path.getNode();
+			final Light3D light = (Light3D)path.getNode();
 			final Matrix3D lightTransform = path.getTransform();
 			final boolean castingShadows = shaderManager.isShaderSupportAvailable() && _configuration.isShadowEnabled() && light.isCastingShadows();
 
@@ -709,11 +717,11 @@ public class JOGLRenderer
 	/**
 	 * Render a scene, with lights rendered in multiple passes.
 	 *
-	 * @param   scene           Scene to be rendered.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
-	 * @param   background      Background to be rendered.
-	 * @param   grid            Grid to be rendered (when enabled).
+	 * @param scene        Scene to be rendered.
+	 * @param styleFilters Style filters to apply.
+	 * @param sceneStyle   Render style to use as base for scene.
+	 * @param background   Background to be rendered.
+	 * @param grid         Grid to be rendered (when enabled).
 	 */
 	public void renderSceneSinglePass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
@@ -733,7 +741,7 @@ public class JOGLRenderer
 		if ( shaderManager.isShaderSupportAvailable() || isReflectionsEnabled() )
 		{
 			gl.glMatrixMode( GL.GL_TEXTURE );
-			for ( int i = 2 ; i >= 0 ; i-- )
+			for ( int i = 2; i >= 0; i-- )
 			{
 				gl.glActiveTexture( GL.GL_TEXTURE0 + i );
 				gl.glLoadIdentity();
@@ -773,7 +781,7 @@ public class JOGLRenderer
 				if ( node instanceof Light3D )
 				{
 					int lightNumber = _lightNumber;
-					renderLight( GL.GL_LIGHT0 + lightNumber, (Light3D) node, path.getTransform() );
+					renderLight( GL.GL_LIGHT0 + lightNumber, (Light3D)node, path.getTransform() );
 					_lightNumber = ++lightNumber;
 					result = ( lightNumber < _maxlights );
 				}
@@ -807,7 +815,7 @@ public class JOGLRenderer
 	/**
 	 * Renders the given background.
 	 *
-	 * @param   background  Background to be rendered.
+	 * @param background Background to be rendered.
 	 */
 	private void renderBackground( final Background background )
 	{
@@ -926,8 +934,8 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Renders an environment surrounding the entire scene using a cube map.
-	 * This is currently not used, but provided for future reference.
+	 * Renders an environment surrounding the entire scene using a cube map. This
+	 * is currently not used, but provided for future reference.
 	 */
 	private void renderEnvironment()
 	{
@@ -998,9 +1006,9 @@ public class JOGLRenderer
 	/**
 	 * Renders the given content nodes applying render styles as specified.
 	 *
-	 * @param   nodes           Nodes to be rendered.
-	 * @param   styleFilters    Render style filters to be applied.
-	 * @param   sceneStyle      Base render style for the entire scene.
+	 * @param nodes        Nodes to be rendered.
+	 * @param styleFilters Render style filters to be applied.
+	 * @param sceneStyle   Base render style for the entire scene.
 	 */
 	public void renderContentNodes( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
@@ -1034,9 +1042,9 @@ public class JOGLRenderer
 	/**
 	 * Render objects in scene.
 	 *
-	 * @param   nodes           Nodes in the scene.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
+	 * @param nodes        Nodes in the scene.
+	 * @param styleFilters Style filters to apply.
+	 * @param sceneStyle   Render style to use as base for scene.
 	 */
 	private void renderObjects( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
@@ -1095,10 +1103,10 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Returns the maximum number of lights supported by the OpenGL
-	 * implementation. At least (and most commonly) 8 lights are supported.
+	 * Returns the maximum number of lights supported by the OpenGL implementation.
+	 * At least (and most commonly) 8 lights are supported.
 	 *
-	 * @return  Maximum number of lights.
+	 * @return Maximum number of lights.
 	 */
 	private int getMaxLights()
 	{
@@ -1110,7 +1118,7 @@ public class JOGLRenderer
 	/**
 	 * Renders the contents of the given texture to the viewport.
 	 *
-	 * @param   texture     Texture to be rendered.
+	 * @param texture Texture to be rendered.
 	 */
 	private void renderToViewport( final Texture texture )
 	{
@@ -1122,10 +1130,10 @@ public class JOGLRenderer
 
 		final TextureCoords textureCoords = texture.getImageTexCoords();
 
-		final float left   = textureCoords.left();
+		final float left = textureCoords.left();
 		final float bottom = textureCoords.bottom();
-		final float right  = textureCoords.right();
-		final float top    = textureCoords.top();
+		final float right = textureCoords.right();
+		final float top = textureCoords.top();
 
 		_state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
 		gl.glBegin( GL.GL_QUADS );
@@ -1160,8 +1168,8 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Restores the projection and model-view transforms that were replaced by
-	 * a previous call to {@link #toViewportSpace()}.
+	 * Restores the projection and model-view transforms that were replaced by a
+	 * previous call to {@link #toViewportSpace()}.
 	 */
 	private void fromViewportSpace()
 	{
@@ -1177,10 +1185,10 @@ public class JOGLRenderer
 	 * Renders small previews of the given textures on the screen, for debugging
 	 * purposes.
 	 *
-	 * @param   textures    Texture to be rendered.
-	 * @param   x           Horizontal position; <code>-1.0</code> for the left
-	 *                      side of the screen, <code>1.0</code> for the right.
-	 * @param   blend       Whether the texture should be alpha-blended.
+	 * @param textures Texture to be rendered.
+	 * @param x        Horizontal position; {@code -1.0} for the left side of
+	 *                 the screen, {@code 1.0} for the right.
+	 * @param blend    Whether the texture should be alpha-blended.
 	 */
 	private void displayTextures( final Texture[] textures, final double x, final boolean blend )
 	{
@@ -1204,7 +1212,7 @@ public class JOGLRenderer
 			gl.glDisable( GL.GL_BLEND );
 		}
 
-		for ( int i = 0 ; i < textures.length ; i++ )
+		for ( int i = 0; i < textures.length; i++ )
 		{
 			final Texture texture = textures[ i ];
 
@@ -1219,10 +1227,10 @@ public class JOGLRenderer
 
 			final TextureCoords textureCoords = texture.getImageTexCoords();
 
-			final float left   = textureCoords.left();
+			final float left = textureCoords.left();
 			final float bottom = textureCoords.bottom();
-			final float right  = textureCoords.right();
-			final float top    = textureCoords.top();
+			final float right = textureCoords.right();
+			final float top = textureCoords.top();
 
 			gl.glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 			gl.glBegin( GL.GL_QUADS );
@@ -1244,9 +1252,9 @@ public class JOGLRenderer
 	/**
 	 * Renders the given light.
 	 *
-	 * @param   lightNumber     OpenGL identifier for the light.
-	 * @param   light           Light to be rendered.
-	 * @param   light2world     Light to world transformation.
+	 * @param lightNumber OpenGL identifier for the light.
+	 * @param light       Light to be rendered.
+	 * @param light2world Light to world transformation.
 	 */
 	private void renderLight( final int lightNumber, final Light3D light, final Matrix3D light2world )
 	{
@@ -1255,7 +1263,7 @@ public class JOGLRenderer
 		gl.glLightfv( lightNumber, GL.GL_AMBIENT, new float[] {
 		0.0f, 0.0f, 0.0f, 1.0f
 		}, 0 );
-		gl.glLightfv( lightNumber, GL.GL_DIFFUSE , new float[] { light.getDiffuseRed() , light.getDiffuseGreen() , light.getDiffuseBlue() , 1.0f }, 0 );
+		gl.glLightfv( lightNumber, GL.GL_DIFFUSE, new float[] { light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue(), 1.0f }, 0 );
 		gl.glLightfv( lightNumber, GL.GL_SPECULAR, new float[] { light.getSpecularRed(), light.getSpecularGreen(), light.getSpecularBlue(), 1.0f }, 0 );
 
 		if ( light instanceof DirectionalLight3D )
@@ -1263,15 +1271,15 @@ public class JOGLRenderer
 			final DirectionalLight3D directional = (DirectionalLight3D)light;
 			final Vector3D direction = directional.getDirection();
 			gl.glLightfv( lightNumber, GL.GL_POSITION, new float[] { -(float)direction.x, -(float)direction.y, -(float)direction.z, 0.0f }, 0 );
-			gl.glLightf( lightNumber, GL.GL_CONSTANT_ATTENUATION , 1.0f );
-			gl.glLightf( lightNumber, GL.GL_LINEAR_ATTENUATION   , 0.0f );
+			gl.glLightf( lightNumber, GL.GL_CONSTANT_ATTENUATION, 1.0f );
+			gl.glLightf( lightNumber, GL.GL_LINEAR_ATTENUATION, 0.0f );
 			gl.glLightf( lightNumber, GL.GL_QUADRATIC_ATTENUATION, 0.0f );
 		}
 		else
 		{
-			gl.glLightfv( lightNumber, GL.GL_POSITION, new float[]{ (float)light2world.xo, (float)light2world.yo, (float)light2world.zo, 1.0f }, 0 );
-			gl.glLightf( lightNumber, GL.GL_CONSTANT_ATTENUATION , light.getConstantAttenuation()  );
-			gl.glLightf( lightNumber, GL.GL_LINEAR_ATTENUATION   , light.getLinearAttenuation()    );
+			gl.glLightfv( lightNumber, GL.GL_POSITION, new float[] { (float)light2world.xo, (float)light2world.yo, (float)light2world.zo, 1.0f }, 0 );
+			gl.glLightf( lightNumber, GL.GL_CONSTANT_ATTENUATION, light.getConstantAttenuation() );
+			gl.glLightf( lightNumber, GL.GL_LINEAR_ATTENUATION, light.getLinearAttenuation() );
 			gl.glLightf( lightNumber, GL.GL_QUADRATIC_ATTENUATION, light.getQuadraticAttenuation() );
 		}
 
@@ -1279,13 +1287,13 @@ public class JOGLRenderer
 		{
 			final SpotLight3D spot = (SpotLight3D)light;
 			final Vector3D direction = light2world.rotate( spot.getDirection() );
-			gl.glLightfv( lightNumber, GL.GL_SPOT_DIRECTION, new float[] { (float)direction.x   , (float)direction.y   , (float)direction.z           }, 0 );
-			gl.glLightf ( lightNumber, GL.GL_SPOT_CUTOFF   , spot.getSpreadAngle() );
-			gl.glLightf ( lightNumber, GL.GL_SPOT_EXPONENT , spot.getConcentration() );
+			gl.glLightfv( lightNumber, GL.GL_SPOT_DIRECTION, new float[] { (float)direction.x, (float)direction.y, (float)direction.z }, 0 );
+			gl.glLightf( lightNumber, GL.GL_SPOT_CUTOFF, spot.getSpreadAngle() );
+			gl.glLightf( lightNumber, GL.GL_SPOT_EXPONENT, spot.getConcentration() );
 		}
 		else
 		{
-			gl.glLightf ( lightNumber, GL.GL_SPOT_CUTOFF   , 180.0f );
+			gl.glLightf( lightNumber, GL.GL_SPOT_CUTOFF, 180.0f );
 			gl.glLightf( lightNumber, GL.GL_SPOT_EXPONENT, 0.0f );
 		}
 
@@ -1295,16 +1303,16 @@ public class JOGLRenderer
 	/**
 	 * Renders the given object.
 	 *
-	 * @param   object          Object to be rendered.
-	 * @param   paths           Node paths to the object.
-	 * @param   objectStyle     Render style applied to the object.
+	 * @param object      Object to be rendered.
+	 * @param paths       Node paths to the object.
+	 * @param objectStyle Render style applied to the object.
 	 */
 	protected void renderObject( final Object3D object, final List<Node3DPath> paths, final RenderStyle objectStyle )
 	{
 		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
-		final boolean anyFillEnabled     = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
-		final boolean anyStrokeEnabled   = objectStyle.isStrokeEnabled() && ( objectStyle.getStrokeColor() != null );
-		final boolean anyVertexEnabled   = objectStyle.isVertexEnabled() && ( objectStyle.getVertexColor() != null );
+		final boolean anyFillEnabled = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
+		final boolean anyStrokeEnabled = objectStyle.isStrokeEnabled() && ( objectStyle.getStrokeColor() != null );
+		final boolean anyVertexEnabled = objectStyle.isVertexEnabled() && ( objectStyle.getVertexColor() != null );
 
 		if ( anyMaterialEnabled || anyFillEnabled || anyStrokeEnabled || anyVertexEnabled )
 		{
@@ -1341,9 +1349,9 @@ public class JOGLRenderer
 	/**
 	 * Renders the given object with a material applied to it.
 	 *
-	 * @param   object          Object to be rendered.
-	 * @param   paths           Node paths to the object.
-	 * @param   objectStyle     Render style to be applied.
+	 * @param object      Object to be rendered.
+	 * @param paths       Node paths to the object.
+	 * @param objectStyle Render style to be applied.
 	 */
 	private void renderObjectMaterial( @NotNull final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
@@ -1559,9 +1567,9 @@ public class JOGLRenderer
 	/**
 	 * Renders the given object in a solid color.
 	 *
-	 * @param   object          Object to be rendered.
-	 * @param   paths           Node paths to the object.
-	 * @param   objectStyle     Render style to be applied.
+	 * @param object      Object to be rendered.
+	 * @param paths       Node paths to the object.
+	 * @param objectStyle Render style to be applied.
 	 */
 	private void renderObjectFilled( @NotNull final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
@@ -1581,7 +1589,7 @@ public class JOGLRenderer
 				gl.glColorMask( false, false, false, false );
 			}
 
-			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha >= 1.0f ) ) &&
+			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) || ( alpha >= 1.0f ) ) &&
 			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha < 1.0f ) ) )
 			{
 				/*
@@ -1643,9 +1651,9 @@ public class JOGLRenderer
 	/**
 	 * Renders the outlines of the given object.
 	 *
-	 * @param   object          Object to be rendered.
-	 * @param   paths           Node paths to the object.
-	 * @param   objectStyle     Render style to be applied.
+	 * @param object      Object to be rendered.
+	 * @param paths       Node paths to the object.
+	 * @param objectStyle Render style to be applied.
 	 */
 	private void renderObjectStroked( final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
@@ -1676,7 +1684,7 @@ public class JOGLRenderer
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
 			// FIXME: Backface culling doesn't work on vertices. Do it ourselves? (Shader?)
-			final boolean backfaceCulling  = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
+			final boolean backfaceCulling = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
 
 			final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.OUTLINES );
 			for ( final Node3DPath path : paths )
@@ -1698,9 +1706,9 @@ public class JOGLRenderer
 	/**
 	 * Renders the vertices of the given object.
 	 *
-	 * @param   object          Object to be rendered.
-	 * @param   paths           Node paths to the object.
-	 * @param   objectStyle     Render style to be applied.
+	 * @param object      Object to be rendered.
+	 * @param paths       Node paths to the object.
+	 * @param objectStyle Render style to be applied.
 	 */
 	private void renderObjectVertices( @NotNull final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
@@ -1727,7 +1735,7 @@ public class JOGLRenderer
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
 			// FIXME: Backface culling doesn't work on vertices. Do it ourselves? (Shader?)
-			final boolean backfaceCulling  = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
+			final boolean backfaceCulling = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
 
 			final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.OUTLINES );
 			for ( final Node3DPath path : paths )
@@ -1749,7 +1757,7 @@ public class JOGLRenderer
 	/**
 	 * Renders the normals of the given face as lines.
 	 *
-	 * @param   faces   Faces to be rendered.
+	 * @param faces Faces to be rendered.
 	 */
 	private void renderFaceNormals( @NotNull final Collection<Face3D> faces )
 	{
@@ -1765,7 +1773,7 @@ public class JOGLRenderer
 			double z = 0.0;
 
 			final double scale = 10.0;
-			for ( int i = 0 ; i < face.getVertexCount() ; i++ )
+			for ( int i = 0; i < face.getVertexCount(); i++ )
 			{
 				final Vector3D point = face.getVertex( i ).point;
 
@@ -1796,7 +1804,7 @@ public class JOGLRenderer
 	 * Renders the given grid. This method is only called when the given grid is
 	 * enabled.
 	 *
-	 * @param   grid    Grid to be rendered.
+	 * @param grid Grid to be rendered.
 	 */
 	private void renderGrid( @NotNull final Grid grid )
 	{
@@ -1829,7 +1837,7 @@ public class JOGLRenderer
 		state.setColor( 0.75f, 0.75f, 0.75f, 1.0f );
 		gl.glBegin( GL.GL_LINES );
 
-		for ( int x = minCellX ; x <= maxCellX ; x++ )
+		for ( int x = minCellX; x <= maxCellX; x++ )
 		{
 			if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
 			{
@@ -1838,7 +1846,7 @@ public class JOGLRenderer
 			}
 		}
 
-		for ( int y = minCellY ; y <= maxCellY ; y++ )
+		for ( int y = minCellY; y <= maxCellY; y++ )
 		{
 			if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
 			{
@@ -1865,7 +1873,7 @@ public class JOGLRenderer
 				state.setColor( 0.5f, 0.5f, 0.5f, 1.0f );
 				gl.glBegin( GL.GL_LINES );
 
-				for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
+				for ( int x = highlightMinX; x <= highLightMaxX; x += highlightInterval )
 				{
 					if ( !hightlightAxes || ( x != 0 ) )
 					{
@@ -1874,7 +1882,7 @@ public class JOGLRenderer
 					}
 				}
 
-				for ( int y = highlightMinY ; y <= highLightMaxY ; y += highlightInterval )
+				for ( int y = highlightMinY; y <= highLightMaxY; y += highlightInterval )
 				{
 					if ( !hightlightAxes || ( y != 0 ) )
 					{
@@ -1985,7 +1993,7 @@ public class JOGLRenderer
 		/**
 		 * Returns the number of primitives rendered during the last frame.
 		 *
-		 * @return  Number of primitives.
+		 * @return Number of primitives.
 		 */
 		public int getPrimitiveCount()
 		{
@@ -1993,11 +2001,11 @@ public class JOGLRenderer
 		}
 
 		/**
-		 * Returns the number of unique objects rendered during the last frame.
-		 * Unique is defined here as not equal to any of the other objects,
-		 * based on {@link Object#equals(Object)}.
+		 * Returns the number of unique objects rendered during the last frame. Unique
+		 * is defined here as not equal to any of the other objects, based on {@link
+		 * Object#equals(Object)}.
 		 *
-		 * @return  Number of unique objects.
+		 * @return Number of unique objects.
 		 */
 		public int getUniqueObjectCount()
 		{
@@ -2005,11 +2013,10 @@ public class JOGLRenderer
 		}
 
 		/**
-		 * Returns the number of objects rendered during the last frame. This
-		 * includes objects that are equal and objects being rendered multiple
-		 * times.
+		 * Returns the number of objects rendered during the last frame. This includes
+		 * objects that are equal and objects being rendered multiple times.
 		 *
-		 * @return  Number of objects.
+		 * @return Number of objects.
 		 */
 		public int getObjectCount()
 		{
@@ -2017,8 +2024,8 @@ public class JOGLRenderer
 		}
 
 		/**
-		 * Called at the end of a frame, allowing the current value of each
-		 * counter to be stored and to prepare for the next frame.
+		 * Called at the end of a frame, allowing the current value of each counter to
+		 * be stored and to prepare for the next frame.
 		 */
 		private void frameRendered()
 		{
@@ -2037,11 +2044,11 @@ public class JOGLRenderer
 		}
 
 		/**
-		 * Called when an object is rendered, such that the statistics may be
-		 * updated accordingly.
+		 * Called when an object is rendered, such that the statistics may be updated
+		 * accordingly.
 		 *
-		 * @param   object  Object that was rendered.
-		 * @param   count   Number of times the object was rendered.
+		 * @param object Object that was rendered.
+		 * @param count  Number of times the object was rendered.
 		 */
 		private void objectRendered( final Object object, final int count )
 		{
@@ -2061,7 +2068,7 @@ public class JOGLRenderer
 		/**
 		 * Returns the number of frames rendered during the previous second.
 		 *
-		 * @return  Number of frames rendered.
+		 * @return Number of frames rendered.
 		 */
 		public int getFPS()
 		{
@@ -2073,7 +2080,7 @@ public class JOGLRenderer
 	 * Tree walker that takes level of detail of {@link Object3D}s into account.
 	 */
 	private class LevelOfDetailTreeWalker
-		extends Node3DTreeWalker
+	extends Node3DTreeWalker
 	{
 		/**
 		 * Calculates projected object bounds.
@@ -2107,14 +2114,14 @@ public class JOGLRenderer
 
 								final double[] points =
 								{
-									boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
-									boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
-									boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
-									boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
-									boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
-									boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
-									boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
-									boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
+								boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
+								boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
+								boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
+								boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
+								boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
+								boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
+								boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
+								boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
 								};
 
 								object2View.transform( points, points, 8 );
@@ -2146,8 +2153,8 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Combination of 3D object and render style. This is used during rendering
-	 * to render the same object and style efficiently.
+	 * Combination of 3D object and render style. This is used during rendering to
+	 * render the same object and style efficiently.
 	 */
 	private static class StyledObject3D
 	{
@@ -2164,8 +2171,8 @@ public class JOGLRenderer
 		/**
 		 * Construct.
 		 *
-		 * @param   object        3D object.
-		 * @param   renderStyle     Render style.
+		 * @param object      3D object.
+		 * @param renderStyle Render style.
 		 */
 		StyledObject3D( final Object3D object, final RenderStyle renderStyle )
 		{
@@ -2176,7 +2183,7 @@ public class JOGLRenderer
 		/**
 		 * Get 3D object.
 		 *
-		 * @return  3D object.
+		 * @return 3D object.
 		 */
 		public Object3D getObject()
 		{
@@ -2186,7 +2193,7 @@ public class JOGLRenderer
 		/**
 		 * Get render style.
 		 *
-		 * @return  Render style.
+		 * @return Render style.
 		 */
 		public RenderStyle getRenderStyle()
 		{
