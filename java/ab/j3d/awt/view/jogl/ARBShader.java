@@ -1,8 +1,6 @@
-/* ====================================================================
- * $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -30,12 +27,21 @@ import javax.media.opengl.glu.*;
  * implementation uses the ARB extension for GLSL. As such, it may be supported
  * on OpenGL versions 1.4 and above.
  *
- * @author  G. Meinders
- * @version $Revision$ $Date$
+ * @author G. Meinders
  */
 public class ARBShader
-	implements Shader
+implements Shader
 {
+	/**
+	 * Shader type.
+	 */
+	private final Type _shaderType;
+
+	/**
+	 * Shader source.
+	 */
+	private String[] _source = null;
+
 	/**
 	 * Shader object.
 	 */
@@ -44,7 +50,7 @@ public class ARBShader
 	/**
 	 * Constructs a new shader of the given type.
 	 *
-	 * @param   shaderType  Type of shader.
+	 * @param shaderType Type of shader.
 	 */
 	public ARBShader( final Type shaderType )
 	{
@@ -52,16 +58,27 @@ public class ARBShader
 		{
 			throw new NullPointerException( "shaderType" );
 		}
+		_shaderType = shaderType;
 
 		final GL gl = GLU.getCurrentGL();
 
 		final int shader;
+
 		switch ( shaderType )
 		{
+			case FRAGMENT:
+				shader = gl.glCreateShaderObjectARB( GL.GL_FRAGMENT_SHADER_ARB );
+				break;
+
+			case VERTEX:
+				//noinspection fallthrough
+				shader = gl.glCreateShaderObjectARB( GL.GL_VERTEX_SHADER_ARB );
+				break;
+
 			default:
-			case VERTEX:   shader = gl.glCreateShaderObjectARB( GL.GL_VERTEX_SHADER_ARB );   break;
-			case FRAGMENT: shader = gl.glCreateShaderObjectARB( GL.GL_FRAGMENT_SHADER_ARB ); break;
+				throw new IllegalArgumentException( "Unknown shader type: " + shaderType );
 		}
+
 		_shader = shader;
 	}
 
@@ -73,7 +90,7 @@ public class ARBShader
 	public void setSource( final String... source )
 	{
 		final int[] length = new int[ source.length ];
-		for ( int i = 0 ; i < source.length ; i++ )
+		for ( int i = 0; i < source.length; i++ )
 		{
 			length[ i ] = source[ i ].length();
 		}
@@ -81,7 +98,8 @@ public class ARBShader
 		final GL gl = GLU.getCurrentGL();
 
 		final int shader = _shader;
-		gl.glShaderSourceARB( shader, source.length , source , length , 0 );
+		gl.glShaderSourceARB( shader, source.length, source, length, 0 );
+		_source = source.clone();
 
 		compile();
 	}
@@ -89,7 +107,7 @@ public class ARBShader
 	/**
 	 * Compiles the shader.
 	 *
-	 * @throws  GLException if compilation fails.
+	 * @throws GLException if compilation fails.
 	 */
 	private void compile()
 	{
@@ -99,26 +117,42 @@ public class ARBShader
 		gl.glCompileShaderARB( shader );
 
 		final int[] compileStatus = new int[ 1 ];
-		gl.glGetObjectParameterivARB( shader , GL.GL_OBJECT_COMPILE_STATUS_ARB , compileStatus , 0 );
+		gl.glGetObjectParameterivARB( shader, GL.GL_OBJECT_COMPILE_STATUS_ARB, compileStatus, 0 );
 
 		if ( compileStatus[ 0 ] == GL.GL_FALSE )
 		{
 			final int[] infoLogLength = new int[ 1 ];
-			gl.glGetObjectParameterivARB( shader , GL.GL_OBJECT_INFO_LOG_LENGTH_ARB , infoLogLength , 0 );
+			gl.glGetObjectParameterivARB( shader, GL.GL_OBJECT_INFO_LOG_LENGTH_ARB, infoLogLength, 0 );
 
-			final String message;
-			if( infoLogLength[ 0 ] == 0 )
+			final StringBuilder message = new StringBuilder();
+
+			if ( infoLogLength[ 0 ] == 0 )
 			{
-				message = "Vertex shader failed to compile.";
+				message.append( _shaderType );
+				message.append( " shader failed to compile." );
 			}
 			else
 			{
 				final byte[] infoLog = new byte[ infoLogLength[ 0 ] ];
-				gl.glGetInfoLogARB( shader , infoLogLength[ 0 ] , infoLogLength , 0 , infoLog , 0 );
-				message = new String( infoLog , 0 , infoLogLength[ 0 ] , Charset.forName( "iso-8859-1" ) );
+				gl.glGetInfoLogARB( shader, infoLogLength[ 0 ], infoLogLength, 0, infoLog, 0 );
+
+				message.append( new String( infoLog, 0, infoLogLength[ 0 ], Charset.forName( "iso-8859-1" ) ) );
 			}
 
-			throw new GLException( message );
+			final String[] source = _source;
+			if ( ( source != null ) && ( source.length > 0 ) )
+			{
+				message.append( "\n---[ Shader program ]----------------------------\n" );
+				for ( final String text : source )
+				{
+					message.append( text );
+					message.append( '\n' );
+				}
+				message.append( "-------------------------------------------------" );
+			}
+
+			throw new GLException( message.toString() );
+
 		}
 	}
 
