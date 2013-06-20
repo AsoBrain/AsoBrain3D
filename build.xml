@@ -18,6 +18,10 @@
 	<target name="build" depends="compile-java,compile-examples,compile-tests,jars.uptodate.check" unless="jars.uptodate" description="Build project">
 		<mkdir dir="lib"/>
 		<jar destfile="lib/ab3d.jar">
+			<manifest>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
 			<fileset dir="classes/java"/>
 			<fileset dir="images"/>
 		</jar>
