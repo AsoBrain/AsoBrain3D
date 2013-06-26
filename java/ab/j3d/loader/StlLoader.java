@@ -454,7 +454,11 @@ public class StlLoader
 			final long numberOfTriangles = readUnsignedInt32( in );
 			for ( long i = 0L; i < numberOfTriangles; i++ )
 			{
-				final Vector3D normal = transform.rotate( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				Vector3D normal = transform.rotate( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				if ( !normal.isNonZero() )
+				{
+					normal = null;
+				}
 				normals[ 0 ] = normal;
 				normals[ 1 ] = normal;
 				normals[ 2 ] = normal;
