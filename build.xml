@@ -209,6 +209,10 @@
 			<sequential>
 				<jar destfile="@{jar}_resigned.jar">
 					<zipfileset src="@{jar}" excludes="META-INF/**"/>
+					<manifest>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
 				</jar>
 				<repack200 jar="@{jar}_resigned.jar"/>
 				<signjar jar="@{jar}_resigned.jar" keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}"/>
