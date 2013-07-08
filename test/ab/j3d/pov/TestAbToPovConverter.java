@@ -81,7 +81,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "MPXs.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "MPXs.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -97,7 +100,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "MFCs.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "MFCs.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -129,7 +135,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_TOP.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_TOP.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -155,7 +164,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -181,7 +193,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -207,7 +222,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BACK.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BACK.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -233,7 +251,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -259,7 +280,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -317,7 +341,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_TOP.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_TOP.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -333,7 +360,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -349,7 +379,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -365,7 +398,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BACK.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BACK.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -381,7 +417,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
@@ -397,7 +436,10 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\" }\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\"\n" +
+		"\t\t\t}\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
