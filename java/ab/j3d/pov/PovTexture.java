@@ -930,7 +930,12 @@ extends PovObject
 
 			final File imageFile = new File( imageURI );
 
-			out.write( "image_map  { " );
+			out.write( "image_map" );
+			out.newLine();
+			out.write( "{" );
+			out.newLine();
+			out.indentIn();
+
 			if ( imageType != null )
 			{
 				out.write( imageType );
@@ -938,7 +943,28 @@ extends PovObject
 			}
 			out.write( '"' );
 			out.write( imageFile.getPath() );
-			out.write( "\" }" );
+			out.write( '"' );
+			out.newLine();
+
+			final double filter = getFilter();
+			final double transmit = getTransmit();
+
+			if ( filter != 0.0 )
+			{
+				out.write( "filter all " );
+				out.write( format( filter ) );
+				out.newLine();
+			}
+
+			if ( transmit != 0.0 )
+			{
+				out.write( "transmit all " );
+				out.write( format( transmit ) );
+				out.newLine();
+			}
+
+			out.indentOut();
+			out.write( "}" );
 			out.newLine();
 		}
 		else
@@ -946,22 +972,22 @@ extends PovObject
 			out.write( "color      rgb " );
 			rgb.write( out );
 			out.newLine();
-		}
 
-		final double filter = getFilter();
-		if ( filter != 0.0 )
-		{
-			out.write( "filter     " );
-			out.write( format( filter ) );
-			out.newLine();
-		}
+			final double filter = getFilter();
+			if ( filter != 0.0 )
+			{
+				out.write( "filter     " );
+				out.write( format( filter ) );
+				out.newLine();
+			}
 
-		final double transmit = getTransmit();
-		if ( transmit != 0.0 )
-		{
-			out.write( "transmit   " );
-			out.write( format( transmit ) );
-			out.newLine();
+			final double transmit = getTransmit();
+			if ( transmit != 0.0 )
+			{
+				out.write( "transmit   " );
+				out.write( format( transmit ) );
+				out.newLine();
+			}
 		}
 
 		out.indentOut();
@@ -1232,22 +1258,22 @@ extends PovObject
 			out.write( image.getPath() );
 			out.write( "\" }" );
 			out.newLine();
-		}
 
-		final double filter = getFilter();
-		if ( filter != 0.0 )
-		{
-			out.write( "filter     " );
-			out.write( format( filter ) );
-			out.newLine();
-		}
+			final double filter = getFilter();
+			if ( filter != 0.0 )
+			{
+				out.write( "filter all " );
+				out.write( format( filter ) );
+				out.newLine();
+			}
 
-		final double transmit = getTransmit();
-		if ( transmit != 0.0 )
-		{
-			out.write( "transmit   " );
-			out.write( format( transmit ) );
-			out.newLine();
+			final double transmit = getTransmit();
+			if ( transmit != 0.0 )
+			{
+				out.write( "transmit all " );
+				out.write( format( transmit ) );
+				out.newLine();
+			}
 		}
 
 		out.indentOut();
