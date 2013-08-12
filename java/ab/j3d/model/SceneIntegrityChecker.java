@@ -164,6 +164,11 @@ public class SceneIntegrityChecker
 
 				final StringBuilder error = new StringBuilder();
 
+				if ( faceVertices.isEmpty() )
+				{
+					error.append( "\n\tface has no vertices" );
+				}
+
 				Vector3D faceCross;
 				try
 				{
