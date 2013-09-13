@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AsoBrain 3D Toolkit" default="release">
+<project name="AsoBrain 3D Toolkit" default="release" xmlns:maven="antlib:org.apache.maven.artifact.ant">
 	<property file="build.properties"/>
 	<property file="../build.properties"/>
 	<property file="../../build.properties"/>
@@ -7,6 +7,7 @@
 	<property name="build.sysclasspath" value="ignore"/>
 
 	<include file="build-pack200.xml"/>
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpath="${maven.ant.tasks}" />
 
 	<target name="clean" depends="init" description="Remove temporary build files">
 		<delete dir="classes"/>
@@ -25,6 +26,11 @@
 			<fileset dir="classes/java"/>
 			<fileset dir="images"/>
 		</jar>
+
+		<maven:install file="lib/ab3d.jar">
+			<maven:pom file="pom.xml" />
+		</maven:install>
+
 		<jar destfile="ab3d-test.jar" basedir="classes/test"/>
 	</target>
 
@@ -33,11 +39,9 @@
 			<and>
 				<uptodate>
 					<srcfiles dir="classes/java"/>
-					<mapper type="merge" to="../../lib/ab3d.jar"/>
-				</uptodate>
-				<uptodate>
 					<srcfiles dir="images"/>
-					<mapper type="merge" to="../lib/ab3d.jar"/>
+					<srcfiles file="pom.xml"/>
+					<mapper type="merge" to="${basedir}/lib/ab3d.jar"/>
 				</uptodate>
 				<uptodate>
 					<srcfiles dir="." includes="classes/test/**"/>
