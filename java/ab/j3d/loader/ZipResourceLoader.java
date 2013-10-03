@@ -99,7 +99,7 @@ public class ZipResourceLoader
 				{
 					for ( ZipEntry zipEntry = zis.getNextEntry(); zipEntry != null; zipEntry = zis.getNextEntry() )
 					{
-						System.out.println( zipEntry.getName() );
+//						System.out.println( zipEntry.getName() );
 						if ( path.equals( zipEntry.getName() ) )
 						{
 							result = zis;
