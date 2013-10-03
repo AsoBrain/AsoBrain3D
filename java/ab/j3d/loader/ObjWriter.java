@@ -63,6 +63,21 @@ public class ObjWriter
 	private final Collection<String> _uniqueNames = new HashSet<String>();
 
 	/**
+	 * Texture vertices.
+	 */
+	private final HashList<Vector3D> _vertices = new HashList<Vector3D>();
+
+	/**
+	 * Texture vertices.
+	 */
+	private final HashList<Vector2f> _textureVertices = new HashList<Vector2f>();
+
+	/**
+	 * Texture vertices.
+	 */
+	private final HashList<Vector3D> _normals = new HashList<Vector3D>();
+
+	/**
 	 * Add {@link Appearance} to MTL file. If the appearance was added before,
 	 * calling this method will have no effect.
 	 *
@@ -130,28 +145,36 @@ public class ObjWriter
 	}
 
 	/**
-	 * Writes an OBJ file for the given node.
+	 * Writes a ZIP file with an OBJ and MTL file for the given node.
 	 *
-	 * @param out               Stream to write to.
-	 * @param node              Node to be written.
-	 * @param materialLibraries Names of material libraries.
+	 * @param out             Stream to write to.
+	 * @param node            Node to be written.
+	 * @param name            Name for the OBJ/MTL files (without extension).
+	 * @param removeUrlPrefix Prefix to remove from URLs (optional).
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public void write( final OutputStream out, final Node3D node, final String... materialLibraries )
+	public void writeZIP( final OutputStream out, final Node3D node, final String name, final String removeUrlPrefix )
 	throws IOException
 	{
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
-		for ( final String materialLibrary : materialLibraries )
-		{
-			objWriter.write( "mtllib " );
-			objWriter.write( materialLibrary );
-			objWriter.write( "\n" );
-		}
-		final Node3DVisitor objGenerator = new ObjGenerator( objWriter );
-		Node3DTreeWalker.walk( objGenerator, node );
+		final ZipOutputStream zipOut = new ZipOutputStream( new BufferedOutputStream( out ) );
 
-		objWriter.flush();
+		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
+		write( zipOut, node, name + ".mtl" );
+		zipOut.closeEntry();
+
+		final Map<String, Appearance> appearances = new HashMap<String, Appearance>();
+		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
+		{
+			appearances.put( entry.getValue(), entry.getKey() );
+		}
+
+		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
+		writeMTL( zipOut, appearances, removeUrlPrefix );
+		zipOut.closeEntry();
+
+		zipOut.finish();
+		zipOut.flush();
 	}
 
 	/**
@@ -189,9 +212,10 @@ public class ObjWriter
 	private static void writeMtlRecord( final Appendable out, final CharSequence materialName, final Appearance appearance, final String removeUrlPrefix )
 	throws IOException
 	{
+		//noinspection SpellCheckingInspection
 		out.append( "newmtl " );
 		out.append( materialName );
-		out.append( '\n' );
+		out.append( "\r\n" );
 
 		final Color4 ambientColor = appearance.getAmbientColor();
 		out.append( "Ka " );
@@ -200,7 +224,7 @@ public class ObjWriter
 		out.append( DECIMAL_FORMAT.format( ambientColor.getGreenFloat() ) );
 		out.append( ' ' );
 		out.append( DECIMAL_FORMAT.format( ambientColor.getBlueFloat() ) );
-		out.append( '\n' );
+		out.append( "\r\n" );
 
 		final Color4 diffuseColor = appearance.getDiffuseColor();
 		out.append( "Kd " );
@@ -209,7 +233,7 @@ public class ObjWriter
 		out.append( DECIMAL_FORMAT.format( diffuseColor.getGreenFloat() ) );
 		out.append( ' ' );
 		out.append( DECIMAL_FORMAT.format( diffuseColor.getBlueFloat() ) );
-		out.append( '\n' );
+		out.append( "\r\n" );
 
 		final Color4 specularColor = appearance.getSpecularColor();
 		out.append( "Ks " );
@@ -218,19 +242,20 @@ public class ObjWriter
 		out.append( DECIMAL_FORMAT.format( specularColor.getGreenFloat() ) );
 		out.append( ' ' );
 		out.append( DECIMAL_FORMAT.format( specularColor.getBlueFloat() ) );
-		out.append( '\n' );
+		out.append( "\r\n" );
 
-		out.append( "illum 2\n" );
+		//noinspection SpellCheckingInspection
+		out.append( "illum 2\r\n" );
 
 		out.append( "Ns " );
 		final int shininess = appearance.getShininess();
 		// NOTE: This is simply the inverse of what 'ObjLoader' does.
 		out.append( String.valueOf( Math.min( 128, shininess * 1000 / 128 ) ) );
-		out.append( '\n' );
+		out.append( "\r\n" );
 
 		out.append( "d " );
 		out.append( DECIMAL_FORMAT.format( diffuseColor.getAlphaFloat() ) );
-		out.append( '\n' );
+		out.append( "\r\n" );
 
 		final TextureMap colorMap = appearance.getColorMap();
 		if ( colorMap != null )
@@ -246,7 +271,7 @@ public class ObjWriter
 
 				out.append( "map_Kd " );
 				out.append( url );
-				out.append( '\n' );
+				out.append( "\r\n" );
 			}
 		}
 
@@ -264,122 +289,147 @@ public class ObjWriter
 
 				out.append( "bump " );
 				out.append( url );
-				out.append( '\n' );
+				out.append( "\r\n" );
 			}
 		}
 	}
 
 	/**
-	 * Writes a ZIP file with an OBJ and MTL file for the given node.
+	 * Writes an OBJ file for the given node.
 	 *
-	 * @param out             Stream to write to.
-	 * @param node            Node to be written.
-	 * @param name            Name for the OBJ/MTL files (without extension).
-	 * @param removeUrlPrefix Prefix to remove from URLs (optional).
+	 * @param out               Stream to write to.
+	 * @param node              Node to be written.
+	 * @param materialLibraries Names of material libraries.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public void writeZIP( final OutputStream out, final Node3D node, final String name, final String removeUrlPrefix )
+	public void write( final OutputStream out, final Node3D node, final String... materialLibraries )
 	throws IOException
 	{
-		final ZipOutputStream zipOut = new ZipOutputStream( new BufferedOutputStream( out ) );
-
-		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
-
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( zipOut, "US-ASCII" ) );
-		objWriter.write( "mtllib " + name + ".mtl\n" );
-		final Node3DVisitor objGenerator = new ObjGenerator( objWriter );
-		Node3DTreeWalker.walk( objGenerator, node );
-
+		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		write( objWriter, node, materialLibraries );
 		objWriter.flush();
-		zipOut.closeEntry();
-
-		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
-
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, "US-ASCII" ) );
-
-		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
-		{
-			writeMtlRecord( mtlWriter, entry.getValue(), entry.getKey(), removeUrlPrefix );
-		}
-
-		mtlWriter.flush();
-		zipOut.closeEntry();
-
-		zipOut.finish();
-		zipOut.flush();
 	}
 
 	/**
-	 * Node visitor that generates an OBJ file containing geometry for the visited
-	 * {@link Object3D}s.
+	 * Writes an OBJ file for the given node.
+	 *
+	 * @param out               Stream to write to.
+	 * @param node              Node to be written.
+	 * @param materialLibraries Names of material libraries.
+	 *
+	 * @throws IOException if an I/O error occurs.
 	 */
-	private class ObjGenerator
-	implements Node3DVisitor
+	public void write( final Writer out, final Node3D node, final String... materialLibraries )
+	throws IOException
 	{
-		/**
-		 * Stream to write the OBJ file to.
-		 */
-		private Appendable _out;
-
-		/**
-		 * Current vertex index.
-		 */
-		@SuppressWarnings ( "FieldMayBeFinal" )
-		private int _vertexIndex = 1;
-
-		/**
-		 * Current appearance.
-		 */
-		@SuppressWarnings ( "FieldMayBeFinal" )
-		@Nullable
-		private Appearance _currentAppearance = null;
-
-		/**
-		 * Constructs a new instance.
-		 *
-		 * @param out Stream to write to.
-		 */
-		private ObjGenerator( @NotNull final Appendable out )
+		for ( final String materialLibrary : materialLibraries )
 		{
-			_out = out;
+			//noinspection SpellCheckingInspection
+			out.write( "mtllib " );
+			out.write( materialLibrary );
+			out.write( "\r\n" );
 		}
 
-		public boolean visitNode( @NotNull final Node3DPath path )
-		{
-			try
-			{
-				final Node3D node = path.getNode();
-				if ( node instanceof Object3D )
-				{
-					writeObject( path.getTransform(), (Object3D)node );
-				}
-			}
-			catch ( IOException e )
-			{
-				throw new RuntimeException( e + "\n\t@ " + path.toString( "\n\t/ " ), e );
-			}
+		final ArrayList<Node3DPath> nodes = new ArrayList<Node3DPath>();
+		Node3DTreeWalker.walk( new Node3DCollector( nodes, Object3D.class ), node );
 
-			return true;
+		final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps = createVertexMap( nodes );
+
+		writeVertexList( out );
+		writeTextureVertexList( out );
+		writeNormalList( out );
+		writeObjects( out, nodes, vertexMaps );
+	}
+
+	/**
+	 * Write vertex list.
+	 *
+	 * @param out Stream to write to.
+	 *
+	 * @throws IOException if an error occurs while accessing resources.
+	 */
+	private void writeVertexList( @NotNull final Appendable out )
+	throws IOException
+	{
+		for ( final Vector3D vertex : _vertices )
+		{
+			out.append( "v " );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( vertex.x ) );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( vertex.y ) );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( vertex.z ) );
+			out.append( "\r\n" );
 		}
+	}
 
-		/**
-		 * Write visited {@link Object3D} to output.
-		 *
-		 * @param transform Object transform.
-		 * @param object    Object to write.
-		 *
-		 * @throws IOException if the object could not be written.
-		 */
-		private void writeObject( final Matrix3D transform, final Object3D object )
-		throws IOException
+	/**
+	 * Write texture vertex list.
+	 *
+	 * @param out Stream to write to.
+	 *
+	 * @throws IOException if an error occurs while accessing resources.
+	 */
+	private void writeTextureVertexList( @NotNull final Appendable out )
+	throws IOException
+	{
+		for ( final Vector2f textureVertex : _textureVertices )
 		{
-			final Appendable out = _out;
+			out.append( "vt " );
+			out.append( DECIMAL_FORMAT.format( (double)textureVertex.getX() ) );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( (double)textureVertex.getY() ) );
+			out.append( "\r\n" );
+		}
+	}
+
+	/**
+	 * Write normal list.
+	 *
+	 * @param out Stream to write to.
+	 *
+	 * @throws IOException if an error occurs while accessing resources.
+	 */
+	private void writeNormalList( @NotNull final Appendable out )
+	throws IOException
+	{
+		for ( final Vector3D normal : _normals )
+		{
+			out.append( "vn " );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( normal.x ) );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( normal.y ) );
+			out.append( ' ' );
+			out.append( DECIMAL_FORMAT.format( normal.z ) );
+			out.append( "\r\n" );
+		}
+	}
+
+	/**
+	 * Write visited {@link Object3D} to output.
+	 *
+	 * @param out        Stream to write to.
+	 * @param objects    Objects to write.
+	 * @param vertexMaps Map from 3D scene to OBJ file vertices.
+	 *
+	 * @throws IOException if the object could not be written.
+	 */
+	private void writeObjects( final Appendable out, final Iterable<Node3DPath> objects, final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps )
+	throws IOException
+	{
+		Appearance currentAppearance = null;
+
+		for ( final Node3DPath path : objects )
+		{
+			final Object3D object = (Object3D)path.getNode();
+			final Map<Vertex3D, ObjVertex> vertexMap = vertexMaps.get( path );
+
 			out.append( "o " );
 			out.append( getObjectName( object ) );
-			out.append( '\n' );
-
-			Appearance currentAppearance = _currentAppearance;
+			out.append( "\r\n" );
 
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
 			{
@@ -389,128 +439,254 @@ public class ObjWriter
 					throw new IOException( "Can't write null-appearance of object " + object );
 				}
 
+				//noinspection ObjectEquality
 				if ( appearance != currentAppearance )
 				{
 					final String materialName = addAppearance( appearance );
+
+					//noinspection SpellCheckingInspection
 					out.append( "usemtl " );
 					out.append( materialName );
-					out.append( '\n' );
+					out.append( "\r\n" );
+
 					currentAppearance = appearance;
 				}
 
 				for ( final Face3D face : faceGroup.getFaces() )
 				{
-					writeFace( transform, faceGroup, face );
+					writeFace( out, faceGroup, face, vertexMap );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Write {@link Face3D} to output.
+	 *
+	 * @param out       Stream to write to.
+	 * @param faceGroup Face group to which the face belongs.
+	 * @param vertexMap Map from 3D scene to OBJ file vertices.
+	 * @param face      Face to write.
+	 *
+	 * @throws IOException if the object could not be written.
+	 */
+	private void writeFace( @NotNull final Appendable out, @NotNull final FaceGroup faceGroup, @NotNull final Face3D face, @NotNull final Map<Vertex3D, ObjVertex> vertexMap )
+	throws IOException
+	{
+		final boolean twoSided = faceGroup.isTwoSided();
+
+		final ObjVertex[] faceVertices = new ObjVertex[ face.getVertexCount() ];
+		for ( int i = 0; i < face.getVertexCount(); i++ )
+		{
+			final Vertex3D vertex = face.getVertex( i );
+
+			final ObjVertex objVertex = vertexMap.get( vertex );
+			if ( objVertex == null )
+			{
+				throw new AssertionError( "vertex not defined" );
+			}
+
+			faceVertices[ i ] = objVertex;
+		}
+
+		final Tessellation tessellation = face.getTessellation();
+		for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+		{
+
+			final int[] triangles = primitive.getTriangles();
+			for ( int i = 0; i < triangles.length; i += 3 )
+			{
+				writeFace( out, twoSided, faceVertices[ triangles[ i ] ], faceVertices[ triangles[ i + 1 ] ], faceVertices[ triangles[ i + 2 ] ] );
+			}
+		}
+	}
+
+	/**
+	 * Write face to OBJ file.
+	 *
+	 * @param out      Stream to write to.
+	 * @param twoSided Write two-sided face (actually write 2nd face with reversed
+	 *                 vertices).
+	 * @param vertices Vertices that define the face.
+	 *
+	 * @throws IOException if an error occurs while accessing resources.
+	 */
+	private void writeFace( final Appendable out, final boolean twoSided, final ObjVertex... vertices )
+	throws IOException
+	{
+		out.append( 'f' );
+		for ( final ObjVertex vertex : vertices )
+		{
+			writeVertex( out, vertex );
+		}
+		out.append( "\r\n" );
+
+		if ( twoSided )
+		{
+			out.append( 'f' );
+			for ( int i = vertices.length; --i >= 0; )
+			{
+				writeVertex( out, vertices[ i ] );
+			}
+			out.append( "\r\n" );
+		}
+	}
+
+	/**
+	 * Write vertex.
+	 *
+	 * @param out    Stream to write to.
+	 * @param vertex Vertex to write.
+	 *
+	 * @throws IOException if an error occurs while accessing resources.
+	 */
+	private void writeVertex( @NotNull final Appendable out, @NotNull final ObjVertex vertex )
+	throws IOException
+	{
+		out.append( ' ' );
+		out.append( String.valueOf( vertex._vertexIndex ) );
+
+		if ( ( vertex._textureVertexIndex > 0 ) || ( vertex._normalIndex > 0 ) )
+		{
+			out.append( '/' );
+
+			if ( vertex._textureVertexIndex > 0 )
+			{
+				out.append( String.valueOf( vertex._textureVertexIndex ) );
+			}
+
+			if ( vertex._normalIndex > 0 )
+			{
+				out.append( '/' );
+				out.append( String.valueOf( vertex._normalIndex ) );
+			}
+		}
+	}
+
+	/**
+	 * Returns a name for the given object.
+	 *
+	 * @param object Object to be named.
+	 *
+	 * @return Name for the object.
+	 */
+	@NotNull
+	private CharSequence getObjectName( @NotNull final Object3D object )
+	{
+		final String basename = "object";  // ( object.getTag() == null ) ? "object" : String.valueOf( object.getTag() );
+		return generateUniqueName( basename );
+	}
+
+	/**
+	 * Create map from 3D scene vertices to OBJ file vertices.
+	 *
+	 * @param nodes Nodes containing 3D scene.
+	 *
+	 * @return Map from 3D scene to OBJ file vertices.
+	 */
+	private Map<Node3DPath, Map<Vertex3D, ObjVertex>> createVertexMap( final Iterable<Node3DPath> nodes )
+	{
+		final HashList<Vector3D> vertices = _vertices;
+		final HashList<Vector2f> textureVertices = _textureVertices;
+		final HashList<Vector3D> normals = _normals;
+
+		final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps = new IdentityHashMap<Node3DPath, Map<Vertex3D, ObjVertex>>();
+		for ( final Node3DPath path : nodes )
+		{
+			final Matrix3D transform = path.getTransform();
+			final Object3D object = (Object3D)path.getNode();
+
+			final Map<Vertex3D, ObjVertex> vertexMap = new IdentityHashMap<Vertex3D, ObjVertex>();
+
+			for ( final FaceGroup faceGroup : object.getFaceGroups() )
+			{
+				for ( final Face3D face : faceGroup.getFaces() )
+				{
+					final Vector3D faceNormal = face.getNormal();
+					final int vertexCount = face.getVertexCount();
+
+					for ( int i = 0; i < vertexCount; i++ )
+					{
+						final Vertex3D vertex = face.getVertex( i );
+						final Vector3D vertexNormal = face.getVertexNormal( i );
+						final boolean hasTextureVertex = !Double.isNaN( vertex.colorMapU ) && !Double.isNaN( vertex.colorMapV );
+						final boolean hasVertexNormal = vertexNormal.isNonZero() && !vertexNormal.almostEquals( faceNormal );
+
+						final int v = 1 + vertices.indexOfOrAdd( transform.transform( vertex.point ) );
+						final int vt = hasTextureVertex ? ( 1 + textureVertices.indexOfOrAdd( new Vector2f( vertex.colorMapU, vertex.colorMapV ) ) ) : 0;
+						final int vn = hasVertexNormal ? 1 + normals.indexOfOrAdd( transform.rotate( vertexNormal ) ) : 0;
+
+						vertexMap.put( vertex, new ObjVertex( v, vt, vn ) );
+					}
 				}
 			}
 
-			_currentAppearance = currentAppearance;
+			vertexMaps.put( path, vertexMap );
 		}
+
+		return vertexMaps;
+	}
+
+	/**
+	 * OBJ file vertex.
+	 */
+	private static class ObjVertex
+	{
+		/**
+		 * Vertex index (1+).
+		 */
+		private final int _vertexIndex;
 
 		/**
-		 * Write {@link Face3D} to output.
-		 *
-		 * @param transform Object transform.
-		 * @param faceGroup Face group to which the face belongs.
-		 * @param face      Face to write.
-		 *
-		 * @throws IOException if the object could not be written.
+		 * Texture vertex index (1+ or 0=undefined).
 		 */
-		private void writeFace( final Matrix3D transform, final FaceGroup faceGroup, final Face3D face )
-		throws IOException
-		{
-			final Appendable out = _out;
-			final int vertexIndex = _vertexIndex;
-			final int vertexCount = face.getVertexCount();
-
-			for ( int i = 0; i < vertexCount; i++ )
-			{
-				final Vertex3D vertex = face.getVertex( i );
-
-				out.append( "v " );
-				out.append( ' ' );
-				out.append( DECIMAL_FORMAT.format( transform.transformX( vertex.point ) ) );
-				out.append( ' ' );
-				out.append( DECIMAL_FORMAT.format( transform.transformY( vertex.point ) ) );
-				out.append( ' ' );
-				out.append( DECIMAL_FORMAT.format( transform.transformZ( vertex.point ) ) );
-				out.append( '\n' );
-
-				if ( !Double.isNaN( vertex.colorMapU ) && !Double.isNaN( vertex.colorMapV ) )
-				{
-					out.append( "vt " );
-					out.append( DECIMAL_FORMAT.format( (double)vertex.colorMapU ) );
-					out.append( ' ' );
-					out.append( DECIMAL_FORMAT.format( (double)vertex.colorMapV ) );
-					out.append( '\n' );
-				}
-
-				final Vector3D normal = face.getVertexNormal( i );
-				if ( !normal.isNonZero() )
-				{
-					throw new IllegalStateException( "Cowardly refusing to write zero-normal: " + normal );
-				}
-
-				out.append( "vn " );
-				out.append( ' ' );
-				out.append( DECIMAL_FORMAT.format( transform.rotateX( normal ) ) );
-				out.append( ' ' );
-				out.append( DECIMAL_FORMAT.format( transform.rotateY( normal ) ) );
-				out.append( ' ' );
-				out.append( DECIMAL_FORMAT.format( transform.rotateZ( normal ) ) );
-				out.append( '\n' );
-			}
-
-			final Tessellation tessellation = face.getTessellation();
-			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
-			{
-				final int[] triangles = primitive.getTriangles();
-				for ( int i = 0; i < triangles.length; i += 3 )
-				{
-					out.append( 'f' );
-					for ( int j = 0; j < 3; j++ )
-					{
-						out.append( ' ' );
-						out.append( String.valueOf( vertexIndex + triangles[ i + j ] ) );
-						out.append( '/' );
-						out.append( String.valueOf( vertexIndex + triangles[ i + j ] ) );
-						out.append( '/' );
-						out.append( String.valueOf( vertexIndex + triangles[ i + j ] ) );
-					}
-					out.append( '\n' );
-
-					if ( faceGroup.isTwoSided() )
-					{
-						out.append( 'f' );
-						for ( int j = 2; j >= 0; j-- )
-						{
-							out.append( ' ' );
-							out.append( String.valueOf( vertexIndex + triangles[ i + j ] ) );
-							out.append( '/' );
-							out.append( String.valueOf( vertexIndex + triangles[ i + j ] ) );
-							out.append( '/' );
-							out.append( String.valueOf( vertexIndex + triangles[ i + j ] ) );
-						}
-						out.append( '\n' );
-					}
-				}
-			}
-
-			_vertexIndex = vertexIndex + vertexCount;
-		}
+		private final int _textureVertexIndex;
 
 		/**
-		 * Returns a name for the given object.
-		 *
-		 * @param object Object to be named.
-		 *
-		 * @return Name for the object.
+		 * Normal index (1+ or 0=undefined).
 		 */
-		@NotNull
-		private CharSequence getObjectName( @NotNull final Object3D object )
+		private final int _normalIndex;
+
+		/**
+		 * Create vertex.
+		 *
+		 * @param vertexIndex        Vertex index (1+).
+		 * @param textureVertexIndex Texture vertex index (1+ or 0=undefined).
+		 * @param normalIndex        Normal index (1+ or 0=undefined).
+		 */
+		private ObjVertex( final int vertexIndex, final int textureVertexIndex, final int normalIndex )
 		{
-			return String.valueOf( object.getTag() );
+			_vertexIndex = vertexIndex;
+			_textureVertexIndex = textureVertexIndex;
+			_normalIndex = normalIndex;
 		}
 
+		@Override
+		public int hashCode()
+		{
+			return _vertexIndex ^ _textureVertexIndex ^ _normalIndex;
+		}
+
+		@Override
+		public boolean equals( final Object obj )
+		{
+			final boolean result;
+
+			if ( obj == this )
+			{
+				result = true;
+			}
+			else if ( obj instanceof ObjVertex )
+			{
+				final ObjVertex other = (ObjVertex)obj;
+				result = ( ( other._vertexIndex == _vertexIndex ) && ( other._textureVertexIndex == _textureVertexIndex ) && ( other._normalIndex == _normalIndex ) );
+			}
+			else
+			{
+				result = false;
+			}
+
+			return result;
+		}
 	}
 }
