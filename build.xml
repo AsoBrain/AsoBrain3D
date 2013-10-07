@@ -40,7 +40,6 @@
 				<uptodate>
 					<srcfiles dir="classes/java"/>
 					<srcfiles dir="images"/>
-					<srcfiles file="pom.xml"/>
 					<mapper type="merge" to="${basedir}/lib/ab3d.jar"/>
 				</uptodate>
 				<uptodate>
