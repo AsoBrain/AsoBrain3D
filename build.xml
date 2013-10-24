@@ -20,6 +20,7 @@
 		<mkdir dir="lib"/>
 		<jar destfile="lib/ab3d.jar">
 			<manifest>
+				<attribute name="Application-Name" value="AsoBrain 3D Library"/>
 				<attribute name="Permissions" value="all-permissions"/>
 				<attribute name="Codebase" value="*"/>
 			</manifest>
@@ -213,6 +214,7 @@
 				<jar destfile="@{jar}_resigned.jar">
 					<zipfileset src="@{jar}" excludes="META-INF/**"/>
 					<manifest>
+						<attribute name="Application-Name" value="Java OpenGL (JOGL)"/>
 						<attribute name="Permissions" value="all-permissions"/>
 						<attribute name="Codebase" value="*"/>
 					</manifest>
