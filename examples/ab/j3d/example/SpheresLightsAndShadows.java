@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,34 +15,31 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.example;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 
 /**
  * Renders a scene with several colored spheres, lit by two spot lights with
- * shadow casting enabled. Uses the {@link JOGLEngine}.
+ * shadow casting enabled. Uses the {@link RenderEngine}.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class SpheresLightsAndShadows
 	extends ExampleApplet
 {
 	@Override
-	protected JOGLEngine createEngine()
+	protected RenderEngine createEngine()
 	{
 		final JOGLConfiguration configuration = new JOGLConfiguration();
 		configuration.setPerPixelLightingEnabled( true );
 		configuration.setShadowEnabled( true );
 		configuration.setShadowMultisampleEnabled( true );
-		return new JOGLEngine( configuration );
+		return RenderEngineFactory.createJOGLEngine( configuration );
 	}
 
 	@Override

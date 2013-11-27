@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -31,7 +29,6 @@ import javax.swing.Timer;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.view.*;
@@ -40,7 +37,6 @@ import ab.j3d.view.*;
  * Test application for visualizing geometry intersection tests.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class CollisionTestApp
 {
@@ -80,7 +76,7 @@ public class CollisionTestApp
 		scene.addContentNode( "light1", Matrix3D.getTranslation( 10.0, -10.0, 10.0 ), light1 );
 		scene.addContentNode( "light2", Matrix3D.getTranslation( -5.0, 10.0, 5.0 ), light2 );
 
-		final JOGLEngine engine = new JOGLEngine();
+		final RenderEngine engine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
 
 		final View3D view = engine.createView( scene );
 		view.setFrontClipDistance( 0.001 );

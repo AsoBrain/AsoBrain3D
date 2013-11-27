@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
@@ -27,7 +25,6 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.view.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.loader.max3ds.*;
 import ab.j3d.model.*;
@@ -37,7 +34,6 @@ import ab.j3d.view.*;
  * This is a sample application for the {@link Max3DSFile} class.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class Max3DSFileApp
 {
@@ -93,7 +89,7 @@ public class Max3DSFileApp
 			Scene.addLegacyLights( scene );
 			maxFile.addMeshesToScene( scene );
 
-			final RenderEngine renderEngine = new JOGLEngine(); // new Color( 51 , 77 , 102 ) );
+			final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() ); // new Color( 51 , 77 , 102 ) );
 
 			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );

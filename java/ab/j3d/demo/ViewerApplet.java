@@ -1,5 +1,4 @@
 /*
- * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2013 Peter S. Heijnen
  *
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.demo;
 
@@ -33,7 +31,6 @@ import javax.swing.*;
 import ab.j3d.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.java2d.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.loader.*;
 import ab.j3d.model.*;
@@ -239,23 +236,21 @@ public class ViewerApplet
 
 				if ( Boolean.parseBoolean( getParameter( "opengl" ) ) )
 				{
-					engine = new JOGLEngine();
+					final JOGLConfiguration configuration = JOGLConfiguration.createDefaultInstance();
+
+					if ( Boolean.parseBoolean( getParameter( "shadows" ) ) )
+					{
+						configuration.setShadowEnabled( true );
+						configuration.setShadowMultisampleEnabled( true );
+					}
+
+					engine = RenderEngineFactory.createJOGLEngine( configuration );
 				}
 				else
 				{
 					engine = new Java2dEngine();
 				}
 
-				if ( engine instanceof JOGLEngine )
-				{
-					if ( Boolean.parseBoolean( getParameter( "shadows" ) ) )
-					{
-						final JOGLEngine joglEngine = (JOGLEngine)engine;
-						final JOGLConfiguration configuration = joglEngine.getConfiguration();
-						configuration.setShadowEnabled( true );
-						configuration.setShadowMultisampleEnabled( true );
-					}
-				}
 				System.err.println( "Engine initialized" );
 
 				final View3D view = engine.createView( scene );

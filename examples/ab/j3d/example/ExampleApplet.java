@@ -1,7 +1,6 @@
-/* $Id$
- *
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +28,6 @@ import ab.j3d.view.*;
  * Applet with a single 3D view, used as a base class for (most) examples.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public abstract class ExampleApplet
 	extends JApplet

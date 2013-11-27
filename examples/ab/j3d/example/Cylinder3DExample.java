@@ -25,7 +25,6 @@ import javax.swing.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.view.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -86,7 +85,7 @@ public class Cylinder3DExample
 		scene.addContentNode( "cyl5", Matrix3D.getTranslation( 100.0, 0.0, 0.0 ), new Cylinder3D( 0.0, 15.0, 11, BasicAppearances.BLUE, uvMap, true, BasicAppearances.GREEN, uvMap, BasicAppearances.RED, uvMap, false ) );
 		scene.addContentNode( "cyl6", Matrix3D.getTranslation( 150.0, 0.0, 0.0 ), new Cylinder3D( 0.0, 15.0, 11, BasicAppearances.BLUE, uvMap, true, BasicAppearances.GREEN, uvMap, BasicAppearances.RED, uvMap, true ) );
 
-		final RenderEngine renderEngine = new JOGLEngine( JOGLConfiguration.createDefaultInstance() );
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createDefaultInstance() );
 
 		final View3D view = renderEngine.createView( scene );
 		view.setRenderingPolicy( RenderingPolicy.SKETCH );
