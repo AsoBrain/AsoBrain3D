@@ -19,7 +19,6 @@
 package ab.j3d.awt.view.jogl;
 
 import java.io.*;
-import java.util.concurrent.*;
 import javax.media.opengl.*;
 
 import ab.j3d.view.*;
@@ -289,7 +288,7 @@ public class JOGLCapabilities
 			if ( opengl13 || gl.isExtensionAvailable( "GL_ARB_multitexture" ) )
 			{
 				_multitexture = true;
-				_maxTextureUnits = getInteger( gl, GL.GL_MAX_TEXTURE_UNITS );
+				_maxTextureUnits = getInteger( gl, GL2ES1.GL_MAX_TEXTURE_UNITS );
 			}
 
 			/*
@@ -310,25 +309,25 @@ public class JOGLCapabilities
 			// multi-layer depth-peeling algorithm.
 			if ( _drawBuffers )
 			{
-				getInteger( gl , GL.GL_MAX_DRAW_BUFFERS );
+				getInteger( gl , GL2ES2.GL_MAX_DRAW_BUFFERS );
 			}
 
 			// Limits the complexity of shaders we can use.
 			if ( _shaderObjects )
 			{
-				getInteger( gl , GL.GL_MAX_VARYING_FLOATS );
-				getInteger( gl , GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
-				getInteger( gl , GL.GL_MAX_TEXTURE_IMAGE_UNITS );
-				getInteger( gl , GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
-				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION );
+				getInteger( gl , GL2GL3.GL_MAX_VARYING_FLOATS );
+				getInteger( gl , GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				getInteger( gl , GL2ES2.GL_MAX_TEXTURE_IMAGE_UNITS );
+				getInteger( gl , GL2GL3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_shadingLanguageVersion = gl.glGetString( GL2ES2.GL_SHADING_LANGUAGE_VERSION );
 			}
 			else if ( _shaderObjectsARB )
 			{
-				getInteger( gl , GL.GL_MAX_VARYING_FLOATS_ARB );
-				getInteger( gl , GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB );
-				getInteger( gl , GL.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
-				getInteger( gl , GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB );
-				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION_ARB );
+				getInteger( gl , GL2.GL_MAX_VARYING_FLOATS );
+				getInteger( gl , GL2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				getInteger( gl , GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
+				getInteger( gl , GL2.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_shadingLanguageVersion = gl.glGetString( GL2.GL_SHADING_LANGUAGE_VERSION_ARB );
 			}
 
 			_version    = gl.glGetString( GL.GL_VERSION );
@@ -389,17 +388,6 @@ public class JOGLCapabilities
 		implements Runnable
 	{
 		/**
-		 * Used to implement {@link #waitFor()}.
-		 */
-		private final Semaphore _semaphore = new Semaphore( 0 );
-
-		/**
-		 * Any uncaught throwable that occured during the {@link #run()} method.
-		 * It's thrown
-		 */
-		private Throwable _throwable = null;
-
-		/**
 		 * This method is called on the OpenGL thread.
 		 *
 		 * @param   gl  OpenGL pipeline.
@@ -408,14 +396,7 @@ public class JOGLCapabilities
 
 		public final void run()
 		{
-			try
-			{
-				makeContextCurrentAndRun();
-			}
-			finally
-			{
-				_semaphore.release();
-			}
+			makeContextCurrentAndRun();
 		}
 
 		/**
@@ -439,11 +420,6 @@ public class JOGLCapabilities
 			try
 			{
 				run( context.getGL() );
-				_throwable = null;
-			}
-			catch ( Throwable t )
-			{
-				_throwable = t;
 			}
 			finally
 			{
@@ -465,35 +441,6 @@ public class JOGLCapabilities
 		}
 
 		/**
-		 * Waits until the probe has completed determining which OpenGL
-		 * capabilities are available.
-		 *
-		 * @throws  InterruptedException if the current thread is interrupted.
-		 */
-		public final void waitFor()
-			throws InterruptedException
-		{
-			_semaphore.acquire();
-
-			final Throwable throwable = _throwable;
-			if ( throwable != null )
-			{
-				if ( throwable instanceof RuntimeException )
-				{
-					throw (RuntimeException)throwable;
-				}
-				else if ( throwable instanceof Error )
-				{
-					throw (Error)throwable;
-				}
-				else
-				{
-					throw new RuntimeException( "Failed to determine JOGL capabilities." , throwable );
-				}
-			}
-		}
-
-		/**
 		 * Runs the probe on the OpenGL thread. This method blocks until the
 		 * probe is completed.
 		 */
@@ -505,16 +452,7 @@ public class JOGLCapabilities
 			}
 			else
 			{
-				Threading.invokeOnOpenGLThread( this );
-
-				try
-				{
-					waitFor();
-				}
-				catch ( InterruptedException e )
-				{
-					/* Should not be interrupted. */
-				}
+				Threading.invokeOnOpenGLThread( true, this );
 			}
 		}
 	}

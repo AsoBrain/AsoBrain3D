@@ -1,8 +1,6 @@
-/* ====================================================================
- * $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -33,7 +30,6 @@ import org.jetbrains.annotations.*;
  * implementation uses the core API, available in OpenGL 2.0 and above.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class CoreShaderProgram
 	implements ShaderProgram
@@ -65,8 +61,9 @@ public class CoreShaderProgram
 		_linked = false;
 
 		final GL gl = GLU.getCurrentGL();
+		final GL2ES2 gl2 = gl.getGL2ES2();
 
-		_program = gl.glCreateProgram();
+		_program = gl2.glCreateProgram();
 	}
 
 	@Override
@@ -79,7 +76,8 @@ public class CoreShaderProgram
 	public void attach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glAttachShader( _program, shader.getShaderObject() );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		gl2.glAttachShader( _program, shader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -87,7 +85,8 @@ public class CoreShaderProgram
 	public void detach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDetachShader( _program, shader.getShaderObject() );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		gl2.glDetachShader( _program, shader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -97,15 +96,16 @@ public class CoreShaderProgram
 		if ( !_linked )
 		{
 			final GL gl = GLU.getCurrentGL();
+			final GL2ES2 gl2 = gl.getGL2ES2();
 			final int program = _program;
 
 			/*
 			 * Link the program.
 			 */
-			gl.glLinkProgram( program );
+			gl2.glLinkProgram( program );
 
 			final int[] linkStatus = new int[ 1 ];
-			gl.glGetProgramiv( program, GL.GL_LINK_STATUS, linkStatus, 0 );
+			gl2.glGetProgramiv( program, GL2ES2.GL_LINK_STATUS, linkStatus, 0 );
 
 			final String infoLog = getInfoLog();
 			if ( linkStatus[ 0 ] == GL.GL_FALSE )
@@ -121,12 +121,13 @@ public class CoreShaderProgram
 	public void validate()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2ES2 gl2 = gl.getGL2ES2();
 		final int program = _program;
 
-		gl.glValidateProgram( program );
+		gl2.glValidateProgram( program );
 
 		final int[] validateStatus = new int[ 1 ];
-		gl.glGetProgramiv( program, GL.GL_VALIDATE_STATUS, validateStatus, 0 );
+		gl2.glGetProgramiv( program, GL2ES2.GL_VALIDATE_STATUS, validateStatus, 0 );
 
 		final String infoLog = getInfoLog();
 		if ( validateStatus[ 0 ] == GL.GL_FALSE )
@@ -140,8 +141,9 @@ public class CoreShaderProgram
 	public String getInfoLog()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2ES2 gl2 = gl.getGL2ES2();
 		final int[] infoLogLength = new int[ 1 ];
-		gl.glGetProgramiv( _program, GL.GL_INFO_LOG_LENGTH, infoLogLength, 0 );
+		gl2.glGetProgramiv( _program, GL2ES2.GL_INFO_LOG_LENGTH, infoLogLength, 0 );
 
 		final String infoLog;
 		if( infoLogLength[ 0 ] == 0 )
@@ -151,7 +153,7 @@ public class CoreShaderProgram
 		else
 		{
 			final byte[] infoLogBytes = new byte[ infoLogLength[ 0 ] ];
-			gl.glGetProgramInfoLog( _program, infoLogLength[ 0 ], infoLogLength, 0, infoLogBytes, 0 );
+			gl2.glGetProgramInfoLog( _program, infoLogLength[ 0 ], infoLogLength, 0, infoLogBytes, 0 );
 			infoLog = new String( infoLogBytes, 0, infoLogLength[ 0 ], Charset.forName( "iso-8859-1" ) );
 		}
 		return infoLog;
@@ -161,32 +163,36 @@ public class CoreShaderProgram
 	public void enable()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2ES2 gl2 = gl.getGL2ES2();
 		link();
-		gl.glUseProgram( _program );
+		gl2.glUseProgram( _program );
 	}
 
 	@Override
 	public void disable()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glUseProgram( 0 );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		gl2.glUseProgram( 0 );
 	}
 
 	@Override
 	public void dispose()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDeleteProgram( _program );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		gl2.glDeleteProgram( _program );
 	}
 
 	@Override
 	public void setUniform( final String identifier, final float value )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocation( _program, identifier );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		final int variable = gl2.glGetUniformLocation( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform1f( variable, value );
+			gl2.glUniform1f( variable, value );
 		}
 	}
 
@@ -194,10 +200,11 @@ public class CoreShaderProgram
 	public void setUniform( final String identifier, final int value )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocation( _program, identifier );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		final int variable = gl2.glGetUniformLocation( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform1i( variable, value );
+			gl2.glUniform1i( variable, value );
 		}
 	}
 
@@ -217,10 +224,11 @@ public class CoreShaderProgram
 	public void setUniform( final String identifier, final float x, final float y, final float z )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocation( _program, identifier );
+		final GL2ES2 gl2 = gl.getGL2ES2();
+		final int variable = gl2.glGetUniformLocation( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform3f( variable, x, y, z );
+			gl2.glUniform3f( variable, x, y, z );
 		}
 	}
 

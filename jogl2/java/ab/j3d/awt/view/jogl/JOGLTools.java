@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,21 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
 import java.awt.image.*;
 import java.nio.*;
 import javax.media.opengl.*;
+import javax.media.opengl.fixedfunc.*;
 
 import ab.j3d.*;
+import com.jogamp.opengl.util.texture.*;
 
 /**
  * Utility methods for JOGL.
  *
  * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
  */
 public class JOGLTools
 {
@@ -49,159 +48,14 @@ public class JOGLTools
 	 */
 	public static void glMultMatrixd( final GL gl , final Matrix3D transform )
 	{
-		gl.glMultMatrixd( new double[]
+		final GL2 gl2 = gl.getGL2();
+		gl2.glMultMatrixd( new double[]
 			{
 				transform.xx , transform.yx , transform.zx , 0.0 ,
 				transform.xy , transform.yy , transform.zy , 0.0 ,
 				transform.xz , transform.yz , transform.zz , 0.0 ,
 				transform.xo , transform.yo , transform.zo , 1.0
 			} , 0 );
-	}
-
-	/**
-	 * Loads a shader and returns an int which specifies the shader's location on
-	 * the graphics card. If the shader couldn't be compiled an error will be
-	 * shown in the console.
-	 *
-	 * @param gl            OpenGL pipeline.
-	 * @param shader        Shader to compile
-	 * @param shaderType    Type of shader.
-	 *
-	 * @return Returns the shader, returns 0 when the shader couldn't compile.
-	 */
-	public static int compileAndLoadShader( final GL gl , final String[] shader , final int shaderType )
-	{
-		final int   shaderId      = gl.glCreateShaderObjectARB( shaderType );
-		final int[] lengths       = new int[ shader.length ];
-		final int[] compileShader = new int[ 1 ];
-		      int   result        = 0;
-
-		for( int i = 0 ; i < shader.length ; i++)
-			lengths[ i ] = shader[ i ].length();
-		gl.glShaderSourceARB( shaderId , shader.length , shader , lengths , 0 );
-		gl.glCompileShaderARB( shaderId );
-
-		gl.glGetShaderiv( shaderId , GL.GL_COMPILE_STATUS , compileShader , 0 );
-
-		if ( compileShader[ 0 ] == GL.GL_TRUE )
-		{
-			result = shaderId;
-		}
-		else
-		{
-			final IntBuffer len = BufferUtil.newIntBuffer( 1 );
-			gl.glGetShaderiv( shaderId , GL.GL_INFO_LOG_LENGTH , len );
-			final int infoLen = len.get();
-
-			if( infoLen > 1 )
-			{
-				len.flip();
-				final ByteBuffer infoLogBuf = BufferUtil.newByteBuffer( infoLen );
-				gl.glGetShaderInfoLog(  shaderId , infoLen , len , infoLogBuf );
-
-				final int actualWidth = len.get();
-				final StringBuilder sBuf = new StringBuilder( actualWidth );
-
-				for ( int i = 0 ; i < actualWidth ; i++ )
-				{
-					sBuf.append( (char) infoLogBuf.get() );
-				}
-
-				System.err.println( sBuf.toString() );
-
-			}
-			else
-			{
-				System.err.println( "ERROR: But no info returned from info log" );
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Creats and loads a shader program. It also tries to attach the specified
-	 * shaders to the program, these shaders must be compiled already. If the
-	 * shader program couldn't be loaded an error is shown in the console.
-	 *
-	 * @param gl        OpenGL pipeline.
-	 * @param shaders   Shaders to link and use.
-	 *
-	 * @return Returns the shader program, will return 0 when the program
-	 *                 couldn't be loaded.
-	 */
-	public static int loadProgram( final GL gl , final int[] shaders )
-	{
-		final int shaderProgramId = gl.glCreateProgramObjectARB();
-
-		// link shaders
-		for( final int shader : shaders )
-		{
-			gl.glAttachObjectARB( shaderProgramId , shader );
-		}
-
-		gl.glLinkProgramARB(shaderProgramId);
-		final int[] linkStatus = new int[ 1 ];
-
-		gl.glGetObjectParameterivARB( shaderProgramId , GL.GL_OBJECT_LINK_STATUS_ARB , linkStatus , 0 );
-
-		if ( linkStatus[ 0 ] == GL.GL_FALSE )
-		{
-			final IntBuffer len = BufferUtil.newIntBuffer( 1 );
-			gl.glGetObjectParameterivARB( shaderProgramId , GL.GL_OBJECT_INFO_LOG_LENGTH_ARB , len );
-			final int infoLen = len.get(); // this value includes the null, where actualWidth does not
-
-			if( infoLen > 1 )
-			{
-				len.flip();
-				final ByteBuffer infoLogBuf = BufferUtil.newByteBuffer( infoLen );
-				gl.glGetInfoLogARB( shaderProgramId , infoLen , len , infoLogBuf );
-
-				final int actualWidth = len.get();
-				final StringBuilder sBuf = new StringBuilder( actualWidth );
-
-				for ( int i = 0 ; i < actualWidth ; i++ )
-				{
-					sBuf.append( (char) infoLogBuf.get() );
-				}
-
-				System.err.println( sBuf.toString() );
-
-			}
-			else
-			{
-				System.err.println( "ERROR: But no info returned from info log" );
-			}
-		}
-		return shaderProgramId;
-	}
-
-	/**
-	 * Compiles both shaders and attaches them to a newly created shader program.
-	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   fragmentShader  Fragment shader to use.
-	 * @param   vertexShader    Vertes shader to use.
-	 *
-	 * @return  Returns the shader program, fill
-	 */
-	public static int loadShaders( final GL gl , final String[] fragmentShader , final String[] vertexShader )
-	{
-		final int fragShader;
-		final int vertShader;
-		final int result;
-
-		fragShader = compileAndLoadShader( gl , fragmentShader , GL.GL_FRAGMENT_SHADER_ARB );
-		vertShader = compileAndLoadShader( gl , vertexShader , GL.GL_VERTEX_SHADER_ARB );
-
-		if( fragShader != 0 && vertShader != 0 )
-		{
-			result = loadProgram( gl , new int[]{ fragShader , vertShader } );
-		}
-		else
-		{
-			result = 0;
-		}
-		return result;
 	}
 
 	/**
@@ -270,7 +124,7 @@ public class JOGLTools
 	public static Texture createNormalizationCubeMap( final GL gl )
 	{
 		final Texture result = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
-		result.bind();
+		result.bind( gl );
 
 		final int   size     = 128;
 		final double offset   = 0.5;
@@ -397,7 +251,7 @@ public class JOGLTools
 		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR        );
 		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
 		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
-		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
+		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL2ES2.GL_TEXTURE_WRAP_R , GL.GL_CLAMP_TO_EDGE );
 
 		return result;
 	}
@@ -415,38 +269,40 @@ public class JOGLTools
 	 */
 	public static void renderToScreen( final GL gl, final int texture, final float x1, final float y1, final float x2, final float y2 )
 	{
-		gl.glPushAttrib( GL.GL_DEPTH_BUFFER_BIT );
+		final GL2 gl2 = gl.getGL2();
+
+		gl2.glPushAttrib( GL.GL_DEPTH_BUFFER_BIT );
 		gl.glDisable( GL.GL_DEPTH_TEST );
 
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+		gl2.glPushMatrix();
+		gl2.glLoadIdentity();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glPushMatrix();
+		gl2.glLoadIdentity();
 
 		gl.glBindTexture( GL.GL_TEXTURE_2D, texture );
 		gl.glEnable( GL.GL_TEXTURE_2D );
 
-		gl.glColor3f( 1.0f, 1.0f, 1.0f );
-		gl.glBegin( GL.GL_QUADS );
-		gl.glTexCoord2f( 0.0f, 0.0f );
-		gl.glVertex2f( x1, y1 );
-		gl.glTexCoord2f( 1.0f, 0.0f );
-		gl.glVertex2f( x2, y1 );
-		gl.glTexCoord2f( 1.0f, 1.0f );
-		gl.glVertex2f( x2, y2 );
-		gl.glTexCoord2f( 0.0f, 1.0f );
-		gl.glVertex2f( x1, y2 );
-		gl.glEnd();
+		gl2.glColor3f( 1.0f, 1.0f, 1.0f );
+		gl2.glBegin( GL2.GL_QUADS );
+		gl2.glTexCoord2f( 0.0f, 0.0f );
+		gl2.glVertex2f( x1, y1 );
+		gl2.glTexCoord2f( 1.0f, 0.0f );
+		gl2.glVertex2f( x2, y1 );
+		gl2.glTexCoord2f( 1.0f, 1.0f );
+		gl2.glVertex2f( x2, y2 );
+		gl2.glTexCoord2f( 0.0f, 1.0f );
+		gl2.glVertex2f( x1, y2 );
+		gl2.glEnd();
 
 		gl.glDisable( GL.GL_TEXTURE_2D );
 
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glPopMatrix();
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glPopMatrix();
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+		gl2.glPopMatrix();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glPopMatrix();
 
-		gl.glPopAttrib();
+		gl2.glPopAttrib();
 	}
 }

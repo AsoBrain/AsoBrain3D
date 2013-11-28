@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,11 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
 import javax.media.opengl.*;
+import javax.media.opengl.fixedfunc.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -31,7 +30,6 @@ import ab.j3d.view.*;
  * This implementation performs no optimizations such as caching.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class GLStateHelper
 {
@@ -102,12 +100,13 @@ public class GLStateHelper
 	public void setColor( final float red, final float green, final float blue, final float alpha, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
 	{
 		final GL gl = _gl;
-		gl.glColor4f( red, green, blue, alpha );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { ambientFactor * red, ambientFactor * green, ambientFactor * blue, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { specularReflectivity, specularReflectivity, specularReflectivity, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { 0.0f, 0.0f, 0.0f, alpha }, 0 );
-		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, shininess );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glColor4f( red, green, blue, alpha );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_AMBIENT, new float[] { ambientFactor * red, ambientFactor * green, ambientFactor * blue, alpha }, 0 );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_DIFFUSE, new float[] { diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha }, 0 );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_SPECULAR, new float[] { specularReflectivity, specularReflectivity, specularReflectivity, alpha }, 0 );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_EMISSION, new float[] { 0.0f, 0.0f, 0.0f, alpha }, 0 );
+		gl2.glMaterialf( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_SHININESS, shininess );
 	}
 
 	/**
@@ -158,12 +157,13 @@ public class GLStateHelper
 		final Color4 emissiveColor = appearance.getEmissiveColor();
 
 		final GL gl = _gl;
-		gl.glColor4f( diffuseRed, diffuseGreen, diffuseBlue, alpha );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { ambientColor.getRedFloat(), ambientColor.getGreenFloat(), ambientColor.getBlueFloat(), alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { diffuseRed, diffuseGreen, diffuseBlue, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { specularColor.getRedFloat(), specularColor.getGreenFloat(), specularColor.getBlueFloat(), alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { emissiveColor.getRedFloat(), emissiveColor.getGreenFloat(), emissiveColor.getBlueFloat(), alpha }, 0 );
-		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)appearance.getShininess() );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glColor4f( diffuseRed, diffuseGreen, diffuseBlue, alpha );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_AMBIENT, new float[] { ambientColor.getRedFloat(), ambientColor.getGreenFloat(), ambientColor.getBlueFloat(), alpha }, 0 );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_DIFFUSE, new float[] { diffuseRed, diffuseGreen, diffuseBlue, alpha }, 0 );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_SPECULAR, new float[] { specularColor.getRedFloat(), specularColor.getGreenFloat(), specularColor.getBlueFloat(), alpha }, 0 );
+		gl2.glMaterialfv( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_EMISSION, new float[] { emissiveColor.getRedFloat(), emissiveColor.getGreenFloat(), emissiveColor.getBlueFloat(), alpha }, 0 );
+		gl2.glMaterialf( GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_SHININESS, (float)appearance.getShininess() );
 	}
 
 	/**

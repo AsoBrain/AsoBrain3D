@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -31,7 +29,6 @@ import javax.media.opengl.glu.*;
  * @see     <a href="http://www.opengl.org/registry/specs/EXT/framebuffer_blit.txt">EXT_framebuffer_blit</a>
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class Framebuffer
 {
@@ -48,7 +45,7 @@ public class Framebuffer
 		final GL gl = GLU.getCurrentGL();
 
 		final int[] framebuffers = new int[ 1 ];
-		gl.glGenFramebuffersEXT( framebuffers.length, framebuffers, 0 );
+		gl.glGenFramebuffers( framebuffers.length, framebuffers, 0 );
 		_framebuffer = framebuffers[ 0 ];
 	}
 
@@ -59,7 +56,7 @@ public class Framebuffer
 	public void bind()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT, _framebuffer );
+		gl.glBindFramebuffer( GL.GL_FRAMEBUFFER, _framebuffer );
 	}
 
 	/**
@@ -69,7 +66,7 @@ public class Framebuffer
 	public void bindReadOnly()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glBindFramebufferEXT( GL.GL_READ_FRAMEBUFFER_EXT, _framebuffer );
+		gl.glBindFramebuffer( GL2GL3.GL_READ_FRAMEBUFFER, _framebuffer );
 	}
 
 	/**
@@ -79,7 +76,7 @@ public class Framebuffer
 	public void bindDrawOnly()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glBindFramebufferEXT( GL.GL_DRAW_FRAMEBUFFER_EXT, _framebuffer );
+		gl.glBindFramebuffer( GL2GL3.GL_DRAW_FRAMEBUFFER, _framebuffer );
 	}
 
 	/**
@@ -89,7 +86,7 @@ public class Framebuffer
 	public static void unbind()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT, 0 );
+		gl.glBindFramebuffer( GL.GL_FRAMEBUFFER, 0 );
 	}
 
 	/**
@@ -98,8 +95,9 @@ public class Framebuffer
 	public void disableColorAttachments()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDrawBuffer( GL.GL_NONE );
-		gl.glReadBuffer( GL.GL_NONE );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glDrawBuffer( GL.GL_NONE );
+		gl2.glReadBuffer( GL.GL_NONE );
 	}
 
 	/**
@@ -108,7 +106,7 @@ public class Framebuffer
 	public void delete()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDeleteFramebuffersEXT( 1, new int[] { _framebuffer }, 0 );
+		gl.glDeleteFramebuffers( 1, new int[] { _framebuffer }, 0 );
 	}
 
 	/**
@@ -120,26 +118,24 @@ public class Framebuffer
 	{
 		final GL gl = GLU.getCurrentGL();
 
-		final int status = gl.glCheckFramebufferStatusEXT( GL.GL_FRAMEBUFFER_EXT );
+		final int status = gl.glCheckFramebufferStatus( GL.GL_FRAMEBUFFER );
 		switch ( status )
 		{
-			case GL.GL_FRAMEBUFFER_COMPLETE_EXT:
+			case GL.GL_FRAMEBUFFER_COMPLETE:
 				break;
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+			case GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 				throw new GLException( "Framebuffer incomplete: attachment" );
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+			case GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 				throw new GLException( "Framebuffer incomplete: missing attachment" );
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT:
-				throw new GLException( "Framebuffer incomplete: duplicate attachment" );
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+			case GL.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
 				throw new GLException( "Framebuffer incomplete: dimensions" );
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+			case GL.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
 				throw new GLException( "Framebuffer incomplete: formats" );
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+			case GL2GL3.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 				throw new GLException( "Framebuffer incomplete: draw buffer" );
-			case GL.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+			case GL2GL3.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 				throw new GLException( "Framebuffer incomplete: read buffer" );
-			case GL.GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+			case GL.GL_FRAMEBUFFER_UNSUPPORTED:
 				throw new GLException( "Framebuffer unsupported" );
 			default:
 				throw new GLException( "Unknown framebuffer status: " + status );

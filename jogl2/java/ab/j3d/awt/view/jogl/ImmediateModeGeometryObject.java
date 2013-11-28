@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -37,7 +34,6 @@ import org.jetbrains.annotations.*;
  * rendering was deprecated in OpenGL 3 and removed in OpenGL 4.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class ImmediateModeGeometryObject
 	implements GeometryObject
@@ -88,6 +84,7 @@ public class ImmediateModeGeometryObject
 	private void drawFaces()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
 		for ( final FaceGroup faceGroup : _faceGroups )
 		{
@@ -107,30 +104,30 @@ public class ImmediateModeGeometryObject
 					if ( !setVertexNormals )
 					{
 						final Vector3D normal = face.getNormal();
-						gl.glNormal3d( normal.x, normal.y, normal.z );
+						gl2.glNormal3d( normal.x, normal.y, normal.z );
 					}
 
 					for ( final TessellationPrimitive primitive : primitives )
 					{
 						if ( primitive instanceof TriangleList )
 						{
-							gl.glBegin( GL.GL_TRIANGLES );
+							gl2.glBegin( GL.GL_TRIANGLES );
 						}
 						else if ( primitive instanceof TriangleFan )
 						{
-							gl.glBegin( GL.GL_TRIANGLE_FAN );
+							gl2.glBegin( GL.GL_TRIANGLE_FAN );
 						}
 						else if ( primitive instanceof TriangleStrip )
 						{
-							gl.glBegin( GL.GL_TRIANGLE_STRIP );
+							gl2.glBegin( GL.GL_TRIANGLE_STRIP );
 						}
 						else if ( primitive instanceof QuadStrip )
 						{
-							gl.glBegin( GL.GL_QUAD_STRIP );
+							gl2.glBegin( GL2.GL_QUAD_STRIP );
 						}
 						else if ( primitive instanceof QuadList )
 						{
-							gl.glBegin( GL.GL_QUADS );
+							gl2.glBegin( GL2.GL_QUADS );
 						}
 						else
 						{
@@ -143,20 +140,20 @@ public class ImmediateModeGeometryObject
 
 							if ( colorMap != null )
 							{
-								gl.glTexCoord2f( vertex.colorMapU, vertex.colorMapV );
+								gl2.glTexCoord2f( vertex.colorMapU, vertex.colorMapV );
 							}
 
 							if ( setVertexNormals )
 							{
 								final Vector3D normal = face.getVertexNormal( vertexIndex );
-								gl.glNormal3d( normal.x, normal.y, normal.z );
+								gl2.glNormal3d( normal.x, normal.y, normal.z );
 							}
 
 							final Vector3D point = vertex.point;
-							gl.glVertex3d( point.x, point.y, point.z );
+							gl2.glVertex3d( point.x, point.y, point.z );
 						}
 
-						gl.glEnd();
+						gl2.glEnd();
 					}
 				}
 			}
@@ -169,6 +166,7 @@ public class ImmediateModeGeometryObject
 	private void drawOutlines()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
 		for ( final FaceGroup faceGroup : _faceGroups )
 		{
@@ -184,13 +182,13 @@ public class ImmediateModeGeometryObject
 					if ( !setVertexNormals )
 					{
 						final Vector3D normal = face.getNormal();
-						gl.glNormal3d( normal.x, normal.y, normal.z );
+						gl2.glNormal3d( normal.x, normal.y, normal.z );
 					}
 
 					final Tessellation tessellation = face.getTessellation();
 					for ( final int[] outline : tessellation.getOutlines() )
 					{
-						gl.glBegin( GL.GL_LINE_STRIP );
+						gl2.glBegin( GL.GL_LINE_STRIP );
 
 						for ( final int vertexIndex : outline )
 						{
@@ -200,13 +198,13 @@ public class ImmediateModeGeometryObject
 							if ( setVertexNormals )
 							{
 								final Vector3D normal = face.getVertexNormal( vertexIndex );
-								gl.glNormal3d( normal.x, normal.y, normal.z );
+								gl2.glNormal3d( normal.x, normal.y, normal.z );
 							}
 
-							gl.glVertex3d( point.x, point.y, point.z );
+							gl2.glVertex3d( point.x, point.y, point.z );
 						}
 
-						gl.glEnd();
+						gl2.glEnd();
 					}
 				}
 			}
@@ -219,6 +217,7 @@ public class ImmediateModeGeometryObject
 	private void drawVertices()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
 		for ( final FaceGroup faceGroup : _faceGroups )
 		{
@@ -234,10 +233,10 @@ public class ImmediateModeGeometryObject
 					if ( !setVertexNormals )
 					{
 						final Vector3D normal = face.getNormal();
-						gl.glNormal3d( normal.x, normal.y, normal.z );
+						gl2.glNormal3d( normal.x, normal.y, normal.z );
 					}
 
-					gl.glBegin( GL.GL_POINTS );
+					gl2.glBegin( GL.GL_POINTS );
 
 					for ( int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++ )
 					{
@@ -247,13 +246,13 @@ public class ImmediateModeGeometryObject
 						if ( setVertexNormals )
 						{
 							final Vector3D normal = face.getVertexNormal( vertexIndex );
-							gl.glNormal3d( normal.x, normal.y, normal.z );
+							gl2.glNormal3d( normal.x, normal.y, normal.z );
 						}
 
-						gl.glVertex3d( point.x, point.y, point.z );
+						gl2.glVertex3d( point.x, point.y, point.z );
 					}
 
-					gl.glEnd();
+					gl2.glEnd();
 				}
 			}
 		}

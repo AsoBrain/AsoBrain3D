@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,13 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
 import java.nio.*;
 import java.util.*;
 import javax.media.opengl.*;
+import javax.media.opengl.fixedfunc.*;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
@@ -34,7 +32,6 @@ import org.jetbrains.annotations.*;
  * Stores geometry using vertex buffer objects.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public abstract class VertexBufferObject
 	implements GeometryObject
@@ -244,7 +241,7 @@ public abstract class VertexBufferObject
 					else if ( primitive instanceof QuadStrip )
 					{
 						buffer = vertexBuffer;
-						mode = GL.GL_QUAD_STRIP;
+						mode = GL2.GL_QUAD_STRIP;
 					}
 					else
 					{
@@ -273,7 +270,7 @@ public abstract class VertexBufferObject
 
 		if ( quadCount > 0 )
 		{
-			drawOperations.add( new DrawArrays( GL.GL_QUADS, quadOffset / bytesPerVertex, quadCount * 4 ) );
+			drawOperations.add( new DrawArrays( GL2.GL_QUADS, quadOffset / bytesPerVertex, quadCount * 4 ) );
 		}
 
 		vertexBuffer.rewind();
@@ -579,21 +576,24 @@ public abstract class VertexBufferObject
 
 		public void enable( @NotNull final GL gl )
 		{
-			gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
-			gl.glEnableClientState( GL.GL_NORMAL_ARRAY );
-			gl.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY );
+			final GL2 gl2 = gl.getGL2();
+
+			gl2.glEnableClientState( GLPointerFunc.GL_VERTEX_ARRAY );
+			gl2.glEnableClientState( GLPointerFunc.GL_NORMAL_ARRAY );
+			gl2.glEnableClientState( GLPointerFunc.GL_TEXTURE_COORD_ARRAY );
 
 			final int bytesPerVertex = getBytesPerVertex();
-			gl.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
-			gl.glNormalPointer( GL.GL_FLOAT, bytesPerVertex, 12L );
-			gl.glTexCoordPointer( 2, GL.GL_FLOAT, bytesPerVertex, 24L );
+			gl2.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
+			gl2.glNormalPointer( GL.GL_FLOAT, bytesPerVertex, 12L );
+			gl2.glTexCoordPointer( 2, GL.GL_FLOAT, bytesPerVertex, 24L );
 		}
 
 		public void disable( @NotNull final GL gl )
 		{
-			gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
-			gl.glDisableClientState( GL.GL_NORMAL_ARRAY );
-			gl.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY );
+			final GL2 gl2 = gl.getGL2();
+			gl2.glDisableClientState( GLPointerFunc.GL_VERTEX_ARRAY );
+			gl2.glDisableClientState( GLPointerFunc.GL_NORMAL_ARRAY );
+			gl2.glDisableClientState( GLPointerFunc.GL_TEXTURE_COORD_ARRAY );
 		}
 
 		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
@@ -635,15 +635,17 @@ public abstract class VertexBufferObject
 
 		public void enable( @NotNull final GL gl )
 		{
-			gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
+			final GL2 gl2 = gl.getGL2();
+			gl2.glEnableClientState( GLPointerFunc.GL_VERTEX_ARRAY );
 
 			final int bytesPerVertex = getBytesPerVertex();
-			gl.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
+			gl2.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
 		}
 
 		public void disable( @NotNull final GL gl )
 		{
-			gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
+			final GL2 gl2 = gl.getGL2();
+			gl2.glDisableClientState( GLPointerFunc.GL_VERTEX_ARRAY );
 		}
 
 		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )

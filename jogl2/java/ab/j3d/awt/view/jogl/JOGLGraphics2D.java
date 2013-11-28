@@ -1,8 +1,6 @@
-/* ====================================================================
- *  $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -30,12 +27,14 @@ import java.nio.*;
 import java.text.*;
 import java.util.*;
 import javax.media.opengl.*;
+import javax.media.opengl.fixedfunc.*;
+
+import com.jogamp.opengl.util.awt.*;
 
 /**
  * This class tries to imitate some functions of the java2d api in OpenGL using JOGL.
  *
  * @author  Jark Reijerink
- * @version $Revision$ $Date$
  */
 public class JOGLGraphics2D
 	extends Graphics2D
@@ -132,23 +131,25 @@ public class JOGLGraphics2D
 	private void glBegin2D()
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
+
 		final DoubleBuffer vPort = DoubleBuffer.allocate( 4 );
-		gl.glGetDoublev( GL.GL_VIEWPORT , vPort );
-		gl.glMatrixMode( GL.GL_PROJECTION );
+		gl2.glGetDoublev( GL.GL_VIEWPORT, vPort );
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
 
 		// save projection settings
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
+		gl2.glPushMatrix();
+		gl2.glLoadIdentity();
 
 		// Set orthographic projection: left, right, bottom, top, near, far
-		gl.glOrtho( 0.0 , vPort.get( 2 ) , vPort.get( 3 ) , 0.0 , 0.0 , 1.0 );
-		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl2.glOrtho( 0.0 , vPort.get( 2 ) , vPort.get( 3 ) , 0.0 , 0.0 , 1.0 );
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 
 		// save model view settings
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
+		gl2.glPushMatrix();
+		gl2.glLoadIdentity();
 		gl.glDisable( GL.GL_DEPTH_TEST );
-		gl.glDisable( GL.GL_LIGHTING );
+		gl.glDisable( GLLightingFunc.GL_LIGHTING );
 		gl.glDisable( GL.GL_CULL_FACE );
 
 		/* Enable blending to support transparency. */
@@ -157,7 +158,7 @@ public class JOGLGraphics2D
 
 		final Color   color = getColor();
 		final float[] argb  = color.getRGBComponents( null );
-		gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
+		gl2.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 
 		final Stroke stroke = getStroke();
 		if( stroke instanceof BasicStroke )
@@ -172,17 +173,19 @@ public class JOGLGraphics2D
 	private void glEnd2D()
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
+
 		gl.glEnable( GL.GL_CULL_FACE );
 		gl.glEnable( GL.GL_DEPTH_TEST );
-		gl.glMatrixMode( GL.GL_PROJECTION );
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
 
 		 // restore previous projection settings
-		gl.glPopMatrix();
-		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl2.glPopMatrix();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 
 		// restore previous model view settings
-		gl.glPopMatrix();
-		gl.glEnable( GL.GL_LIGHTING );
+		gl2.glPopMatrix();
+		gl.glEnable( GLLightingFunc.GL_LIGHTING );
 	}
 
 	/**
@@ -468,6 +471,7 @@ public class JOGLGraphics2D
 	public void draw( final Shape shape )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
 
@@ -485,21 +489,21 @@ public class JOGLGraphics2D
 				case PathIterator.SEG_MOVETO :
 					if ( started )
 					{
-						gl.glEnd();
+						gl2.glEnd();
 					}
 
-					gl.glBegin( GL.GL_LINE_STRIP );
+					gl2.glBegin( GL.GL_LINE_STRIP );
 					startX = coordinates[ 0 ];
 					startY = coordinates[ 1 ];
-					gl.glVertex2d( normalize( startX ), normalize( startY ) );
+					gl2.glVertex2d( normalize( startX ), normalize( startY ) );
 					started = true;
 					break;
 
 				case PathIterator.SEG_CLOSE :
 					if ( started )
 					{
-						gl.glVertex2d( normalize( startX ), normalize( startY ) );
-						gl.glEnd();
+						gl2.glVertex2d( normalize( startX ), normalize( startY ) );
+						gl2.glEnd();
 						started = false;
 					}
 					break;
@@ -507,7 +511,7 @@ public class JOGLGraphics2D
 				case PathIterator.SEG_LINETO :
 					if ( started )
 					{
-						gl.glVertex2d( normalize( coordinates[ 0 ] ), normalize( coordinates[ 1 ] ) );
+						gl2.glVertex2d( normalize( coordinates[ 0 ] ), normalize( coordinates[ 1 ] ) );
 					}
 					break;
 			}
@@ -517,7 +521,7 @@ public class JOGLGraphics2D
 
 		if ( started )
 		{
-			gl.glEnd();
+			gl2.glEnd();
 		}
 
 		glEnd2D();
@@ -527,27 +531,28 @@ public class JOGLGraphics2D
 	public void fill( final Shape shape )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
 
 		if ( shape instanceof Line2D )
 		{
 			final Line2D line = (Line2D)shape;
-			gl.glBegin( GL.GL_LINES );
-			gl.glVertex2d( line.getX1(), line.getY1() );
-			gl.glVertex2d( line.getX2(), line.getY2() );
-			gl.glEnd();
+			gl2.glBegin( GL.GL_LINES );
+			gl2.glVertex2d( line.getX1(), line.getY1() );
+			gl2.glVertex2d( line.getX2(), line.getY2() );
+			gl2.glEnd();
 		}
 		else if ( shape instanceof Rectangle2D )
 		{
 			final Rectangle2D rectangle = (Rectangle2D)shape;
 			glBegin2D();
-			gl.glBegin( GL.GL_QUADS );
-			gl.glVertex2d( rectangle.getMinX(), rectangle.getMinY() );
-			gl.glVertex2d( rectangle.getMaxX(), rectangle.getMinY() );
-			gl.glVertex2d( rectangle.getMaxX(), rectangle.getMaxY() );
-			gl.glVertex2d( rectangle.getMinX(), rectangle.getMaxY() );
-			gl.glEnd();
+			gl2.glBegin( GL2.GL_QUADS );
+			gl2.glVertex2d( rectangle.getMinX(), rectangle.getMinY() );
+			gl2.glVertex2d( rectangle.getMaxX(), rectangle.getMinY() );
+			gl2.glVertex2d( rectangle.getMaxX(), rectangle.getMaxY() );
+			gl2.glVertex2d( rectangle.getMinX(), rectangle.getMaxY() );
+			gl2.glEnd();
 			glEnd2D();
 		}
 		else
@@ -568,21 +573,21 @@ public class JOGLGraphics2D
 					case PathIterator.SEG_MOVETO :
 						if ( started )
 						{
-							gl.glEnd();
+							gl2.glEnd();
 						}
 
-						gl.glBegin( GL.GL_POLYGON );
+						gl2.glBegin( GL2.GL_POLYGON );
 						startX = coordinates[ 0 ];
 						startY = coordinates[ 1 ];
-						gl.glVertex2d( startX , startY );
+						gl2.glVertex2d( startX , startY );
 						started = true;
 						break;
 
 					case PathIterator.SEG_CLOSE :
 						if ( started )
 						{
-							gl.glVertex2d( startX , startY );
-							gl.glEnd();
+							gl2.glVertex2d( startX , startY );
+							gl2.glEnd();
 							started = false;
 						}
 						break;
@@ -590,7 +595,7 @@ public class JOGLGraphics2D
 					case PathIterator.SEG_LINETO :
 						if ( started )
 						{
-							gl.glVertex2d( coordinates[ 0 ] , coordinates[ 1 ] );
+							gl2.glVertex2d( coordinates[ 0 ] , coordinates[ 1 ] );
 						}
 						break;
 				}
@@ -600,7 +605,7 @@ public class JOGLGraphics2D
 
 			if ( started )
 			{
-				gl.glEnd();
+				gl2.glEnd();
 			}
 		}
 
@@ -803,11 +808,12 @@ public class JOGLGraphics2D
 	public void drawLine( final int x1 , final int y1 , final int x2 , final int y2 )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 		glBegin2D();
-		gl.glBegin( GL.GL_LINES );
-		gl.glVertex2f( normalize( (float)x1 ), normalize( (float)y1 ) );
-		gl.glVertex2f( normalize( (float)x2 ), normalize( (float)y2 ) );
-		gl.glEnd();
+		gl2.glBegin( GL.GL_LINES );
+		gl2.glVertex2f( normalize( (float)x1 ), normalize( (float)y1 ) );
+		gl2.glVertex2f( normalize( (float)x2 ), normalize( (float)y2 ) );
+		gl2.glEnd();
 		glEnd2D();
 	}
 
@@ -827,16 +833,17 @@ public class JOGLGraphics2D
 	public void drawPolyline( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
-		gl.glBegin( GL.GL_LINE_STRIP );
+		gl2.glBegin( GL.GL_LINE_STRIP );
 
 		for ( int i = 0; i < nPoints; i++ )
 		{
-			gl.glVertex2f( normalize( (float)xPoints[ i ] ), normalize( (float)yPoints[ i ] ) );
+			gl2.glVertex2f( normalize( (float)xPoints[ i ] ), normalize( (float)yPoints[ i ] ) );
 		}
 
-		gl.glEnd();
+		gl2.glEnd();
 		glEnd2D();
 	}
 
@@ -844,16 +851,17 @@ public class JOGLGraphics2D
 	public void drawPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
-		gl.glBegin( GL.GL_LINE_LOOP );
+		gl2.glBegin( GL.GL_LINE_LOOP );
 
 		for ( int i = 0; i < nPoints; i++ )
 		{
-			gl.glVertex2f( normalize( (float)xPoints[ i ] ), normalize( (float)yPoints[ i ] ) );
+			gl2.glVertex2f( normalize( (float)xPoints[ i ] ), normalize( (float)yPoints[ i ] ) );
 		}
 
-		gl.glEnd();
+		gl2.glEnd();
 		glEnd2D();
 	}
 
@@ -861,16 +869,17 @@ public class JOGLGraphics2D
 	public void fillPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
-		gl.glBegin( GL.GL_POLYGON );
+		gl2.glBegin( GL2.GL_POLYGON );
 
 		for ( int i = 0 ; i < nPoints ; i++ )
 		{
-			gl.glVertex2i( xPoints[ i ], yPoints[ i ] );
+			gl2.glVertex2i( xPoints[ i ], yPoints[ i ] );
 		}
 
-		gl.glEnd();
+		gl2.glEnd();
 		glEnd2D();
 	}
 
@@ -878,14 +887,15 @@ public class JOGLGraphics2D
 	public void drawRect( final int x , final int y , final int width , final int height )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
-		gl.glBegin( GL.GL_LINE_LOOP );
-		gl.glVertex2f( normalize( (float)( x         ) ), normalize( (float)( y          ) ) );
-		gl.glVertex2f( normalize( (float)( x + width ) ), normalize( (float)( y          ) ) );
-		gl.glVertex2f( normalize( (float)( x + width ) ), normalize( (float)( y + height ) ) );
-		gl.glVertex2f( normalize( (float)( x         ) ), normalize( (float)( y + height ) ) );
-		gl.glEnd();
+		gl2.glBegin( GL.GL_LINE_LOOP );
+		gl2.glVertex2f( normalize( (float)( x         ) ), normalize( (float)( y          ) ) );
+		gl2.glVertex2f( normalize( (float)( x + width ) ), normalize( (float)( y          ) ) );
+		gl2.glVertex2f( normalize( (float)( x + width ) ), normalize( (float)( y + height ) ) );
+		gl2.glVertex2f( normalize( (float)( x         ) ), normalize( (float)( y + height ) ) );
+		gl2.glEnd();
 		glEnd2D();
 	}
 
@@ -893,14 +903,15 @@ public class JOGLGraphics2D
 	public void fillRect( final int x , final int y , final int width , final int height )
 	{
 		final GL gl = _gla.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		glBegin2D();
-		gl.glBegin( GL.GL_QUADS );
-		gl.glVertex2i( x         , y          );
-		gl.glVertex2i( x + width , y          );
-		gl.glVertex2i( x + width , y + height );
-		gl.glVertex2i( x         , y + height );
-		gl.glEnd();
+		gl2.glBegin( GL2.GL_QUADS );
+		gl2.glVertex2i( x         , y          );
+		gl2.glVertex2i( x + width , y          );
+		gl2.glVertex2i( x + width , y + height );
+		gl2.glVertex2i( x         , y + height );
+		gl2.glEnd();
 		glEnd2D();
 	}
 

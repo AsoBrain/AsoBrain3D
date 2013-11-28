@@ -1,8 +1,6 @@
-/* ====================================================================
- *  $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -32,6 +29,7 @@ import javax.media.opengl.glu.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import com.jogamp.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -41,7 +39,6 @@ import org.jetbrains.annotations.*;
  * {@link #setTextureData(Future)}.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class TextureProxy
 	implements Callable<TextureData>
@@ -377,7 +374,7 @@ public class TextureProxy
 			case BufferedImage.TYPE_INT_RGB:
 				internalFormat = GL.GL_RGB;
 				pixelFormat = GL.GL_BGRA;
-				pixelType = GL.GL_UNSIGNED_INT_8_8_8_8_REV;
+				pixelType = GL2.GL_UNSIGNED_INT_8_8_8_8_REV;
 				expectingGL12 = true;
 				break;
 			case BufferedImage.TYPE_INT_ARGB:
@@ -389,18 +386,18 @@ public class TextureProxy
 			case BufferedImage.TYPE_INT_ARGB_PRE:
 				internalFormat = GL.GL_RGBA;
 				pixelFormat = GL.GL_BGRA;
-				pixelType = GL.GL_UNSIGNED_INT_8_8_8_8_REV;
+				pixelType = GL2.GL_UNSIGNED_INT_8_8_8_8_REV;
 				expectingGL12 = true;
 				break;
 			case BufferedImage.TYPE_INT_BGR:
 				internalFormat = GL.GL_RGB;
 				pixelFormat = GL.GL_RGBA;
-				pixelType = GL.GL_UNSIGNED_INT_8_8_8_8_REV;
+				pixelType = GL2.GL_UNSIGNED_INT_8_8_8_8_REV;
 				expectingGL12 = true;
 				break;
 			case BufferedImage.TYPE_3BYTE_BGR:
 				internalFormat = GL.GL_RGB;
-				pixelFormat = GL.GL_BGR;
+				pixelFormat = GL2.GL_BGR;
 				pixelType = GL.GL_UNSIGNED_BYTE;
 				break;
 			case BufferedImage.TYPE_BYTE_GRAY:
@@ -443,7 +440,7 @@ public class TextureProxy
 			buffer = wrapImageDataBuffer( image );
 		}
 
-		return new TextureData( internalFormat, width, height, 0, pixelFormat, pixelType, true, false, true, buffer, null );
+		return new TextureData( GLProfile.getGL2GL3(), internalFormat, width, height, 0, pixelFormat, pixelType, true, false, true, buffer, null );
 	}
 
 	/**
@@ -582,8 +579,8 @@ public class TextureProxy
 	 */
 	private static void setTextureParameters( @NotNull final GL gl, @NotNull final Texture texture )
 	{
-		texture.setTexParameteri( GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT );
-		texture.setTexParameteri( GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT );
+		texture.setTexParameteri( gl, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT );
+		texture.setTexParameteri( gl, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT );
 
 		if ( hasAutoMipMapGenerationSupport( gl ) )
 		{
@@ -592,13 +589,13 @@ public class TextureProxy
 				/**
 				 * Generate mip maps to avoid 'noise' on far-away textures.
 				 */
-				texture.setTexParameteri( GL.GL_GENERATE_MIPMAP, GL.GL_TRUE );
+				texture.setTexParameteri( gl, GL2.GL_GENERATE_MIPMAP, GL.GL_TRUE );
 
 				/*
 				 * Use linear texture filtering.
 				 */
-				texture.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
-				texture.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST );
+				texture.setTexParameteri( gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
+				texture.setTexParameteri( gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST );
 			}
 			catch ( GLException e )
 			{

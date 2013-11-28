@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,11 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
 import javax.media.opengl.*;
+import javax.media.opengl.fixedfunc.*;
 import javax.media.opengl.glu.*;
 
 import ab.j3d.*;
@@ -60,7 +59,6 @@ import ab.j3d.model.*;
  * </pre>
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class ShadowMap
 {
@@ -187,15 +185,15 @@ public class ShadowMap
 		{
 			final int depthTexture = textures[ 0 ];
 			gl.glBindTexture( GL.GL_TEXTURE_2D, depthTexture );
-			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, size, size, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_INT, null );
+			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL2ES2.GL_DEPTH_COMPONENT, size, size, 0, GL2ES2.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_INT, null );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE );
-			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_COMPARE_R_TO_TEXTURE );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL2ES2.GL_TEXTURE_COMPARE_MODE, GL2.GL_COMPARE_R_TO_TEXTURE );
 			_depthTexture = depthTexture;
 		}
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT, GL.GL_TEXTURE_2D, _depthTexture, 0 );
+		gl.glFramebufferTexture2D( GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, _depthTexture, 0 );
 
 		if ( _renderColorMap )
 		{
@@ -208,7 +206,7 @@ public class ShadowMap
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE );
 			_colorTexture = colorTexture;
 
-			gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT, GL.GL_TEXTURE_2D, _colorTexture, 0 );
+			gl.glFramebufferTexture2D( GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, _colorTexture, 0 );
 		}
 		else
 		{
@@ -228,16 +226,17 @@ public class ShadowMap
 	 */
 	public void begin( final GL gl, final Scene scene )
 	{
+		final GL2 gl2 = gl.getGL2();
 		final GLU glu = new GLU();
 
 		// Store projection matrix for final rendering pass.
-		gl.glPushAttrib( GL.GL_VIEWPORT_BIT );
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glPushMatrix();
+		gl2.glPushAttrib( GL2.GL_VIEWPORT_BIT );
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+		gl2.glPushMatrix();
 
 		// Adjust viewport size and projection matrix for shadow map.
 		gl.glViewport( 0, 0, _size, _size );
-		gl.glLoadIdentity();
+		gl2.glLoadIdentity();
 
 		// View from light.
 		Matrix3D lightViewTransform = Matrix3D.IDENTITY;
@@ -273,7 +272,7 @@ public class ShadowMap
 			if ( light instanceof DirectionalLight3D )
 			{
 				final double zNear = -max.z;
-				gl.glOrtho( min.x, max.x, min.y, max.y, zNear, zFar );
+				gl2.glOrtho( min.x, max.x, min.y, max.y, zNear, zFar );
 			}
 			else
 			{
@@ -292,16 +291,16 @@ public class ShadowMap
 			}
 		}
 
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glLoadIdentity();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glLoadIdentity();
 		JOGLTools.glMultMatrixd( gl, lightViewTransform );
 
 		final double[] projectionMatrix = new double[ 16 ];
-		gl.glGetDoublev( GL.GL_PROJECTION_MATRIX, projectionMatrix, 0 );
+		gl2.glGetDoublev( GLMatrixFunc.GL_PROJECTION_MATRIX, projectionMatrix, 0 );
 		_projectionMatrix = projectionMatrix;
 
 		final double[] modelviewMatrix = new double[ 16 ];
-		gl.glGetDoublev( GL.GL_MODELVIEW_MATRIX, modelviewMatrix, 0 );
+		gl2.glGetDoublev( GLMatrixFunc.GL_MODELVIEW_MATRIX, modelviewMatrix, 0 );
 		_modelviewMatrix = modelviewMatrix;
 
 		_framebuffer.bind();
@@ -329,9 +328,10 @@ public class ShadowMap
 		Framebuffer.unbind();
 
 		// Restore viewport size and camera projection.
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glPopMatrix();
-		gl.glPopAttrib();
+		final GL2 gl2 = gl.getGL2();
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+		gl2.glPopMatrix();
+		gl2.glPopAttrib();
 	}
 
 	/**
@@ -341,9 +341,10 @@ public class ShadowMap
 	 */
 	public void loadProjectionMatrix( final GL gl )
 	{
-		gl.glLoadMatrixd( SCREEN_TO_TEXTURE, 0 );
-		gl.glMultMatrixd( _projectionMatrix, 0 );
-		gl.glMultMatrixd( _modelviewMatrix, 0 );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glLoadMatrixd( SCREEN_TO_TEXTURE, 0 );
+		gl2.glMultMatrixd( _projectionMatrix, 0 );
+		gl2.glMultMatrixd( _modelviewMatrix, 0 );
 	}
 
 	/**

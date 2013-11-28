@@ -1,8 +1,6 @@
-/* ====================================================================
- *  $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -28,7 +25,6 @@ import javax.media.opengl.glu.*;
  * Provides information about the number of samples rendered.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class OcclusionQuery
 {
@@ -44,12 +40,13 @@ public class OcclusionQuery
 	public OcclusionQuery()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
 		final int[] object = new int[ 1 ];
-		gl.glGenQueries( object.length , object , 0 );
+		gl2.glGenQueries( object.length , object , 0 );
 		_object = object[ 0 ];
 
-		gl.glBeginQuery( GL.GL_SAMPLES_PASSED , object[ 0 ] );
+		gl2.glBeginQuery( GL2GL3.GL_SAMPLES_PASSED , object[ 0 ] );
 	}
 
 	/**
@@ -61,12 +58,13 @@ public class OcclusionQuery
 	public int getSampleCount()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
-		gl.glEndQuery( GL.GL_SAMPLES_PASSED );
+		gl2.glEndQuery( GL2GL3.GL_SAMPLES_PASSED );
 
 		final int[] sampleCount = new int[ 1 ];
-		gl.glGetQueryObjectiv( _object , GL.GL_QUERY_RESULT , sampleCount , 0 );
-		gl.glDeleteQueries( 1 , new int[ _object ] , 0 );
+		gl2.glGetQueryObjectiv( _object , GL2ES2.GL_QUERY_RESULT , sampleCount , 0 );
+		gl2.glDeleteQueries( 1 , new int[ _object ] , 0 );
 
 		return sampleCount[ 0 ];
 	}

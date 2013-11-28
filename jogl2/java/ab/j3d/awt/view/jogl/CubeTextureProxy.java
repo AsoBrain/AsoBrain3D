@@ -1,8 +1,6 @@
-/* ====================================================================
- * $Id
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -25,6 +22,7 @@ import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 
 import ab.j3d.appearance.*;
+import com.jogamp.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -32,7 +30,6 @@ import org.jetbrains.annotations.*;
  * asynchronously.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class CubeTextureProxy
 	extends TextureProxy
@@ -131,7 +128,7 @@ public class CubeTextureProxy
 			     ( x2Data != null ) && ( y2Data != null ) && ( z2Data != null ) )
 			{
 				texture = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
-				texture.bind();
+				texture.bind( GLContext.getCurrentGL() );
 
 				final GL gl = GLU.getCurrentGL();
 
@@ -149,12 +146,12 @@ public class CubeTextureProxy
 				y2Data.flush();
 				z2Data.flush();
 
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_GENERATE_MIPMAP    , GL.GL_FALSE );
+				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL2ES1.GL_GENERATE_MIPMAP, GL.GL_FALSE );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
+				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL2ES2.GL_TEXTURE_WRAP_R , GL.GL_CLAMP_TO_EDGE );
 
 				_texture = texture;
 			}

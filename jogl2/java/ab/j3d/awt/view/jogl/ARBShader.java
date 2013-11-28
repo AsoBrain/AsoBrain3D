@@ -61,18 +61,18 @@ implements Shader
 		_shaderType = shaderType;
 
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
 		final int shader;
 
 		switch ( shaderType )
 		{
-			case FRAGMENT:
-				shader = gl.glCreateShaderObjectARB( GL.GL_FRAGMENT_SHADER_ARB );
+			case VERTEX:
+				shader = gl2.glCreateShaderObjectARB( GL2.GL_VERTEX_SHADER );
 				break;
 
-			case VERTEX:
-				//noinspection fallthrough
-				shader = gl.glCreateShaderObjectARB( GL.GL_VERTEX_SHADER_ARB );
+			case FRAGMENT:
+				shader = gl2.glCreateShaderObjectARB( GL2.GL_FRAGMENT_SHADER );
 				break;
 
 			default:
@@ -96,9 +96,10 @@ implements Shader
 		}
 
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 
 		final int shader = _shader;
-		gl.glShaderSourceARB( shader, source.length, source, length, 0 );
+		gl2.glShaderSourceARB( shader, source.length, source, length, 0 );
 		_source = source.clone();
 
 		compile();
@@ -112,17 +113,18 @@ implements Shader
 	private void compile()
 	{
 		final GL gl = GLU.getCurrentGL();
+		final GL2 gl2 = gl.getGL2();
 		final int shader = _shader;
 
-		gl.glCompileShaderARB( shader );
+		gl2.glCompileShaderARB( shader );
 
 		final int[] compileStatus = new int[ 1 ];
-		gl.glGetObjectParameterivARB( shader, GL.GL_OBJECT_COMPILE_STATUS_ARB, compileStatus, 0 );
+		gl2.glGetObjectParameterivARB( shader, GL2.GL_OBJECT_COMPILE_STATUS_ARB, compileStatus, 0 );
 
 		if ( compileStatus[ 0 ] == GL.GL_FALSE )
 		{
 			final int[] infoLogLength = new int[ 1 ];
-			gl.glGetObjectParameterivARB( shader, GL.GL_OBJECT_INFO_LOG_LENGTH_ARB, infoLogLength, 0 );
+			gl2.glGetObjectParameterivARB( shader, GL2.GL_OBJECT_INFO_LOG_LENGTH_ARB, infoLogLength, 0 );
 
 			final StringBuilder message = new StringBuilder();
 
@@ -134,8 +136,7 @@ implements Shader
 			else
 			{
 				final byte[] infoLog = new byte[ infoLogLength[ 0 ] ];
-				gl.glGetInfoLogARB( shader, infoLogLength[ 0 ], infoLogLength, 0, infoLog, 0 );
-
+				gl2.glGetInfoLogARB( shader, infoLogLength[ 0 ], infoLogLength, 0, infoLog, 0 );
 				message.append( new String( infoLog, 0, infoLogLength[ 0 ], Charset.forName( "iso-8859-1" ) ) );
 			}
 
@@ -152,13 +153,13 @@ implements Shader
 			}
 
 			throw new GLException( message.toString() );
-
 		}
 	}
 
 	public void dispose()
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDeleteObjectARB( _shader );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glDeleteObjectARB( _shader );
 	}
 }

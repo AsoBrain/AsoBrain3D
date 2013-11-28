@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -33,7 +30,6 @@ import org.jetbrains.annotations.*;
  * OpenGL capabilities.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class GeometryObjectFactory
 {
@@ -44,7 +40,6 @@ public class GeometryObjectFactory
 	{
 		/** Immediate mode rendering.              */ IMMEDIATE_MODE,
 		/** Vertex buffer object, OpenGL 1.5 core. */ VERTEX_BUFFER_OBJECT_CORE,
-		/** Vertex buffer object, ARB extension.   */ VERTEX_BUFFER_OBJECT_ARB
 	}
 
 	/**
@@ -81,10 +76,6 @@ public class GeometryObjectFactory
 			{
 				case VERTEX_BUFFER_OBJECT_CORE:
 					result = new VertexBufferObjectCore( faceGroups, type );
-					break;
-
-				case VERTEX_BUFFER_OBJECT_ARB:
-					result = new VertexBufferObjectARB( faceGroups, type );
 					break;
 
 				default:
@@ -125,10 +116,6 @@ public class GeometryObjectFactory
 			if ( VertexBufferObjectCore.testSupport() )
 			{
 				result = Implementation.VERTEX_BUFFER_OBJECT_CORE;
-			}
-			else if ( VertexBufferObjectARB.testSupport() )
-			{
-				result = Implementation.VERTEX_BUFFER_OBJECT_ARB;
 			}
 			else
 			{

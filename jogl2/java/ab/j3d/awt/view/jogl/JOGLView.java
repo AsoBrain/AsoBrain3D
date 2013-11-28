@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,27 +15,30 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
+import javax.media.nativewindow.*;
 import javax.media.opengl.*;
+import javax.media.opengl.awt.*;
+import javax.media.opengl.fixedfunc.*;
 import javax.media.opengl.glu.*;
 import javax.swing.*;
 
 import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import com.jogamp.nativewindow.awt.*;
 import org.jetbrains.annotations.*;
 
 /**
  * JOGL view implementation.
  *
  * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
  */
 public class JOGLView
 	extends View3D
@@ -60,7 +62,7 @@ public class JOGLView
 	/**
 	 * Provides information about OpenGL capabilities.
 	 */
-	private final JOGLCapabilities _capabilities;
+	private JOGLCapabilities _capabilities;
 
 	/**
 	 * Scene input translator for this View.
@@ -124,7 +126,7 @@ public class JOGLView
 
 		final GLCanvas glCanvas;
 
-		final GLCapabilities capabilities = new GLCapabilities();
+		final GLCapabilities capabilities = new GLCapabilities( GLProfile.get( GLProfile.GL2 ) );
 		capabilities.setRedBits( 8 );
 		capabilities.setGreenBits( 8 );
 		capabilities.setBlueBits( 8 );
@@ -140,8 +142,6 @@ public class JOGLView
 
 		/* See if the model already contains a context. */
 		glCanvas = new SharedContextGLCanvas( capabilities );
-
-		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
 
 		glCanvas.setMinimumSize( new Dimension( 0, 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
@@ -234,33 +234,7 @@ public class JOGLView
 
 			try
 			{
-				final GLContext context = _glCanvas.getContext();
-
-				if ( ( engine.getContext() != context ) ||
-				     ( engine.getRegisteredViewCount() == 0 ) )
-				{
-					try
-					{
-						context.release();
-					}
-					catch ( GLException gle )
-					{
-						// expected
-					}
-					finally
-					{
-						context.destroy();
-					}
-				}
-
-				_renderer = null;
-
-				final JOGLGraphics2D graphics2D = _graphics2D;
-				if ( graphics2D != null )
-				{
-					graphics2D.dispose();
-					_graphics2D = null;
-				}
+				disposeContext();
 
 				final TextureCache textureCache = engine.getTextureCache();
 				textureCache.removeListener( _textureCacheListener );
@@ -275,20 +249,61 @@ public class JOGLView
 	}
 
 	/**
+	 * Disposes the GL context and associated resources. Either to dispose the
+	 * view completely or to switch to another GL context (e.g. another screen).
+	 */
+	private void disposeContext()
+	{
+		final GLContext context = _glCanvas.getContext();
+		final JOGLEngine engine = _joglEngine;
+
+		if ( ( engine.getContext() != context ) ||
+		     ( engine.getRegisteredViewCount() == 0 ) )
+		{
+			try
+			{
+				context.release();
+			}
+			catch ( GLException gle )
+			{
+				// expected
+			}
+			finally
+			{
+				context.destroy();
+			}
+		}
+
+		_renderer = null;
+		_capabilities = null;
+
+		final JOGLGraphics2D graphics2D = _graphics2D;
+		if ( graphics2D != null )
+		{
+			graphics2D.dispose();
+			_graphics2D = null;
+		}
+	}
+
+	/**
 	 * Creates an offscreen buffer of the jogl context.
 	 *
 	 * @return  Offscreen {@link GLPbuffer} of the jogl context or
 	 *          <code>NULL</code> if the graphic card doesnt have this ability.
+	 *
+	 * @deprecated Uses {@link GLPbuffer}, which is deprecated.
 	 */
 	@Nullable
 	public GLPbuffer createOffscreenBuffer()
 	{
 		GLPbuffer buffer = null;
 
-		final GLDrawableFactory factory = GLDrawableFactory.getFactory();
-		if ( factory.canCreateGLPbuffer() )
+		final GLProfile profile = GLProfile.get( GLProfile.GL2 );
+		final GLDrawableFactory factory = GLDrawableFactory.getFactory( profile );
+		final AbstractGraphicsDevice graphicsDevice = AWTGraphicsDevice.createDefault();
+		if ( factory.canCreateGLPbuffer( graphicsDevice, profile ) )
 		{
-			buffer = factory.createGLPbuffer( _glCanvas.getChosenGLCapabilities(), null, _glCanvas.getWidth(), _glCanvas.getHeight(), _glCanvas.getContext() );
+			buffer = factory.createGLPbuffer( graphicsDevice, _glCanvas.getChosenGLCapabilities(), null, _glCanvas.getWidth(), _glCanvas.getHeight(), _glCanvas.getContext() );
 		}
 
 		return buffer;
@@ -505,9 +520,11 @@ public class JOGLView
 	 */
 	public void init( final GLAutoDrawable glAutoDrawable )
 	{
+		_capabilities = new JOGLCapabilities( _glCanvas.getContext() );
+
 		try
 		{
-			final GL gl = new DebugGL( glAutoDrawable.getGL() );
+			final GL gl = new DebugGL2( glAutoDrawable.getGL().getGL2() );
 			glAutoDrawable.setGL( gl );
 
 			getOrCreateRenderer( gl, true );
@@ -518,9 +535,9 @@ public class JOGLView
 		}
 	}
 
-	public void displayChanged( final GLAutoDrawable glAutoDrawable, final boolean b, final boolean b1 )
+	public void dispose( final GLAutoDrawable glAutoDrawable )
 	{
-		/* Not implemented in reference implementation. */
+		disposeContext();
 	}
 
 	public void reshape( final GLAutoDrawable glAutoDrawable, final int x, final int y, final int width, final int height )
@@ -562,6 +579,7 @@ public class JOGLView
 	protected void displayImpl( final GLAutoDrawable glAutoDrawable )
 	{
 		final GL gl = glAutoDrawable.getGL();
+		final GL2 gl2 = gl.getGL2();
 
 		final int width  = glAutoDrawable.getWidth();
 		final int height = glAutoDrawable.getHeight();
@@ -582,10 +600,10 @@ public class JOGLView
 				final double   near     = _frontClipDistance * scale;
 				final double   far      = _backClipDistance  * scale;
 
-				gl.glMatrixMode( GL.GL_PROJECTION );
-				gl.glLoadIdentity();
-				gl.glOrtho( left, right, bottom, top, near, far );
-				gl.glScaled( scale, scale, scale );
+				gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+				gl2.glLoadIdentity();
+				gl2.glOrtho( left, right, bottom, top, near, far );
+				gl2.glScaled( scale, scale, scale );
 			}
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
@@ -594,14 +612,14 @@ public class JOGLView
 				final double far  = _backClipDistance;
 
 				/* Setup the projection matrix. */
-				gl.glMatrixMode( GL.GL_PROJECTION );
-				gl.glLoadIdentity();
+				gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+				gl2.glLoadIdentity();
 
 				final GLU glu = new GLU();
 				glu.gluPerspective( fov, 1.0, near, far );
-				gl.glHint( GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST );
+				gl.glHint( GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST );
 
-				gl.glScaled( 1.0, aspect, 1.0 );
+				gl2.glScaled( 1.0, aspect, 1.0 );
 			}
 			else
 			{
@@ -648,8 +666,9 @@ public class JOGLView
 		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters, this );
 
 		/* Apply view transform. */
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glLoadIdentity();
+		final GL2 gl2 = gl.getGL2();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glLoadIdentity();
 		JOGLTools.glMultMatrixd( gl, getScene2View() );
 
 		final JOGLRenderer renderer = getOrCreateRenderer( gl, false );
@@ -770,7 +789,7 @@ public class JOGLView
 		extends DefaultGLCapabilitiesChooser
 	{
 		@Override
-		public int chooseCapabilities( final GLCapabilities desired, final GLCapabilities[] available, final int windowSystemRecommendedChoice )
+		public int chooseCapabilities( final CapabilitiesImmutable desired, final List<? extends CapabilitiesImmutable> available, final int windowSystemRecommendedChoice )
 		{
 /*
 			System.out.println( " - desired = " + desired );
