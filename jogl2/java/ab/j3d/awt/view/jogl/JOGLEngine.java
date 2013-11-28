@@ -56,6 +56,11 @@ public class JOGLEngine
 	private int _registeredViewCount;
 
 	/**
+	 * Provides a shared off-screen GL context.
+	 */
+	private GLAutoDrawable _sharedDrawable;
+
+	/**
 	 * Construct new JOGL render engine.
 	 */
 	public JOGLEngine()
@@ -77,6 +82,10 @@ public class JOGLEngine
 	public void dispose()
 	{
 		_textureCache.dispose();
+		if ( _sharedDrawable != null )
+		{
+			_sharedDrawable.destroy();
+		}
 	}
 
 	/**
@@ -98,23 +107,33 @@ public class JOGLEngine
 	}
 
 	/**
-	 * Return the GLContext for this model if set.
+	 * Returns a shared off-screen drawable which provides the master GL context.
+	 * This is needed to ensure that the master GL context is not disposed before
+	 * any of the slave contexts that depend on it.
 	 *
-	 * @return The GLContext for this model
+	 * <p>For details, see <a href="http://jogamp.org/deployment/jogamp-next/javadoc/jogl/javadoc/javax/media/opengl/GLSharedContextSetter.html#lifecycle">GLSharedContextSetter:
+	 * Lifecycle Considerations</a>.
+	 *
+	 * @param profile      Profile to use.
+	 * @param capabilities Needed capabilities.
+	 *
+	 * @return Shared drawable.
 	 */
-	GLContext getContext()
+	GLAutoDrawable getSharedAutoDrawable( final GLProfile profile, final GLCapabilities capabilities )
 	{
-		return _context;
-	}
+		GLAutoDrawable sharedDrawable = _sharedDrawable;
 
-	/**
-	 * Set the GL Context for this model.
-	 *
-	 * @param context GLContext to be set.
-	 */
-	void setContext( final GLContext context )
-	{
-		_context = context;
+		if ( sharedDrawable == null )
+		{
+			// GLProfile and GLCapabilities should be equal across all shared GL drawable/context.
+			final boolean createNewDevice = true; // use 'own' display device!
+			sharedDrawable = GLDrawableFactory.getFactory( profile ).createDummyAutoDrawable( null, createNewDevice, capabilities, null );
+			sharedDrawable.display(); // triggers GLContext object creation and native realization.
+
+			_sharedDrawable = sharedDrawable;
+		}
+
+		return sharedDrawable;
 	}
 
 	/**

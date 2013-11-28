@@ -124,9 +124,9 @@ public class JOGLView
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
-		final GLCanvas glCanvas;
+		final GLProfile profile = GLProfile.get( GLProfile.GL2 );
 
-		final GLCapabilities capabilities = new GLCapabilities( GLProfile.get( GLProfile.GL2 ) );
+		final GLCapabilities capabilities = new GLCapabilities( profile );
 		capabilities.setRedBits( 8 );
 		capabilities.setGreenBits( 8 );
 		capabilities.setBlueBits( 8 );
@@ -140,9 +140,8 @@ public class JOGLView
 			capabilities.setNumSamples( 4 );
 		}
 
-		/* See if the model already contains a context. */
-		glCanvas = new SharedContextGLCanvas( capabilities );
-
+		final GLCanvas glCanvas = new GLCanvas( capabilities, new CapabilitiesChooser(), null );
+		glCanvas.setSharedAutoDrawable( joglEngine.getSharedAutoDrawable( profile, capabilities ) );
 		glCanvas.setMinimumSize( new Dimension( 0, 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
 		_glCanvas = glCanvas;
@@ -255,10 +254,7 @@ public class JOGLView
 	private void disposeContext()
 	{
 		final GLContext context = _glCanvas.getContext();
-		final JOGLEngine engine = _joglEngine;
-
-		if ( ( engine.getContext() != context ) ||
-		     ( engine.getRegisteredViewCount() == 0 ) )
+		if ( context != null )
 		{
 			try
 			{
@@ -702,41 +698,6 @@ public class JOGLView
 		}
 
 		return renderer;
-	}
-
-	/**
-	 * Canvas with a GL context that is shared with all other views created by
-	 * the same {@link JOGLEngine} instance.
-	 */
-	private class SharedContextGLCanvas
-		extends GLCanvas
-	{
-		/**
-		 * Constructs a new canvas with the specified capabilities.
-		 *
-		 * @param   capabilities    Capabilities to be requested.
-		 */
-		SharedContextGLCanvas( final GLCapabilities capabilities )
-		{
-			super( capabilities, new CapabilitiesChooser(), _joglEngine.getContext(), null );
-
-			final GLContext context = getContext();
-			if ( ( context != null ) && ( _joglEngine.getContext() == null ) )
-			{
-				_joglEngine.setContext( context );
-			}
-
-			_joglEngine.registerView();
-
-			addHierarchyListener( new DisposeListener() );
-		}
-
-		@Override
-		public void addNotify()
-		{
-			super.addNotify();
-			_joglEngine.setContext( getContext() );
-		}
 	}
 
 	/**
