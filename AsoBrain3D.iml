@@ -26,7 +26,6 @@
     <orderEntry type="library" scope="PROVIDED" name="Java 3D" level="application" />
     <orderEntry type="library" name="JetBrains Annotations" level="application" />
     <orderEntry type="library" name="JUnit" level="application" />
-    <orderEntry type="library" name="JOGL" level="application" />
     <orderEntry type="library" name="KXML" level="application" />
   </component>
 </module>

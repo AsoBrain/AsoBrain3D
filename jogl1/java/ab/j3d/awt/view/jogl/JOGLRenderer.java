@@ -944,7 +944,7 @@ public class JOGLRenderer
 		{
 			final Class<?> clazz = getClass();
 			final ClassLoader classLoader = clazz.getClassLoader();
-			final URL skyImageUrl = classLoader.getResource( "maps/reflect-sky-bw.jpg" );
+			final URL skyImageUrl = classLoader.getResource( "images/maps/reflect-sky-bw.jpg" );
 			if ( skyImageUrl != null )
 			{
 				try
