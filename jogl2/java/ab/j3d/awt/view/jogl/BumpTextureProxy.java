@@ -20,9 +20,11 @@ package ab.j3d.awt.view.jogl;
 
 import java.awt.image.*;
 import java.io.*;
+import javax.media.opengl.*;
 
 import ab.j3d.appearance.*;
 import com.jogamp.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.awt.*;
 
 /**
  * Texture proxy for a bump map.
@@ -55,7 +57,7 @@ public class BumpTextureProxy
 			final BufferedImage normalMap = JOGLTools.createNormalMapFromBumpMap( image );
 			final BufferedImage compatibleImage = createCompatibleTextureImage( normalMap );
 
-			result = createTextureDataFromCompatibleImage( compatibleImage );
+			result = AWTTextureIO.newTextureData( GLProfile.get( GLProfile.GL2 ), compatibleImage, true );
 		}
 
 		return result;

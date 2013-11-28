@@ -19,10 +19,8 @@
 package ab.j3d.awt.view.jogl;
 
 import java.awt.*;
-import java.awt.color.*;
 import java.awt.image.*;
 import java.io.*;
-import java.nio.*;
 import java.util.concurrent.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
@@ -30,6 +28,7 @@ import javax.media.opengl.glu.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import com.jogamp.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.awt.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -214,13 +213,13 @@ public class TextureProxy
 	}
 
 	/**
-	 * Creates texture data from the given buffered image, if not
-	 * <code>null</code>. The image is automatically converted to a compatible
-	 * format using {@link #createCompatibleTextureImage(BufferedImage)}.
+	 * Creates texture data from the given buffered image, if not {@code null}. The
+	 * image is automatically converted to a compatible size using {@link
+	 * #createCompatibleTextureImage(BufferedImage)}.
 	 *
-	 * @param   image   Texture image.
+	 * @param image Texture image.
 	 *
-	 * @return  Compatible texture data.
+	 * @return Compatible texture data.
 	 */
 	@Nullable
 	protected TextureData createTextureData( @Nullable final BufferedImage image )
@@ -229,7 +228,7 @@ public class TextureProxy
 		if ( image != null )
 		{
 			final BufferedImage compatibleImage = createCompatibleTextureImage( image );
-			result = createTextureDataFromCompatibleImage( compatibleImage );
+			result = AWTTextureIO.newTextureData( GLProfile.get( GLProfile.GL2 ), compatibleImage, true );
 		}
 		return result;
 	}
@@ -350,225 +349,6 @@ public class TextureProxy
 		}
 
 		return result;
-	}
-
-	/**
-	 * Copied from TextureData in JOGL 1.1.1, with some simplifications.
-	 *
-	 * @noinspection JavaDoc
-	 */
-	protected TextureData createTextureDataFromCompatibleImage( final BufferedImage image )
-	{
-		final int width = image.getWidth();
-		final int height = image.getHeight();
-
-		int internalFormat;
-		int pixelType;
-		int pixelFormat;
-
-		boolean convertImage = false;
-		boolean expectingGL12 = false;
-
-		switch ( image.getType() )
-		{
-			case BufferedImage.TYPE_INT_RGB:
-				internalFormat = GL.GL_RGB;
-				pixelFormat = GL.GL_BGRA;
-				pixelType = GL2.GL_UNSIGNED_INT_8_8_8_8_REV;
-				expectingGL12 = true;
-				break;
-			case BufferedImage.TYPE_INT_ARGB:
-				internalFormat = GL.GL_RGBA;
-				pixelFormat = GL.GL_RGBA;
-				pixelType = GL.GL_UNSIGNED_BYTE;
-				expectingGL12 = true;
-				break;
-			case BufferedImage.TYPE_INT_ARGB_PRE:
-				internalFormat = GL.GL_RGBA;
-				pixelFormat = GL.GL_BGRA;
-				pixelType = GL2.GL_UNSIGNED_INT_8_8_8_8_REV;
-				expectingGL12 = true;
-				break;
-			case BufferedImage.TYPE_INT_BGR:
-				internalFormat = GL.GL_RGB;
-				pixelFormat = GL.GL_RGBA;
-				pixelType = GL2.GL_UNSIGNED_INT_8_8_8_8_REV;
-				expectingGL12 = true;
-				break;
-			case BufferedImage.TYPE_3BYTE_BGR:
-				internalFormat = GL.GL_RGB;
-				pixelFormat = GL2.GL_BGR;
-				pixelType = GL.GL_UNSIGNED_BYTE;
-				break;
-			case BufferedImage.TYPE_BYTE_GRAY:
-				internalFormat = GL.GL_RGB;
-				pixelFormat = GL.GL_LUMINANCE;
-				pixelType = GL.GL_UNSIGNED_BYTE;
-				break;
-			case BufferedImage.TYPE_USHORT_GRAY:
-				internalFormat = GL.GL_RGB;
-				pixelFormat = GL.GL_LUMINANCE;
-				pixelType = GL.GL_UNSIGNED_SHORT;
-				break;
-			default:
-				internalFormat = GL.GL_RGBA;
-				pixelFormat = GL.GL_RGBA;
-				pixelType = GL.GL_UNSIGNED_BYTE;
-				convertImage = true;
-				break;
-		}
-
-		final Buffer buffer;
-
-		/*
-		 * OpenGL below 1.2 (i.e. Windows default) doesn't support a lot of
-		 * pixel formats. The image data has to be converted.
-		 */
-		convertImage |= ( expectingGL12 && !_textureCache.isOpenGL12() );
-
-		if ( convertImage )
-		{
-			buffer = createBufferFromCustom( image );
-
-			final ColorModel colorModel = image.getColorModel();
-			internalFormat = colorModel.hasAlpha() ? GL.GL_RGBA : GL.GL_RGB;
-			pixelFormat = colorModel.hasAlpha() ? GL.GL_RGBA : GL.GL_RGB;
-			pixelType = GL.GL_UNSIGNED_BYTE;
-		}
-		else
-		{
-			buffer = wrapImageDataBuffer( image );
-		}
-
-		return new TextureData( GLProfile.getGL2GL3(), internalFormat, width, height, 0, pixelFormat, pixelType, true, false, true, buffer, null );
-	}
-
-	/**
-	 * Copied from TextureData in JOGL 1.1.1.
-	 *
-	 * @noinspection MethodWithMultipleReturnPoints,JavaDoc
-	 */
-	protected static Buffer wrapImageDataBuffer( final BufferedImage image )
-	{
-		//
-		// Note: Grabbing the DataBuffer will defeat Java2D's image
-		// management mechanism (as of JDK 5/6, at least).  This shouldn't
-		// be a problem for most JOGL apps, but those that try to upload
-		// the image into an OpenGL texture and then use the same image in
-		// Java2D rendering might find the 2D rendering is not as fast as
-		// it could be.
-		//
-
-		final WritableRaster raster = image.getRaster();
-		final DataBuffer data = raster.getDataBuffer();
-
-		if ( data instanceof DataBufferByte )
-		{
-			return ByteBuffer.wrap( ( (DataBufferByte)data ).getData() );
-		}
-		else if ( data instanceof DataBufferDouble )
-		{
-			throw new RuntimeException( "DataBufferDouble rasters not supported by OpenGL" );
-		}
-		else if ( data instanceof DataBufferFloat )
-		{
-			return FloatBuffer.wrap( ( (DataBufferFloat)data ).getData() );
-		}
-		else if ( data instanceof DataBufferInt )
-		{
-			return IntBuffer.wrap( ( (DataBufferInt)data ).getData() );
-		}
-		else if ( data instanceof DataBufferShort )
-		{
-			return ShortBuffer.wrap( ( (DataBufferShort)data ).getData() );
-		}
-		else if ( data instanceof DataBufferUShort )
-		{
-			return ShortBuffer.wrap( ( (DataBufferUShort)data ).getData() );
-		}
-		else
-		{
-			throw new RuntimeException( "Unexpected DataBuffer type?" );
-		}
-	}
-
-	/**
-	 * Copied from TextureData in JOGL 1.1.1.
-	 *
-	 * @noinspection JavaDoc
-	 */
-	private static Buffer createBufferFromCustom( @NotNull final BufferedImage image )
-	{
-		final int width = image.getWidth();
-		final int height = image.getHeight();
-
-		// create a temporary image that is compatible with OpenGL
-		final ColorModel imageColorModel = image.getColorModel();
-		final boolean hasAlpha = imageColorModel.hasAlpha();
-
-		final ColorModel colorModel;
-
-		// Don't use integer components for packed int images
-		final int dataBufferType;
-		if ( isPackedInt( image ) )
-		{
-			dataBufferType = DataBuffer.TYPE_BYTE;
-		}
-		else
-		{
-			final WritableRaster imageRaster = image.getRaster();
-			final DataBuffer imageBuffer = imageRaster.getDataBuffer();
-			dataBufferType = imageBuffer.getDataType();
-		}
-
-		if ( dataBufferType == DataBuffer.TYPE_BYTE )
-		{
-			if ( hasAlpha )
-			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), new int[] { 8, 8, 8, 8 }, true, true, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE );
-			}
-			else
-			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), new int[] { 8, 8, 8, 0 }, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE );
-			}
-		}
-		else
-		{
-			if ( hasAlpha )
-			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), null, true, true, Transparency.TRANSLUCENT, dataBufferType );
-			}
-			else
-			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), null, false, false, Transparency.OPAQUE, dataBufferType );
-			}
-		}
-
-		final boolean premultiplied = colorModel.isAlphaPremultiplied();
-		final WritableRaster raster = colorModel.createCompatibleWritableRaster( width, height );
-		final BufferedImage resultImage = new BufferedImage( colorModel, raster, premultiplied, null );
-
-		// copy the source image into the temporary image
-		final Graphics2D g = resultImage.createGraphics();
-		g.setComposite( AlphaComposite.Src );
-		g.drawImage( image, 0, 0, null );
-		g.dispose();
-
-		return wrapImageDataBuffer( resultImage );
-	}
-
-	/**
-	 * Copied from TextureData in JOGL 1.1.1.
-	 *
-	 * @noinspection JavaDoc
-	 */
-	private static boolean isPackedInt( final BufferedImage image )
-	{
-		final int imageType = image.getType();
-		return ( imageType == BufferedImage.TYPE_INT_RGB ||
-		         imageType == BufferedImage.TYPE_INT_BGR ||
-		         imageType == BufferedImage.TYPE_INT_ARGB ||
-		         imageType == BufferedImage.TYPE_INT_ARGB_PRE );
 	}
 
 	/**
