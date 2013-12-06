@@ -27,6 +27,30 @@
 			<fileset dir="classes/java"/>
 			<fileset dir="images"/>
 		</jar>
+		<jar destfile="lib/ab3d-rt-jogl1.jar">
+			<manifest>
+				<attribute name="Application-Name" value="AsoBrain 3D Library"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<fileset dir="classes/java">
+				<include name="ab/xml/**"/>
+				<include name="ab/j3d/*"/>
+				<include name="ab/j3d/appearance/*"/>
+				<include name="ab/j3d/awt/*"/>
+				<include name="ab/j3d/awt/view/*"/>
+				<include name="ab/j3d/awt/view/java2d/*"/>
+				<include name="ab/j3d/awt/view/jogl/*"/>
+				<include name="ab/j3d/control/**"/>
+				<include name="ab/j3d/geom/**"/>
+				<include name="ab/j3d/loader/**"/>
+				<include name="ab/j3d/model/**"/>
+				<include name="ab/j3d/pov/**"/>
+				<include name="ab/j3d/view/**"/>
+			</fileset>
+			<zipfileset src="lib/jogl1/gluegen-rt.jar" excludes="META-INF/**"/>
+			<zipfileset src="lib/jogl1/jogl.jar" excludes="META-INF/**"/>
+		</jar>
 
 		<maven:install file="lib/ab3d.jar">
 			<maven:pom file="pom.xml" />
@@ -44,6 +68,11 @@
 					<mapper type="merge" to="${basedir}/lib/ab3d.jar"/>
 				</uptodate>
 				<uptodate>
+					<srcfiles dir="classes/java"/>
+					<srcfiles dir="lib/jogl1"/>
+					<mapper type="merge" to="${basedir}/lib/ab3d-rt-jogl1.jar"/>
+				</uptodate>
+				<uptodate>
 					<srcfiles dir="." includes="classes/test/**"/>
 					<mapper type="merge" to="ab3d-test.jar"/>
 				</uptodate>
@@ -53,11 +82,14 @@
 
 	<target name="release" depends="build,pack200.uptodate.check" unless="pack200.uptodate" description="Build release">
 		<repack200 jar="lib/ab3d.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl1.jar"/>
 		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
 			<fileset file="lib/ab3d.jar"/>
+			<fileset file="lib/ab3d-rt-jogl1.jar"/>
 			<fileset file="ab3d-test.jar"/>
 		</signjar>
 		<pack200 jar="lib/ab3d.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl1.jar"/>
 	</target>
 
 	<target name="pack200.uptodate.check" depends="build">
