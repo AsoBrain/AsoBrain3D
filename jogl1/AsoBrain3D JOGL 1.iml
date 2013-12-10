@@ -9,7 +9,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="AsoBrain3D" />
     <orderEntry type="library" name="JetBrains Annotations" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="JOGL" level="application" />
+    <orderEntry type="library" name="JOGL" level="application" />
   </component>
 </module>
 
