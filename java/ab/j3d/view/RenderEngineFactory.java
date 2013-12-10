@@ -9,6 +9,8 @@ package ab.j3d.view;
 
 import java.lang.reflect.*;
 
+import ab.j3d.awt.view.java2d.*;
+
 /**
  * Factory for creating render engines.
  *
@@ -39,6 +41,10 @@ public class RenderEngineFactory
 			final Class<? extends RenderEngine> engineClass = clazz.asSubclass( RenderEngine.class );
 			final Constructor<? extends RenderEngine> constructor = engineClass.getConstructor( JOGLConfiguration.class );
 			return constructor.newInstance( configuration );
+		}
+		catch ( ClassNotFoundException ignored )
+		{
+			return new Java2dEngine();
 		}
 		catch ( Exception e )
 		{
