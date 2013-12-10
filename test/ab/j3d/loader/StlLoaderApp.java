@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
@@ -26,7 +24,6 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.view.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
@@ -35,7 +32,6 @@ import ab.j3d.view.*;
  * This is a sample application for the {@link StlLoader} class.
  *
  * @author Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class StlLoaderApp
 {
@@ -72,7 +68,7 @@ public class StlLoaderApp
 		Scene.addLegacyLights( scene );
 		scene.addContentNode( "object", Matrix3D.IDENTITY, object3D );
 
-		final RenderEngine renderEngine = new JOGLEngine();
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
 
 		final View3D view = renderEngine.createView( scene );
 		view.setBackground( Background.createGradient( new Color4f( 0x67, 0x79, 0x88 ), new Color4f( 0x17, 0x47, 0x72 ), new Color4f( 0x85, 0xA4, 0xBF ), new Color4f( 0x9F, 0xB8, 0xCE ) ) );

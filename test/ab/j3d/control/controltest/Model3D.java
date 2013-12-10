@@ -25,7 +25,6 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.controltest.model.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -128,7 +127,7 @@ public class Model3D
 		Scene.addLegacyLights( scene );
 		_scene = scene;
 
-		_renderEngine = new JOGLEngine();
+		_renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
 
 		_elements = new HashSet<SceneElement>();
 

@@ -23,14 +23,15 @@ import java.net.*;
 import java.util.*;
 import javax.imageio.*;
 import javax.media.opengl.*;
+import javax.media.opengl.fixedfunc.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import com.sun.opengl.util.*;
-import com.sun.opengl.util.texture.*;
+import com.jogamp.opengl.util.gl2.*;
+import com.jogamp.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -274,11 +275,11 @@ public class JOGLRenderer
 
 		/* Enable polygon offsets. */
 		state.setEnabled( GL.GL_POLYGON_OFFSET_FILL, true );
-		state.setEnabled( GL.GL_POLYGON_OFFSET_LINE, true );
-		state.setEnabled( GL.GL_POLYGON_OFFSET_POINT, true );
+		state.setEnabled( GL2GL3.GL_POLYGON_OFFSET_LINE, true );
+		state.setEnabled( GL2GL3.GL_POLYGON_OFFSET_POINT, true );
 
 		/* Normalize lighting normals after scaling */
-		state.setEnabled( GL.GL_NORMALIZE, true );
+		state.setEnabled( GLLightingFunc.GL_NORMALIZE, true );
 
 		_textureCache.init();
 
@@ -327,16 +328,18 @@ public class JOGLRenderer
 
 		_shaderManager = shaderManager;
 
+		final GL2 gl2 = gl.getGL2();
+
 		/* Set Light Model to two sided lighting. */
-		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE );
+		gl2.glLightModeli( GL2.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE );
 
 		/* Set local view point */
-		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE );
+		gl2.glLightModeli( GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE );
 
 		/* Apply specular hightlight after texturing (otherwise, this would be done before texturing, so we won't see it). */
 		if ( gl.isExtensionAvailable( "GL_VERSION_1_2" ) )
 		{
-			gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL, GL.GL_SEPARATE_SPECULAR_COLOR );
+			gl2.glLightModeli( GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR );
 		}
 
 		final ShadowMap shadowMap = _shadowMap;
@@ -508,6 +511,8 @@ public class JOGLRenderer
 		final GL gl = _gl;
 		final GLStateHelper state = _state;
 
+		final GL2 gl2 = gl.getGL2();
+
 		/*
 		 * Set texture matrices to identity matrix (this should already be the
 		 * case by default, but some OpenGL drivers seem to think otherwise).
@@ -515,13 +520,13 @@ public class JOGLRenderer
 		final ShaderManager shaderManager = _shaderManager;
 		if ( shaderManager.isShaderSupportAvailable() || isReflectionsEnabled() )
 		{
-			gl.glMatrixMode( GL.GL_TEXTURE );
+			gl2.glMatrixMode( GL.GL_TEXTURE );
 			for ( int i = 2; i >= 0; i-- )
 			{
 				gl.glActiveTexture( GL.GL_TEXTURE0 + i );
-				gl.glLoadIdentity();
+				gl2.glLoadIdentity();
 			}
-			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 		}
 
 		/*
@@ -538,8 +543,8 @@ public class JOGLRenderer
 		if ( !createAccumulationTexture )
 		{
 			final int[] textureWidthHeight = new int[ 2 ];
-			gl.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL.GL_TEXTURE_WIDTH, textureWidthHeight, 0 );
-			gl.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL.GL_TEXTURE_HEIGHT, textureWidthHeight, 1 );
+			gl2.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL2GL3.GL_TEXTURE_WIDTH, textureWidthHeight, 0 );
+			gl2.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL2GL3.GL_TEXTURE_HEIGHT, textureWidthHeight, 1 );
 			createAccumulationTexture = ( ( textureWidthHeight[ 0 ] != width ) || ( textureWidthHeight[ 1 ] != height ) );
 		}
 
@@ -621,10 +626,10 @@ public class JOGLRenderer
 				// Bind shadow map.
 				gl.glActiveTexture( TEXTURE_UNIT_SHADOW );
 				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
-				gl.glMatrixMode( GL.GL_TEXTURE );
+				gl2.glMatrixMode( GL.GL_TEXTURE );
 				shadowMap.loadProjectionMatrix( gl );
 				JOGLTools.glMultMatrixd( gl, _viewToScene );
-				gl.glMatrixMode( GL.GL_MODELVIEW );
+				gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 				gl.glActiveTexture( GL.GL_TEXTURE0 );
 			}
 
@@ -634,10 +639,10 @@ public class JOGLRenderer
 			 */
 			if ( i == 0 )
 			{
-				state.setEnabled( GL.GL_LIGHTING, false );
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
 				renderBackground( background );
-				state.setEnabled( GL.GL_LIGHTING, true );
-				gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT, new float[] { scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue(), 1.0f }, 0 );
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, true );
+				gl2.glLightModelfv( GL2ES1.GL_LIGHT_MODEL_AMBIENT, new float[] { scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue(), 1.0f }, 0 );
 			}
 			else
 			{
@@ -645,20 +650,20 @@ public class JOGLRenderer
 				gl.glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 				gl.glClearDepth( 1.0 );
 				gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
-				gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT, new float[] { 0.0f, 0.0f, 0.0f, 1.0f }, 0 );
+				gl2.glLightModelfv( GL2ES1.GL_LIGHT_MODEL_AMBIENT, new float[] { 0.0f, 0.0f, 0.0f, 1.0f }, 0 );
 			}
 
 			/*
 			 * Render from the camera.
 			 */
-			gl.glMatrixMode( GL.GL_MODELVIEW );
-			gl.glLoadIdentity();
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+			gl2.glLoadIdentity();
 			JOGLTools.glMultMatrixd( gl, _sceneToView );
 
 			/*
 			 * Render scene content with only the current light enabled.
 			 */
-			renderLight( GL.GL_LIGHT0, light, lightTransform );
+			renderLight( GLLightingFunc.GL_LIGHT0, light, lightTransform );
 			shaderManager.setShadowsEnabled( castingShadows );
 			renderContentNodes( scene.getContentNodes(), styleFilters, sceneStyle );
 
@@ -667,7 +672,7 @@ public class JOGLRenderer
 			 */
 			if ( i > 0 )
 			{
-				state.setEnabled( GL.GL_LIGHTING, false );
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
 				gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
 				state.setBlendFunc( GL.GL_ONE, GL.GL_ONE );
 				state.setEnabled( GL.GL_BLEND, true );
@@ -694,10 +699,10 @@ public class JOGLRenderer
 			if ( ( shadowMap != null ) && DEBUG_RENDER_SHADOW_MAP )
 			{
 				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
-				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_NONE );
+				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL2ES2.GL_TEXTURE_COMPARE_MODE, GL.GL_NONE );
 				JOGLTools.renderToScreen( gl, shadowMap.getDepthTexture(), -1.0f, -1.0f, -0.5f, -0.5f );
 				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
-				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_COMPARE_R_TO_TEXTURE );
+				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL2ES2.GL_TEXTURE_COMPARE_MODE, GL2.GL_COMPARE_R_TO_TEXTURE );
 				JOGLTools.renderToScreen( gl, shadowMap.getColorTexture(), 0.5f, -1.0f, 1.0f, -0.5f );
 			}
 
@@ -732,6 +737,7 @@ public class JOGLRenderer
 		shaderManager.setMultiPassLightingEnabled( false );
 
 		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
 		_renderUnlit = true;
 
 		/*
@@ -740,23 +746,23 @@ public class JOGLRenderer
 		 */
 		if ( shaderManager.isShaderSupportAvailable() || isReflectionsEnabled() )
 		{
-			gl.glMatrixMode( GL.GL_TEXTURE );
+			gl2.glMatrixMode( GL.GL_TEXTURE );
 			for ( int i = 2; i >= 0; i-- )
 			{
 				gl.glActiveTexture( GL.GL_TEXTURE0 + i );
-				gl.glLoadIdentity();
+				gl2.glLoadIdentity();
 			}
-			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 		}
 
 		/*
 		 * Render background.
 		 */
 		final GLStateHelper state = _state;
-		state.setEnabled( GL.GL_LIGHTING, false );
+		state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
 		renderBackground( background );
-		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT, new float[] { scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue(), 1.0f }, 0 );
-		state.setEnabled( GL.GL_LIGHTING, true );
+		gl2.glLightModelfv( GL2ES1.GL_LIGHT_MODEL_AMBIENT, new float[] { scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue(), 1.0f }, 0 );
+		state.setEnabled( GLLightingFunc.GL_LIGHTING, true );
 
 		/*
 		 * Enable lights.
@@ -781,7 +787,7 @@ public class JOGLRenderer
 				if ( node instanceof Light3D )
 				{
 					int lightNumber = _lightNumber;
-					renderLight( GL.GL_LIGHT0 + lightNumber, (Light3D)node, path.getTransform() );
+					renderLight( GLLightingFunc.GL_LIGHT0 + lightNumber, (Light3D)node, path.getTransform() );
 					_lightNumber = ++lightNumber;
 					result = ( lightNumber < _maxlights );
 				}
@@ -797,8 +803,8 @@ public class JOGLRenderer
 		/*
 		 * Render from the camera.
 		 */
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glLoadIdentity();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glLoadIdentity();
 		JOGLTools.glMultMatrixd( gl, _sceneToView );
 		renderContentNodes( scene.getContentNodes(), styleFilters, sceneStyle );
 
@@ -807,7 +813,7 @@ public class JOGLRenderer
 		 */
 		if ( grid.isEnabled() )
 		{
-			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 			renderGrid( grid );
 		}
 	}
@@ -820,6 +826,7 @@ public class JOGLRenderer
 	private void renderBackground( final Background background )
 	{
 		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
 		final GLStateHelper state = _state;
 
 		/* Clear depth and color buffer. */
@@ -839,29 +846,29 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_CULL_FACE, false );
 			state.setEnabled( GL.GL_DEPTH_TEST, false );
 
-			gl.glMatrixMode( GL.GL_PROJECTION );
-			gl.glPushMatrix();
-			gl.glLoadIdentity();
+			gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+			gl2.glPushMatrix();
+			gl2.glLoadIdentity();
 
-			gl.glMatrixMode( GL.GL_MODELVIEW );
-			gl.glPushMatrix();
-			gl.glLoadIdentity();
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+			gl2.glPushMatrix();
+			gl2.glLoadIdentity();
 
-			gl.glBegin( GL.GL_QUADS );
+			gl2.glBegin( GL2.GL_QUADS );
 			state.setColor( color0.getRedFloat(), color0.getGreenFloat(), color0.getBlueFloat(), color0.getAlphaFloat() );
-			gl.glVertex2d( -1.0, -1.0 );
+			gl2.glVertex2d( -1.0, -1.0 );
 			state.setColor( color1.getRedFloat(), color1.getGreenFloat(), color1.getBlueFloat(), color1.getAlphaFloat() );
-			gl.glVertex2d( 1.0, -1.0 );
+			gl2.glVertex2d( 1.0, -1.0 );
 			state.setColor( color2.getRedFloat(), color2.getGreenFloat(), color2.getBlueFloat(), color2.getAlphaFloat() );
-			gl.glVertex2d( 1.0, 1.0 );
+			gl2.glVertex2d( 1.0, 1.0 );
 			state.setColor( color3.getRedFloat(), color3.getGreenFloat(), color3.getBlueFloat(), color3.getAlphaFloat() );
-			gl.glVertex2d( -1.0, 1.0 );
-			gl.glEnd();
+			gl2.glVertex2d( -1.0, 1.0 );
+			gl2.glEnd();
 
-			gl.glPopMatrix();
-			gl.glMatrixMode( GL.GL_PROJECTION );
-			gl.glPopMatrix();
-			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl2.glPopMatrix();
+			gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+			gl2.glPopMatrix();
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 
 			state.setEnabled( GL.GL_DEPTH_TEST, true );
 			state.setEnabled( GL.GL_CULL_FACE, true );
@@ -877,16 +884,16 @@ public class JOGLRenderer
 				state.setEnabled( GL.GL_CULL_FACE, false );
 				state.setEnabled( GL.GL_DEPTH_TEST, false );
 
-				texture.enable();
-				texture.bind();
+				texture.enable( gl );
+				texture.bind( gl );
 
-				gl.glMatrixMode( GL.GL_PROJECTION );
-				gl.glPushMatrix();
-				gl.glLoadIdentity();
+				gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+				gl2.glPushMatrix();
+				gl2.glLoadIdentity();
 
-				gl.glMatrixMode( GL.GL_MODELVIEW );
-				gl.glPushMatrix();
-				gl.glLoadIdentity();
+				gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+				gl2.glPushMatrix();
+				gl2.glLoadIdentity();
 
 				final int[] viewport = new int[ 4 ];
 				gl.glGetIntegerv( GL.GL_VIEWPORT, viewport, 0 );
@@ -895,7 +902,7 @@ public class JOGLRenderer
 
 				final float viewAspect = (float)width / (float)height;
 				final float textureAspect = texture.getAspectRatio();
-				gl.glScalef( textureAspect, viewAspect, 1.0f );
+				gl2.glScalef( textureAspect, viewAspect, 1.0f );
 
 				final double xo = background.getCenterX();
 				final double yo = background.getCenterY();
@@ -906,23 +913,23 @@ public class JOGLRenderer
 				final double y2 = yo + 1.0;
 
 				state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
-				gl.glBegin( GL.GL_QUADS );
-				gl.glTexCoord2d( 0.0, 1.0 );
-				gl.glVertex2d( x1, y1 );
-				gl.glTexCoord2d( 1.0, 1.0 );
-				gl.glVertex2d( x2, y1 );
-				gl.glTexCoord2d( 1.0, 0.0 );
-				gl.glVertex2d( x2, y2 );
-				gl.glTexCoord2d( 0.0, 0.0 );
-				gl.glVertex2d( x1, y2 );
-				gl.glEnd();
+				gl2.glBegin( GL2.GL_QUADS );
+				gl2.glTexCoord2d( 0.0, 1.0 );
+				gl2.glVertex2d( x1, y1 );
+				gl2.glTexCoord2d( 1.0, 1.0 );
+				gl2.glVertex2d( x2, y1 );
+				gl2.glTexCoord2d( 1.0, 0.0 );
+				gl2.glVertex2d( x2, y2 );
+				gl2.glTexCoord2d( 0.0, 0.0 );
+				gl2.glVertex2d( x1, y2 );
+				gl2.glEnd();
 
-				gl.glPopMatrix();
-				gl.glMatrixMode( GL.GL_PROJECTION );
-				gl.glPopMatrix();
-				gl.glMatrixMode( GL.GL_MODELVIEW );
+				gl2.glPopMatrix();
+				gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+				gl2.glPopMatrix();
+				gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 
-				texture.disable();
+				texture.disable( gl );
 
 				state.setEnabled( GL.GL_DEPTH_TEST, true );
 				state.setEnabled( GL.GL_CULL_FACE, true );
@@ -944,7 +951,7 @@ public class JOGLRenderer
 		{
 			final Class<?> clazz = getClass();
 			final ClassLoader classLoader = clazz.getClassLoader();
-			final URL skyImageUrl = classLoader.getResource( "maps/reflect-sky-bw.jpg" );
+			final URL skyImageUrl = classLoader.getResource( "images/maps/reflect-sky-bw.jpg" );
 			if ( skyImageUrl != null )
 			{
 				try
@@ -968,35 +975,37 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_DEPTH_TEST, false );
 			state.setEnabled( GL.GL_CULL_FACE, false );
 
-			gl.glMatrixMode( GL.GL_MODELVIEW );
-			gl.glPushMatrix();
-			gl.glLoadIdentity();
+			final GL2 gl2 = gl.getGL2();
+
+			gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+			gl2.glPushMatrix();
+			gl2.glLoadIdentity();
 			JOGLTools.glMultMatrixd( gl, _sceneToViewRotation );
 
-			cubeMapTexture.bind();
-			cubeMapTexture.enable();
+			cubeMapTexture.bind( gl );
+			cubeMapTexture.enable( gl );
 
-			gl.glTexGeni( GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
-			gl.glTexGeni( GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
-			gl.glTexGeni( GL.GL_R, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
-			gl.glTexGenfv( GL.GL_S, GL.GL_OBJECT_PLANE, new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, 0 );
-			gl.glTexGenfv( GL.GL_T, GL.GL_OBJECT_PLANE, new float[] { 0.0f, 1.0f, 0.0f, 1.0f }, 0 );
-			gl.glTexGenfv( GL.GL_R, GL.GL_OBJECT_PLANE, new float[] { 0.0f, 0.0f, 1.0f, 1.0f }, 0 );
-			state.setEnabled( GL.GL_TEXTURE_GEN_S, true );
-			state.setEnabled( GL.GL_TEXTURE_GEN_T, true );
-			state.setEnabled( GL.GL_TEXTURE_GEN_R, true );
+			gl2.glTexGeni( GL2.GL_S, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
+			gl2.glTexGeni( GL2.GL_T, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
+			gl2.glTexGeni( GL2.GL_R, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
+			gl2.glTexGenfv( GL2.GL_S, GL2.GL_OBJECT_PLANE, new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, 0 );
+			gl2.glTexGenfv( GL2.GL_T, GL2.GL_OBJECT_PLANE, new float[] { 0.0f, 1.0f, 0.0f, 1.0f }, 0 );
+			gl2.glTexGenfv( GL2.GL_R, GL2.GL_OBJECT_PLANE, new float[] { 0.0f, 0.0f, 1.0f, 1.0f }, 0 );
+			state.setEnabled( GL2.GL_TEXTURE_GEN_S, true );
+			state.setEnabled( GL2.GL_TEXTURE_GEN_T, true );
+			state.setEnabled( GL2.GL_TEXTURE_GEN_R, true );
 
 			final GLUT glut = new GLUT();
 			state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
 			glut.glutSolidCube( 1000.0f );
 
-			state.setEnabled( GL.GL_TEXTURE_GEN_S, false );
-			state.setEnabled( GL.GL_TEXTURE_GEN_T, false );
-			state.setEnabled( GL.GL_TEXTURE_GEN_R, false );
+			state.setEnabled( GL2.GL_TEXTURE_GEN_S, false );
+			state.setEnabled( GL2.GL_TEXTURE_GEN_T, false );
+			state.setEnabled( GL2.GL_TEXTURE_GEN_R, false );
 
-			cubeMapTexture.disable();
+			cubeMapTexture.disable( gl );
 
-			gl.glPopMatrix();
+			gl2.glPopMatrix();
 
 			state.setEnabled( GL.GL_CULL_FACE, true );
 			state.setEnabled( GL.GL_DEPTH_TEST, true );
@@ -1111,7 +1120,7 @@ public class JOGLRenderer
 	private int getMaxLights()
 	{
 		final int[] maxLights = new int[ 1 ];
-		_gl.glGetIntegerv( GL.GL_MAX_LIGHTS, maxLights, 0 );
+		_gl.glGetIntegerv( GL2ES1.GL_MAX_LIGHTS, maxLights, 0 );
 		return maxLights[ 0 ];
 	}
 
@@ -1123,9 +1132,10 @@ public class JOGLRenderer
 	private void renderToViewport( final Texture texture )
 	{
 		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
 
-		texture.enable();
-		texture.bind();
+		texture.enable( gl );
+		texture.bind( gl );
 		toViewportSpace();
 
 		final TextureCoords textureCoords = texture.getImageTexCoords();
@@ -1136,19 +1146,19 @@ public class JOGLRenderer
 		final float top = textureCoords.top();
 
 		_state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
-		gl.glBegin( GL.GL_QUADS );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, bottom );
-		gl.glVertex2d( -1.0, -1.0 );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, bottom );
-		gl.glVertex2d( 1.0, -1.0 );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, top );
-		gl.glVertex2d( 1.0, 1.0 );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, top );
-		gl.glVertex2d( -1.0, 1.0 );
-		gl.glEnd();
+		gl2.glBegin( GL2.GL_QUADS );
+		gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, bottom );
+		gl2.glVertex2d( -1.0, -1.0 );
+		gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, bottom );
+		gl2.glVertex2d( 1.0, -1.0 );
+		gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, top );
+		gl2.glVertex2d( 1.0, 1.0 );
+		gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, top );
+		gl2.glVertex2d( -1.0, 1.0 );
+		gl2.glEnd();
 
 		fromViewportSpace();
-		texture.disable();
+		texture.disable( gl );
 	}
 
 	/**
@@ -1159,12 +1169,13 @@ public class JOGLRenderer
 	private void toViewportSpace()
 	{
 		final GL gl = _gl;
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
+		final GL2 gl2 = gl.getGL2();
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+		gl2.glPushMatrix();
+		gl2.glLoadIdentity();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glPushMatrix();
+		gl2.glLoadIdentity();
 	}
 
 	/**
@@ -1174,11 +1185,12 @@ public class JOGLRenderer
 	private void fromViewportSpace()
 	{
 		final GL gl = _gl;
-		gl.glMatrixMode( GL.GL_MODELVIEW );
-		gl.glPopMatrix();
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glPopMatrix();
-		gl.glMatrixMode( GL.GL_MODELVIEW );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
+		gl2.glPopMatrix();
+		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
+		gl2.glPopMatrix();
+		gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 	}
 
 	/**
@@ -1186,21 +1198,22 @@ public class JOGLRenderer
 	 * purposes.
 	 *
 	 * @param textures Texture to be rendered.
-	 * @param x        Horizontal position; {@code -1.0} for the left side of
-	 *                 the screen, {@code 1.0} for the right.
+	 * @param x        Horizontal position; <code>-1.0</code> for the left side of
+	 *                 the screen, <code>1.0</code> for the right.
 	 * @param blend    Whether the texture should be alpha-blended.
 	 */
 	private void displayTextures( final Texture[] textures, final double x, final boolean blend )
 	{
 		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
 
 		/*
 		 * Render one of the buffers to a small rectangle on screen.
 		 */
 		toViewportSpace();
 
-		gl.glPushAttrib( GL.GL_ALL_ATTRIB_BITS ); // Don't use state helper until after 'glPopAttrib'!
-		gl.glDisable( GL.GL_LIGHTING );
+		gl2.glPushAttrib( GL2.GL_ALL_ATTRIB_BITS ); // Don't use state helper until after 'glPopAttrib'!
+		gl.glDisable( GLLightingFunc.GL_LIGHTING );
 
 		if ( blend )
 		{
@@ -1217,8 +1230,8 @@ public class JOGLRenderer
 			final Texture texture = textures[ i ];
 
 			gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-			texture.enable();
-			texture.bind();
+			texture.enable( gl );
+			texture.bind( gl );
 
 			final double minX = x * 0.75 - 0.2;
 			final double maxX = minX + 0.4;
@@ -1232,19 +1245,19 @@ public class JOGLRenderer
 			final float right = textureCoords.right();
 			final float top = textureCoords.top();
 
-			gl.glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-			gl.glBegin( GL.GL_QUADS );
-			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, bottom );
-			gl.glVertex2d( minX, minY );
-			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, bottom );
-			gl.glVertex2d( maxX, minY );
-			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, top );
-			gl.glVertex2d( maxX, maxY );
-			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, top );
-			gl.glVertex2d( minX, maxY );
-			gl.glEnd();
+			gl2.glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+			gl2.glBegin( GL2.GL_QUADS );
+			gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, bottom );
+			gl2.glVertex2d( minX, minY );
+			gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, bottom );
+			gl2.glVertex2d( maxX, minY );
+			gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, top );
+			gl2.glVertex2d( maxX, maxY );
+			gl2.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, top );
+			gl2.glVertex2d( minX, maxY );
+			gl2.glEnd();
 		}
-		gl.glPopAttrib();
+		gl2.glPopAttrib();
 
 		fromViewportSpace();
 	}
@@ -1259,42 +1272,43 @@ public class JOGLRenderer
 	private void renderLight( final int lightNumber, final Light3D light, final Matrix3D light2world )
 	{
 		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
 
-		gl.glLightfv( lightNumber, GL.GL_AMBIENT, new float[] {
+		gl2.glLightfv( lightNumber, GLLightingFunc.GL_AMBIENT, new float[] {
 		0.0f, 0.0f, 0.0f, 1.0f
 		}, 0 );
-		gl.glLightfv( lightNumber, GL.GL_DIFFUSE, new float[] { light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue(), 1.0f }, 0 );
-		gl.glLightfv( lightNumber, GL.GL_SPECULAR, new float[] { light.getSpecularRed(), light.getSpecularGreen(), light.getSpecularBlue(), 1.0f }, 0 );
+		gl2.glLightfv( lightNumber, GLLightingFunc.GL_DIFFUSE, new float[] { light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue(), 1.0f }, 0 );
+		gl2.glLightfv( lightNumber, GLLightingFunc.GL_SPECULAR, new float[] { light.getSpecularRed(), light.getSpecularGreen(), light.getSpecularBlue(), 1.0f }, 0 );
 
 		if ( light instanceof DirectionalLight3D )
 		{
 			final DirectionalLight3D directional = (DirectionalLight3D)light;
 			final Vector3D direction = directional.getDirection();
-			gl.glLightfv( lightNumber, GL.GL_POSITION, new float[] { -(float)direction.x, -(float)direction.y, -(float)direction.z, 0.0f }, 0 );
-			gl.glLightf( lightNumber, GL.GL_CONSTANT_ATTENUATION, 1.0f );
-			gl.glLightf( lightNumber, GL.GL_LINEAR_ATTENUATION, 0.0f );
-			gl.glLightf( lightNumber, GL.GL_QUADRATIC_ATTENUATION, 0.0f );
+			gl2.glLightfv( lightNumber, GLLightingFunc.GL_POSITION, new float[] { -(float)direction.x, -(float)direction.y, -(float)direction.z, 0.0f }, 0 );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_CONSTANT_ATTENUATION, 1.0f );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_LINEAR_ATTENUATION, 0.0f );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_QUADRATIC_ATTENUATION, 0.0f );
 		}
 		else
 		{
-			gl.glLightfv( lightNumber, GL.GL_POSITION, new float[] { (float)light2world.xo, (float)light2world.yo, (float)light2world.zo, 1.0f }, 0 );
-			gl.glLightf( lightNumber, GL.GL_CONSTANT_ATTENUATION, light.getConstantAttenuation() );
-			gl.glLightf( lightNumber, GL.GL_LINEAR_ATTENUATION, light.getLinearAttenuation() );
-			gl.glLightf( lightNumber, GL.GL_QUADRATIC_ATTENUATION, light.getQuadraticAttenuation() );
+			gl2.glLightfv( lightNumber, GLLightingFunc.GL_POSITION, new float[] { (float)light2world.xo, (float)light2world.yo, (float)light2world.zo, 1.0f }, 0 );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_CONSTANT_ATTENUATION, light.getConstantAttenuation() );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_LINEAR_ATTENUATION, light.getLinearAttenuation() );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_QUADRATIC_ATTENUATION, light.getQuadraticAttenuation() );
 		}
 
 		if ( light instanceof SpotLight3D )
 		{
 			final SpotLight3D spot = (SpotLight3D)light;
 			final Vector3D direction = light2world.rotate( spot.getDirection() );
-			gl.glLightfv( lightNumber, GL.GL_SPOT_DIRECTION, new float[] { (float)direction.x, (float)direction.y, (float)direction.z }, 0 );
-			gl.glLightf( lightNumber, GL.GL_SPOT_CUTOFF, spot.getSpreadAngle() );
-			gl.glLightf( lightNumber, GL.GL_SPOT_EXPONENT, spot.getConcentration() );
+			gl2.glLightfv( lightNumber, GLLightingFunc.GL_SPOT_DIRECTION, new float[] { (float)direction.x, (float)direction.y, (float)direction.z }, 0 );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_SPOT_CUTOFF, spot.getSpreadAngle() );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_SPOT_EXPONENT, spot.getConcentration() );
 		}
 		else
 		{
-			gl.glLightf( lightNumber, GL.GL_SPOT_CUTOFF, 180.0f );
-			gl.glLightf( lightNumber, GL.GL_SPOT_EXPONENT, 0.0f );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_SPOT_CUTOFF, 180.0f );
+			gl2.glLightf( lightNumber, GLLightingFunc.GL_SPOT_EXPONENT, 0.0f );
 		}
 
 		_state.setEnabled( lightNumber, true );
@@ -1362,6 +1376,7 @@ public class JOGLRenderer
 			if ( appearance != null )
 			{
 				final GL gl = _gl;
+				final GL2 gl2 = gl.getGL2();
 				final MultiPassRenderMode renderMode = _renderMode;
 
 				/*
@@ -1404,7 +1419,7 @@ public class JOGLRenderer
 					}
 
 					state.setEnabled( GL.GL_BLEND, blend );
-					state.setEnabled( GL.GL_LIGHTING, hasLighting );
+					state.setEnabled( GLLightingFunc.GL_LIGHTING, hasLighting );
 					state.setAppearance( appearance, objectStyle, extraAlpha );
 
 					/*
@@ -1413,8 +1428,8 @@ public class JOGLRenderer
 					if ( bumpMap != null )
 					{
 						gl.glActiveTexture( TEXTURE_UNIT_BUMP );
-						bumpMap.enable();
-						bumpMap.bind();
+						bumpMap.enable( gl );
+						bumpMap.bind( gl );
 						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 					}
 
@@ -1425,46 +1440,46 @@ public class JOGLRenderer
 					if ( reflectionTexture != null )
 					{
 						gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
-						reflectionTexture.enable();
-						reflectionTexture.bind();
+						reflectionTexture.enable( gl );
+						reflectionTexture.bind( gl );
 
 						if ( !shaderManager.isShaderSupportAvailable() )
 						{
 							/*
 							 * Interpolate with previous texture stage.
 							 */
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_COMBINE );
 							final float reflectivity = ( appearance.getReflectionMin() + appearance.getReflectionMax() ) / 2.0f;
-							gl.glTexEnvfv( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_COLOR, new float[] { 0.0f, 0.0f, 0.0f, reflectivity }, 0 );
+							gl2.glTexEnvfv( GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_COLOR, new float[] { 0.0f, 0.0f, 0.0f, reflectivity }, 0 );
 
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_INTERPOLATE );
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB, GL.GL_TEXTURE );
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_RGB, GL.GL_PREVIOUS );
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE2_RGB, GL.GL_CONSTANT );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_COMBINE_RGB, GL2ES1.GL_INTERPOLATE );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2.GL_SOURCE0_RGB, GL.GL_TEXTURE );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2.GL_SOURCE1_RGB, GL2ES1.GL_PREVIOUS );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2.GL_SOURCE2_RGB, GL2ES1.GL_CONSTANT );
 
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_ALPHA, GL.GL_INTERPOLATE );
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_ALPHA, GL.GL_TEXTURE );
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_ALPHA, GL.GL_PREVIOUS );
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE2_ALPHA, GL.GL_CONSTANT );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_COMBINE_ALPHA, GL2ES1.GL_INTERPOLATE );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2.GL_SOURCE0_ALPHA, GL.GL_TEXTURE );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2.GL_SOURCE1_ALPHA, GL2ES1.GL_PREVIOUS );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2.GL_SOURCE2_ALPHA, GL2ES1.GL_CONSTANT );
 
 							/*
 							 * Generate reflection map UV coordinates.
 							 */
-							gl.glTexGeni( GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
-							gl.glTexGeni( GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
-							gl.glTexGeni( GL.GL_R, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
-							state.setEnabled( GL.GL_TEXTURE_GEN_S, true );
-							state.setEnabled( GL.GL_TEXTURE_GEN_T, true );
-							state.setEnabled( GL.GL_TEXTURE_GEN_R, true );
+							gl2.glTexGeni( GL2.GL_S, GL2ES1.GL_TEXTURE_GEN_MODE, GL2ES1.GL_REFLECTION_MAP );
+							gl2.glTexGeni( GL2.GL_T, GL2ES1.GL_TEXTURE_GEN_MODE, GL2ES1.GL_REFLECTION_MAP );
+							gl2.glTexGeni( GL2.GL_R, GL2ES1.GL_TEXTURE_GEN_MODE, GL2ES1.GL_REFLECTION_MAP );
+							state.setEnabled( GL2.GL_TEXTURE_GEN_S, true );
+							state.setEnabled( GL2.GL_TEXTURE_GEN_T, true );
+							state.setEnabled( GL2.GL_TEXTURE_GEN_R, true );
 						}
 
 						/*
 						 * Inverse camera rotation.
 						 */
-						gl.glMatrixMode( GL.GL_TEXTURE );
-						gl.glPushMatrix();
+						gl2.glMatrixMode( GL.GL_TEXTURE );
+						gl2.glPushMatrix();
 						JOGLTools.glMultMatrixd( gl, _viewToSceneRotation );
-						gl.glMatrixMode( GL.GL_MODELVIEW );
+						gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 
 						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 					}
@@ -1474,8 +1489,8 @@ public class JOGLRenderer
 					 */
 					if ( colorMap != null )
 					{
-						colorMap.enable();
-						colorMap.bind();
+						colorMap.enable( gl );
+						colorMap.bind( gl );
 					}
 
 					if ( shaderManager != null )
@@ -1497,7 +1512,7 @@ public class JOGLRenderer
 					for ( final Node3DPath path : paths )
 					{
 						final Matrix3D object2world = path.getTransform();
-						gl.glPushMatrix();
+						gl2.glPushMatrix();
 						JOGLTools.glMultMatrixd( gl, object2world );
 						geometryObject.draw();
 
@@ -1506,7 +1521,7 @@ public class JOGLRenderer
 							renderFaceNormals( faceGroup.getFaces() );
 						}
 
-						gl.glPopMatrix();
+						gl2.glPopMatrix();
 					}
 
 					/*
@@ -1514,7 +1529,7 @@ public class JOGLRenderer
 					 */
 					if ( colorMap != null )
 					{
-						colorMap.disable();
+						colorMap.disable( gl );
 					}
 
 					/*
@@ -1523,7 +1538,7 @@ public class JOGLRenderer
 					if ( bumpMap != null )
 					{
 						gl.glActiveTexture( TEXTURE_UNIT_BUMP );
-						bumpMap.disable();
+						bumpMap.disable( gl );
 						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 					}
 
@@ -1534,20 +1549,20 @@ public class JOGLRenderer
 					{
 						gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
 
-						gl.glMatrixMode( GL.GL_TEXTURE );
-						gl.glPopMatrix();
-						gl.glMatrixMode( GL.GL_MODELVIEW );
+						gl2.glMatrixMode( GL.GL_TEXTURE );
+						gl2.glPopMatrix();
+						gl2.glMatrixMode( GLMatrixFunc.GL_MODELVIEW );
 
 						if ( !shaderManager.isShaderSupportAvailable() )
 						{
-							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE );
+							gl2.glTexEnvi( GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE );
 
-							state.setEnabled( GL.GL_TEXTURE_GEN_S, false );
-							state.setEnabled( GL.GL_TEXTURE_GEN_T, false );
-							state.setEnabled( GL.GL_TEXTURE_GEN_R, false );
+							state.setEnabled( GL2.GL_TEXTURE_GEN_S, false );
+							state.setEnabled( GL2.GL_TEXTURE_GEN_T, false );
+							state.setEnabled( GL2.GL_TEXTURE_GEN_R, false );
 						}
 
-						reflectionTexture.disable();
+						reflectionTexture.disable( gl );
 
 						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 					}
@@ -1606,7 +1621,7 @@ public class JOGLRenderer
 				}
 
 				state.setEnabled( GL.GL_BLEND, blend );
-				state.setEnabled( GL.GL_LIGHTING, hasLighting );
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, hasLighting );
 
 				state.setColor( color.getRedFloat(), color.getGreenFloat(), color.getBlueFloat(), alpha );
 				final ShaderManager shaderManager = _shaderManager;
@@ -1617,6 +1632,7 @@ public class JOGLRenderer
 				/*
 				 * Render faces.
 				 */
+				final GL2 gl2 = gl.getGL2();
 				for ( final FaceGroup faceGroup : object.getFaceGroups() )
 				{
 					state.setEnabled( GL.GL_CULL_FACE, objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided() );
@@ -1625,10 +1641,10 @@ public class JOGLRenderer
 					for ( final Node3DPath path : paths )
 					{
 						final Matrix3D object2world = path.getTransform();
-						gl.glPushMatrix();
+						gl2.glPushMatrix();
 						JOGLTools.glMultMatrixd( gl, object2world );
 						geometryObject.draw();
-						gl.glPopMatrix();
+						gl2.glPopMatrix();
 					}
 				}
 
@@ -1671,7 +1687,7 @@ public class JOGLRenderer
 
 		final GLStateHelper state = _state;
 		state.setEnabled( GL.GL_BLEND, false );
-		state.setEnabled( GL.GL_LIGHTING, hasLighting );
+		state.setEnabled( GLLightingFunc.GL_LIGHTING, hasLighting );
 		state.setColor( color );
 
 		gl.glLineWidth( width );
@@ -1681,6 +1697,7 @@ public class JOGLRenderer
 		shaderManager.setTextureEnabled( false );
 		shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 
+		final GL2 gl2 = gl.getGL2();
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
 			// FIXME: Backface culling doesn't work on vertices. Do it ourselves? (Shader?)
@@ -1690,10 +1707,10 @@ public class JOGLRenderer
 			for ( final Node3DPath path : paths )
 			{
 				final Matrix3D object2world = path.getTransform();
-				gl.glPushMatrix();
+				gl2.glPushMatrix();
 				JOGLTools.glMultMatrixd( gl, object2world );
 				geometryObject.draw();
-				gl.glPopMatrix();
+				gl2.glPopMatrix();
 			}
 		}
 
@@ -1724,7 +1741,7 @@ public class JOGLRenderer
 
 		final GLStateHelper state = _state;
 		state.setEnabled( GL.GL_BLEND, false );
-		state.setEnabled( GL.GL_LIGHTING, hasLighting );
+		state.setEnabled( GLLightingFunc.GL_LIGHTING, hasLighting );
 		state.setColor( objectStyle.getVertexColor() );
 
 		final ShaderManager shaderManager = _shaderManager;
@@ -1732,6 +1749,7 @@ public class JOGLRenderer
 		shaderManager.setTextureEnabled( false );
 		shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 
+		final GL2 gl2 = gl.getGL2();
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
 			// FIXME: Backface culling doesn't work on vertices. Do it ourselves? (Shader?)
@@ -1741,10 +1759,10 @@ public class JOGLRenderer
 			for ( final Node3DPath path : paths )
 			{
 				final Matrix3D object2world = path.getTransform();
-				gl.glPushMatrix();
+				gl2.glPushMatrix();
 				JOGLTools.glMultMatrixd( gl, object2world );
 				geometryObject.draw();
-				gl.glPopMatrix();
+				gl2.glPopMatrix();
 			}
 		}
 
@@ -1762,7 +1780,8 @@ public class JOGLRenderer
 	private void renderFaceNormals( @NotNull final Collection<Face3D> faces )
 	{
 		final GL gl = _gl;
-		gl.glBegin( GL.GL_LINES );
+		final GL2 gl2 = gl.getGL2();
+		gl2.glBegin( GL.GL_LINES );
 
 		for ( final Face3D face : faces )
 		{
@@ -1782,8 +1801,8 @@ public class JOGLRenderer
 				z += point.z;
 
 				final Vector3D vertexNormal = face.getVertexNormal( i );
-				gl.glVertex3d( point.x, point.y, point.z );
-				gl.glVertex3d( point.x + scale * vertexNormal.x, point.y + scale * vertexNormal.y, point.z + scale * vertexNormal.z );
+				gl2.glVertex3d( point.x, point.y, point.z );
+				gl2.glVertex3d( point.x + scale * vertexNormal.x, point.y + scale * vertexNormal.y, point.z + scale * vertexNormal.z );
 			}
 
 			/*
@@ -1793,11 +1812,11 @@ public class JOGLRenderer
 			y /= (double)face.getVertexCount();
 			z /= (double)face.getVertexCount();
 
-			gl.glVertex3d( x, y, z );
-			gl.glVertex3d( x + scale * normal.x, y + scale * normal.y, z + scale * normal.z );
+			gl2.glVertex3d( x, y, z );
+			gl2.glVertex3d( x + scale * normal.x, y + scale * normal.y, z + scale * normal.z );
 		}
 
-		gl.glEnd();
+		gl2.glEnd();
 	}
 
 	/**
@@ -1809,15 +1828,16 @@ public class JOGLRenderer
 	private void renderGrid( @NotNull final Grid grid )
 	{
 		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
 		final GLStateHelper state = _state;
 
-		gl.glPushMatrix();
+		gl2.glPushMatrix();
 		JOGLTools.glMultMatrixd( gl, grid.getGrid2wcs() );
 
 		state.setEnabled( GL.GL_BLEND, true );
 		state.setBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
 		state.setEnabled( GL.GL_LINE_SMOOTH, true );
-		state.setEnabled( GL.GL_LIGHTING, false );
+		state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
 
 		final int minCellX = grid.getMinimumX();
 		final int maxCellX = grid.getMaximumX();
@@ -1835,14 +1855,14 @@ public class JOGLRenderer
 
 		gl.glLineWidth( 1.0f );
 		state.setColor( 0.75f, 0.75f, 0.75f, 1.0f );
-		gl.glBegin( GL.GL_LINES );
+		gl2.glBegin( GL.GL_LINES );
 
 		for ( int x = minCellX; x <= maxCellX; x++ )
 		{
 			if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
 			{
-				gl.glVertex3i( x * cellSize, minY, 0 );
-				gl.glVertex3i( x * cellSize, maxY, 0 );
+				gl2.glVertex3i( x * cellSize, minY, 0 );
+				gl2.glVertex3i( x * cellSize, maxY, 0 );
 			}
 		}
 
@@ -1850,12 +1870,12 @@ public class JOGLRenderer
 		{
 			if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
 			{
-				gl.glVertex3i( minX, y * cellSize, 0 );
-				gl.glVertex3i( maxX, y * cellSize, 0 );
+				gl2.glVertex3i( minX, y * cellSize, 0 );
+				gl2.glVertex3i( maxX, y * cellSize, 0 );
 			}
 		}
 
-		gl.glEnd();
+		gl2.glEnd();
 
 		if ( highlightInterval > 1 )
 		{
@@ -1871,14 +1891,14 @@ public class JOGLRenderer
 			{
 				gl.glLineWidth( 1.5f );
 				state.setColor( 0.5f, 0.5f, 0.5f, 1.0f );
-				gl.glBegin( GL.GL_LINES );
+				gl2.glBegin( GL.GL_LINES );
 
 				for ( int x = highlightMinX; x <= highLightMaxX; x += highlightInterval )
 				{
 					if ( !hightlightAxes || ( x != 0 ) )
 					{
-						gl.glVertex3i( x * cellSize, minY, 0 );
-						gl.glVertex3i( x * cellSize, maxY, 0 );
+						gl2.glVertex3i( x * cellSize, minY, 0 );
+						gl2.glVertex3i( x * cellSize, maxY, 0 );
 					}
 				}
 
@@ -1886,12 +1906,12 @@ public class JOGLRenderer
 				{
 					if ( !hightlightAxes || ( y != 0 ) )
 					{
-						gl.glVertex3i( minX, y * cellSize, 0 );
-						gl.glVertex3i( maxX, y * cellSize, 0 );
+						gl2.glVertex3i( minX, y * cellSize, 0 );
+						gl2.glVertex3i( maxX, y * cellSize, 0 );
 					}
 				}
 
-				gl.glEnd();
+				gl2.glEnd();
 			}
 		}
 
@@ -1904,25 +1924,25 @@ public class JOGLRenderer
 			{
 				gl.glLineWidth( 2.0f );
 				state.setColor( 0.1f, 0.1f, 0.1f, 1.0f );
-				gl.glBegin( GL.GL_LINES );
+				gl2.glBegin( GL.GL_LINES );
 
 				if ( hasXaxis )
 				{
-					gl.glVertex3i( minX, 0, 0 );
-					gl.glVertex3i( maxX, 0, 0 );
+					gl2.glVertex3i( minX, 0, 0 );
+					gl2.glVertex3i( maxX, 0, 0 );
 				}
 
 				if ( hasYaxis )
 				{
-					gl.glVertex3i( 0, minY, 0 );
-					gl.glVertex3i( 0, maxY, 0 );
+					gl2.glVertex3i( 0, minY, 0 );
+					gl2.glVertex3i( 0, maxY, 0 );
 				}
 
-				gl.glEnd();
+				gl2.glEnd();
 			}
 		}
 
-		gl.glPopMatrix();
+		gl2.glPopMatrix();
 	}
 
 	/**

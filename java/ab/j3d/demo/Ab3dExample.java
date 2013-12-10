@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,21 +15,18 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.demo;
 
 import java.awt.*;
 
 import ab.j3d.awt.view.java2d.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.view.*;
 
 /**
  * Utility class for AsoBrain 3D demo applications.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class Ab3dExample
 {
@@ -62,15 +58,15 @@ public class Ab3dExample
 		}
 		else if ( "safe".equals( engineName ) )
 		{
-			engine = new JOGLEngine( JOGLConfiguration.createSafeInstance() );
+			engine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createSafeInstance() );
 		}
 		else if ( "luscious".equals( engineName ) )
 		{
-			engine = new JOGLEngine( JOGLConfiguration.createLusciousInstance() );
+			engine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createLusciousInstance() );
 		}
 		else /* default */
 		{
-			engine = new JOGLEngine( JOGLConfiguration.createDefaultInstance() );
+			engine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createDefaultInstance() );
 		}
 
 		return engine;

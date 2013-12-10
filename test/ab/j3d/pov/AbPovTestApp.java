@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
@@ -26,7 +24,6 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.view.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
@@ -42,7 +39,6 @@ import ab.j3d.view.*;
  * @see     AbPovTestModel
  *
  * @author  Rob Veneberg
- * @version $Revision$ $Date$
  */
 class AbPovTestApp
 {
@@ -53,8 +49,7 @@ class AbPovTestApp
 
 	/**
 	 * An object of type {@link AbPovTestModel} is constructed, the objects are
-	 * retrieved and a view is created and added to a frame. The
-	 * {@link JOGLEngine} is used here.
+	 * retrieved and a view is created and added to a frame.
 	 *
 	 * @param args Command-line arguments.
 	 */
@@ -86,7 +81,7 @@ class AbPovTestApp
 		/*
 		 * Create Java3D-engine.
 		 */
-		final RenderEngine renderEngine = new JOGLEngine();
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
 
 		/*
 		 * Create and display view.

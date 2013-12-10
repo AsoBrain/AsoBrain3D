@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2013 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.example;
 
@@ -29,7 +27,6 @@ import javax.swing.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.view.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.loader.*;
@@ -40,7 +37,6 @@ import ab.j3d.view.*;
  * This application provides an example for  the {@link Object3DSlicer} class.
  *
  * @author Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class Object3DSlicerExample
 {
@@ -282,7 +278,7 @@ public class Object3DSlicerExample
 		configuration.setPerPixelLightingEnabled( true );
 		configuration.setVertexBufferObjectsEnabled( true );
 
-		final RenderEngine renderEngine = new JOGLEngine( configuration );
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( configuration );
 
 		final View3D view = renderEngine.createView( _scene );
 		view.setRenderingPolicy( RenderingPolicy.SKETCH );

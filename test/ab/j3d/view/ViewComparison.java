@@ -29,7 +29,6 @@ import javax.swing.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
-import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -40,7 +39,6 @@ import ab.j3d.pov.*;
  * for comparison purposes.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class ViewComparison
 implements Runnable
@@ -182,7 +180,7 @@ implements Runnable
 	private static Collection<RenderEngine> createRenderEngines( final Scene scene )
 	{
 		final Collection<RenderEngine> models = new ArrayList<RenderEngine>();
-		models.add( new JOGLEngine() );
+		models.add( RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() ) );
 //		models.add( new Java3dEngine( scene, Color.GRAY ) );
 		return models;
 	}
