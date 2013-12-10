@@ -7,11 +7,11 @@
 	<property name="build.sysclasspath" value="ignore"/>
 
 	<include file="build-pack200.xml"/>
-	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpath="${maven.ant.tasks}" />
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpath="${maven.ant.tasks}"/>
 
 	<target name="clean" depends="init" description="Remove temporary build files">
 		<delete dir="classes"/>
-		<delete dir="lib" includes="*.jar"/>
+		<delete dir="lib"/>
 		<delete dir="test-report"/>
 		<delete file="ab3d-test.jar"/>
 	</target>
@@ -27,6 +27,28 @@
 			<fileset dir="classes/java"/>
 			<fileset dir="images"/>
 		</jar>
+		<jar destfile="lib/ab3d-rt-java2d.jar">
+			<manifest>
+				<attribute name="Application-Name" value="AsoBrain 3D Library"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<fileset dir="classes/java">
+				<include name="ab/xml/**"/>
+				<include name="ab/j3d/*"/>
+				<include name="ab/j3d/appearance/*"/>
+				<include name="ab/j3d/awt/*"/>
+				<include name="ab/j3d/awt/view/*"/>
+				<include name="ab/j3d/awt/view/java2d/*"/>
+				<include name="ab/j3d/control/**"/>
+				<include name="ab/j3d/geom/**"/>
+				<include name="ab/j3d/loader/**"/>
+				<include name="ab/j3d/model/**"/>
+				<include name="ab/j3d/pov/**"/>
+				<include name="ab/j3d/view/**"/>
+			</fileset>
+		</jar>
+
 		<jar destfile="lib/ab3d-rt-jogl1.jar">
 			<manifest>
 				<attribute name="Application-Name" value="AsoBrain 3D Library"/>
@@ -40,7 +62,6 @@
 				<include name="ab/j3d/awt/*"/>
 				<include name="ab/j3d/awt/view/*"/>
 				<include name="ab/j3d/awt/view/java2d/*"/>
-				<include name="ab/j3d/awt/view/jogl/*"/>
 				<include name="ab/j3d/control/**"/>
 				<include name="ab/j3d/geom/**"/>
 				<include name="ab/j3d/loader/**"/>
@@ -48,15 +69,242 @@
 				<include name="ab/j3d/pov/**"/>
 				<include name="ab/j3d/view/**"/>
 			</fileset>
-			<zipfileset src="lib/jogl1/gluegen-rt.jar" excludes="META-INF/**"/>
-			<zipfileset src="lib/jogl1/jogl.jar" excludes="META-INF/**"/>
+			<zipfileset src="${jogl1.gluegen-rt.jar}" excludes="META-INF/**"/>
+			<zipfileset src="${jogl1.jar}" excludes="META-INF/**"/>
+			<fileset dir="classes/jogl1/java"/>
 		</jar>
 
-		<maven:install file="lib/ab3d.jar">
-			<maven:pom file="pom.xml" />
-		</maven:install>
+		<jar destfile="lib/jogl1-natives-linux-amd64.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 1 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<mappedresources>
+				<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-linux-amd64.zip" includes="**/*.so"/>
+				<flattenmapper/>
+			</mappedresources>
+		</jar>
+
+		<jar destfile="lib/jogl1-natives-linux-i586.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 1 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<mappedresources>
+				<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-linux-i586.zip" includes="**/*.so"/>
+				<flattenmapper/>
+			</mappedresources>
+		</jar>
+
+		<jar destfile="lib/jogl1-natives-macosx-ppc.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 1 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<mappedresources>
+				<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-macosx-ppc.zip" includes="**/*.jnilib"/>
+				<flattenmapper/>
+			</mappedresources>
+		</jar>
+
+		<jar destfile="lib/jogl1-natives-macosx-universal.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 1 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<mappedresources>
+				<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-macosx-universal.zip" includes="**/*.jnilib"/>
+				<flattenmapper/>
+			</mappedresources>
+		</jar>
+		<!--
+				<jar destfile="lib/jogl1-natives-solaris-amd64.jar">
+					<manifest>
+						<attribute name="Application-Name" value="JOGL 1 natives"/>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
+					<mappedresources>
+						<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-solaris-amd64.zip" includes="**/*.jnilib"/>
+						<flattenmapper/>
+					</mappedresources>
+				</jar>
+
+				<jar destfile="lib/jogl1-natives-solaris-i586.jar">
+					<manifest>
+						<attribute name="Application-Name" value="JOGL 1 natives"/>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
+					<mappedresources>
+						<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-solaris-i586.zip" includes="**/*.jnilib"/>
+						<flattenmapper/>
+					</mappedresources>
+				</jar>
+
+				<jar destfile="lib/jogl1-natives-solaris-sparc.jar">
+					<manifest>
+						<attribute name="Application-Name" value="JOGL 1 natives"/>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
+					<mappedresources>
+						<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-solaris-sparc.zip" includes="**/*.jnilib"/>
+						<flattenmapper/>
+					</mappedresources>
+				</jar>
+
+				<jar destfile="lib/jogl1-natives-solaris-sparcv9.jar">
+					<manifest>
+						<attribute name="Application-Name" value="JOGL 1 natives"/>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
+					<mappedresources>
+						<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-solaris-sparcv9.zip" includes="**/*.jnilib"/>
+						<flattenmapper/>
+					</mappedresources>
+				</jar>
+		-->
+		<jar destfile="lib/jogl1-natives-windows-amd64.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 1 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<mappedresources>
+				<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-windows-amd64.zip" includes="**/*.dll"/>
+				<flattenmapper/>
+			</mappedresources>
+		</jar>
+
+		<jar destfile="lib/jogl1-natives-windows-i586.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 1 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<mappedresources>
+				<zipfileset src="${apis.home}/jogl/jogl-${jogl1.version}-windows-i586.zip" includes="**/*.dll"/>
+				<flattenmapper/>
+			</mappedresources>
+		</jar>
+
+		<jar destfile="lib/ab3d-rt-jogl2.jar">
+			<manifest>
+				<attribute name="Application-Name" value="AsoBrain 3D Library"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<fileset dir="classes/java">
+				<include name="ab/xml/**"/>
+				<include name="ab/j3d/*"/>
+				<include name="ab/j3d/appearance/*"/>
+				<include name="ab/j3d/awt/*"/>
+				<include name="ab/j3d/awt/view/*"/>
+				<include name="ab/j3d/awt/view/java2d/*"/>
+				<include name="ab/j3d/control/**"/>
+				<include name="ab/j3d/geom/**"/>
+				<include name="ab/j3d/loader/**"/>
+				<include name="ab/j3d/model/**"/>
+				<include name="ab/j3d/pov/**"/>
+				<include name="ab/j3d/view/**"/>
+			</fileset>
+			<fileset dir="classes/jogl2/java"/>
+			<zipfileset src="${jogl2.gluegen-rt.jar}" excludes="META-INF/**"/>
+			<zipfileset src="${jogl2.jar}" excludes="META-INF/**"/>
+		</jar>
+
+		<jar destfile="lib/jogl2-natives-linux-amd64.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 2 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-linux-amd64.jar" excludes="META-INF/**"/>
+			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-amd64.jar" excludes="META-INF/**"/>
+		</jar>
+		<!--
+				<jar destfile="lib/jogl2-natives-linux-armv6.jar">
+					<manifest>
+						<attribute name="Application-Name" value="JOGL 2 natives"/>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
+					<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-linux-armv6.jar" excludes="META-INF/**"/>
+					<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-armv6.jar" excludes="META-INF/**"/>
+				</jar>
+
+				<jar destfile="lib/jogl2-natives-linux-armv6hf.jar">
+					<manifest>
+						<attribute name="Application-Name" value="JOGL 2 natives"/>
+						<attribute name="Permissions" value="all-permissions"/>
+						<attribute name="Codebase" value="*"/>
+					</manifest>
+					<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-linux-armv6hf.jar" excludes="META-INF/**"/>
+					<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-armv6hf.jar" excludes="META-INF/**"/>
+				</jar>
+		-->
+		<jar destfile="lib/jogl2-natives-linux-i586.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 2 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-linux-i586.jar" excludes="META-INF/**"/>
+			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-i586.jar" excludes="META-INF/**"/>
+		</jar>
+
+		<jar destfile="lib/jogl2-natives-macosx-universal.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 2 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-macosx-universal.jar" excludes="META-INF/**"/>
+			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-macosx-universal.jar" excludes="META-INF/**"/>
+		</jar>
+
+		<jar destfile="lib/jogl2-natives-windows-amd64.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 2 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-windows-amd64.jar" excludes="META-INF/**"/>
+			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-windows-amd64.jar" excludes="META-INF/**"/>
+		</jar>
+
+		<jar destfile="lib/jogl2-natives-windows-i586.jar">
+			<manifest>
+				<attribute name="Application-Name" value="JOGL 2 natives"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<zipfileset src="${jogl2.home}/jar/gluegen-rt-natives-windows-i586.jar" excludes="META-INF/**"/>
+			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-windows-i586.jar" excludes="META-INF/**"/>
+		</jar>
+
+		<jar destfile="lib/ab3d-demos.jar">
+			<manifest>
+				<attribute name="Application-Name" value="AsoBrain 3D Demos"/>
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+			</manifest>
+			<fileset dir="classes/java">
+				<include name="ab/j3d/demo/**"/>
+			</fileset>
+		</jar>
 
 		<jar destfile="ab3d-test.jar" basedir="classes/test"/>
+
+		<maven:install file="lib/ab3d.jar">
+			<maven:pom file="pom.xml"/>
+		</maven:install>
 	</target>
 
 	<target name="jars.uptodate.check" depends="compile-java,compile-tests">
@@ -69,8 +317,17 @@
 				</uptodate>
 				<uptodate>
 					<srcfiles dir="classes/java"/>
-					<srcfiles dir="lib/jogl1"/>
+					<mapper type="merge" to="${basedir}/lib/ab3d-rt-java2d.jar"/>
+				</uptodate>
+				<uptodate>
+					<srcfiles dir="classes/java"/>
+					<srcfiles dir="classes/jogl1/java"/>
 					<mapper type="merge" to="${basedir}/lib/ab3d-rt-jogl1.jar"/>
+				</uptodate>
+				<uptodate>
+					<srcfiles dir="classes/java"/>
+					<srcfiles dir="classes/jogl2/java"/>
+					<mapper type="merge" to="${basedir}/lib/ab3d-rt-jogl2.jar"/>
 				</uptodate>
 				<uptodate>
 					<srcfiles dir="." includes="classes/test/**"/>
@@ -82,14 +339,74 @@
 
 	<target name="release" depends="build,pack200.uptodate.check" unless="pack200.uptodate" description="Build release">
 		<repack200 jar="lib/ab3d.jar"/>
+		<repack200 jar="lib/ab3d-rt-java2d.jar"/>
 		<repack200 jar="lib/ab3d-rt-jogl1.jar"/>
+		<repack200 jar="lib/jogl1-natives-linux-amd64.jar"/>
+		<repack200 jar="lib/jogl1-natives-linux-i586.jar"/>
+		<repack200 jar="lib/jogl1-natives-macosx-ppc.jar"/>
+		<repack200 jar="lib/jogl1-natives-macosx-universal.jar"/>
+		<!--<repack200 jar="lib/jogl1-natives-solaris-amd64.jar"/>-->
+		<!--<repack200 jar="lib/jogl1-natives-solaris-i586.jar"/>-->
+		<!--<repack200 jar="lib/jogl1-natives-solaris-sparc.jar"/>-->
+		<!--<repack200 jar="lib/jogl1-natives-solaris-sparcv9.jar"/>-->
+		<repack200 jar="lib/jogl1-natives-windows-amd64.jar"/>
+		<repack200 jar="lib/jogl1-natives-windows-i586.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl2.jar"/>
+		<repack200 jar="lib/jogl2-natives-linux-amd64.jar"/>
+		<!--<repack200 jar="lib/jogl2-natives-linux-armv6.jar"/>-->
+		<!--<repack200 jar="lib/jogl2-natives-linux-armv6hf.jar"/>-->
+		<repack200 jar="lib/jogl2-natives-linux-i586.jar"/>
+		<repack200 jar="lib/jogl2-natives-macosx-universal.jar"/>
+		<repack200 jar="lib/jogl2-natives-windows-amd64.jar"/>
+		<repack200 jar="lib/jogl2-natives-windows-i586.jar"/>
+		<repack200 jar="lib/ab3d-demos.jar"/>
 		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
 			<fileset file="lib/ab3d.jar"/>
+			<fileset file="lib/ab3d-rt-java2d.jar"/>
 			<fileset file="lib/ab3d-rt-jogl1.jar"/>
+			<fileset file="lib/jogl1-natives-linux-amd64.jar"/>
+			<fileset file="lib/jogl1-natives-linux-i586.jar"/>
+			<fileset file="lib/jogl1-natives-macosx-ppc.jar"/>
+			<fileset file="lib/jogl1-natives-macosx-universal.jar"/>
+			<!--<fileset file="lib/jogl1-natives-solaris-amd64.jar"/>-->
+			<!--<fileset file="lib/jogl1-natives-solaris-i586.jar"/>-->
+			<!--<fileset file="lib/jogl1-natives-solaris-sparc.jar"/>-->
+			<!--<fileset file="lib/jogl1-natives-solaris-sparcv9.jar"/>-->
+			<fileset file="lib/jogl1-natives-windows-amd64.jar"/>
+			<fileset file="lib/jogl1-natives-windows-i586.jar"/>
+			<fileset file="lib/ab3d-rt-jogl2.jar"/>
+			<fileset file="lib/jogl2-natives-linux-amd64.jar"/>
+			<!--<fileset file="lib/jogl2-natives-linux-armv6.jar"/>-->
+			<!--<fileset file="lib/jogl2-natives-linux-armv6hf.jar"/>-->
+			<fileset file="lib/jogl2-natives-linux-i586.jar"/>
+			<fileset file="lib/jogl2-natives-macosx-universal.jar"/>
+			<fileset file="lib/jogl2-natives-windows-amd64.jar"/>
+			<fileset file="lib/jogl2-natives-windows-i586.jar"/>
+			<fileset file="lib/ab3d-demos.jar"/>
 			<fileset file="ab3d-test.jar"/>
 		</signjar>
 		<pack200 jar="lib/ab3d.jar"/>
+		<pack200 jar="lib/ab3d-rt-java2d.jar"/>
 		<pack200 jar="lib/ab3d-rt-jogl1.jar"/>
+		<pack200 jar="lib/jogl1-natives-linux-amd64.jar"/>
+		<pack200 jar="lib/jogl1-natives-linux-i586.jar"/>
+		<pack200 jar="lib/jogl1-natives-macosx-ppc.jar"/>
+		<pack200 jar="lib/jogl1-natives-macosx-universal.jar"/>
+		<!--<pack200 jar="lib/jogl1-natives-solaris-amd64.jar"/>-->
+		<!--<pack200 jar="lib/jogl1-natives-solaris-i586.jar"/>-->
+		<!--<pack200 jar="lib/jogl1-natives-solaris-sparc.jar"/>-->
+		<!--<pack200 jar="lib/jogl1-natives-solaris-sparcv9.jar"/>-->
+		<pack200 jar="lib/jogl1-natives-windows-amd64.jar"/>
+		<pack200 jar="lib/jogl1-natives-windows-i586.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl2.jar"/>
+		<pack200 jar="lib/jogl2-natives-linux-amd64.jar"/>
+		<!--<pack200 jar="lib/jogl2-natives-linux-armv6.jar"/>-->
+		<!--<pack200 jar="lib/jogl2-natives-linux-armv6hf.jar"/>-->
+		<pack200 jar="lib/jogl2-natives-linux-i586.jar"/>
+		<pack200 jar="lib/jogl2-natives-macosx-universal.jar"/>
+		<pack200 jar="lib/jogl2-natives-windows-amd64.jar"/>
+		<pack200 jar="lib/jogl2-natives-windows-i586.jar"/>
+		<pack200 jar="lib/ab3d-demos.jar"/>
 	</target>
 
 	<target name="pack200.uptodate.check" depends="build">
@@ -103,14 +420,16 @@
 		<echo message="Project: ${ant.project.name}"/>
 		<tstamp/>
 		<available property="api.jetbrains.annotations" type="file" file="${jetbrains-annotations.jar}"/>
-		<available property="api.jogl" type="file" file="lib/jogl1/jogl.jar"/>
+		<available property="api.jogl1" type="file" file="${jogl1.jar}"/>
+		<available property="api.jogl2" type="file" file="${jogl2.jar}"/>
 		<available property="api.junit" type="file" file="${junit.jar}"/>
 		<available property="api.kxml" type="file" file="${kxml.jar}"/>
 	</target>
 
 	<target name="api-check" depends="init" description="Pre-compilation initialization">
 		<fail unless="api.jetbrains.annotations" message="Please check 'JetBrains annotations' library presence and 'build.properties' file."/>
-		<fail unless="api.jogl" message="Please check 'JOGL' library presence and 'build.properties' file."/>
+		<fail unless="api.jogl1" message="Please check 'JOGL 1' library presence and 'build.properties' file."/>
+		<fail unless="api.jogl2" message="Please check 'JOGL 2' library presence and 'build.properties' file."/>
 		<fail unless="api.junit" message="Please check 'JUnit' library presence and 'build.properties' file."/>
 		<fail unless="api.kxml" message="Please check 'KXML' library presence and 'build.properties' file."/>
 	</target>
@@ -125,20 +444,41 @@
 		<pathelement location="classes/java"/>
 		<pathelement location="${java.home}/lib/rt.jar"/>
 		<pathelement location="${jetbrains-annotations.jar}"/>
-		<pathelement location="lib/jogl1/jogl.jar"/>
-		<pathelement location="lib/jogl1/gluegen-rt.jar"/>
 		<pathelement location="${junit.jar}"/>
 		<pathelement location="${kxml.jar}"/>
+	</path>
+
+	<path id="jogl1.classpath">
+		<path refid="java.classpath"/>
+		<pathelement location="${jogl1.jar}"/>
+		<pathelement location="${jogl1.gluegen-rt.jar}"/>
+	</path>
+
+	<path id="jogl2.classpath">
+		<path refid="java.classpath"/>
+		<pathelement location="${jogl2.jar}"/>
+		<pathelement location="${jogl2.gluegen-rt.jar}"/>
 	</path>
 
 	<target name="compile-java" depends="api-check,java.uptodate.check" unless="java.uptodate" description="Compile Java source files">
 		<mkdir dir="classes/java"/>
 		<javac srcdir="java" destdir="classes/java" includeantruntime="false" classpathref="java.classpath" source="1.5" target="1.5" debug="true">
-			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
 		</javac>
 		<copy todir="classes/java" preservelastmodified="true">
 			<fileset dir="java" excludes="**/*.java"/>
+		</copy>
+
+		<mkdir dir="classes/jogl1/java"/>
+		<javac srcdir="jogl1/java" destdir="classes/jogl1/java" includeantruntime="false" classpathref="jogl1.classpath" source="1.5" target="1.5" debug="true"/>
+		<copy todir="classes/jogl1/java" preservelastmodified="true">
+			<fileset dir="jogl1/java" excludes="**/*.java"/>
+		</copy>
+
+		<mkdir dir="classes/jogl2/java"/>
+		<javac srcdir="jogl2/java" destdir="classes/jogl2/java" includeantruntime="false" classpathref="jogl2.classpath" source="1.5" target="1.5" debug="true"/>
+		<copy todir="classes/jogl2/java" preservelastmodified="true">
+			<fileset dir="jogl2/java" excludes="**/*.java"/>
 		</copy>
 	</target>
 
@@ -146,11 +486,19 @@
 		<condition property="java.uptodate">
 			<and>
 				<uptodate>
-					<srcfiles dir="." includes="java/**/*.java" excludes="**/jogl?*/**,**/java3d/**"/>
+					<srcfiles dir="." excludes="**/java3d/**">
+						<include name="java/**/*.java"/>
+						<include name="jogl1/java/**/*.java"/>
+						<include name="jogl2/java/**/*.java"/>
+					</srcfiles>
 					<mapper type="glob" from="*.java" to="classes/*.class"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir="." includes="java/**" excludes="**/*.java"/>
+					<srcfiles dir="." excludes="**/*.java">
+						<include name="java/**"/>
+						<include name="jogl1/java/**"/>
+						<include name="jogl2/java/**"/>
+					</srcfiles>
 					<mapper type="glob" from="*" to="classes/*"/>
 				</uptodate>
 			</and>
@@ -238,49 +586,4 @@
 			<report format="frames" todir="test-report"/>
 		</junitreport>
 	</target>
-
-	<target name="resign-jogl1">
-		<macrodef name="resign">
-			<attribute name="jar"/>
-			<sequential>
-				<jar destfile="@{jar}_resigned.jar">
-					<zipfileset src="@{jar}" excludes="META-INF/**"/>
-					<manifest>
-						<attribute name="Application-Name" value="Java OpenGL (JOGL)"/>
-						<attribute name="Permissions" value="all-permissions"/>
-						<attribute name="Codebase" value="*"/>
-					</manifest>
-				</jar>
-				<repack200 jar="@{jar}_resigned.jar"/>
-				<signjar jar="@{jar}_resigned.jar" keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}"/>
-				<pack200 jar="@{jar}_resigned.jar"/>
-				<move file="@{jar}_resigned.jar.pack.gz" tofile="@{jar}.pack.gz"/>
-				<move file="@{jar}_resigned.jar" tofile="@{jar}"/>
-			</sequential>
-		</macrodef>
-		<resign jar="lib/jogl1/gluegen-rt-natives-linux-amd64.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-linux-i586.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-macosx-ppc.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-macosx-universal.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-amd64.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-i586.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-sparc.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-solaris-sparcv9.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-windows-amd64.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt-natives-windows-i586.jar"/>
-		<resign jar="lib/jogl1/gluegen-rt.jar"/>
-		<resign jar="lib/jogl1/jogl-demos.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-linux-amd64.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-linux-i586.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-macosx-ppc.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-macosx-universal.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-solaris-amd64.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-solaris-i586.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-solaris-sparc.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-solaris-sparcv9.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-windows-amd64.jar"/>
-		<resign jar="lib/jogl1/jogl-natives-windows-i586.jar"/>
-		<resign jar="lib/jogl1/jogl.jar"/>
-	</target>
-
 </project>
