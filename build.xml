@@ -74,7 +74,7 @@
 			<fileset dir="classes/jogl1/java"/>
 		</jar>
 
-		<jar destfile="lib/jogl1-natives-linux-amd64.jar">
+		<jar destfile="lib/ab3d-rt-jogl1-natives-linux-amd64.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 1 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -86,7 +86,7 @@
 			</mappedresources>
 		</jar>
 
-		<jar destfile="lib/jogl1-natives-linux-i586.jar">
+		<jar destfile="lib/ab3d-rt-jogl1-natives-linux-i586.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 1 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -98,7 +98,7 @@
 			</mappedresources>
 		</jar>
 
-		<jar destfile="lib/jogl1-natives-macosx-ppc.jar">
+		<jar destfile="lib/ab3d-rt-jogl1-natives-macosx-ppc.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 1 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -110,7 +110,7 @@
 			</mappedresources>
 		</jar>
 
-		<jar destfile="lib/jogl1-natives-macosx-universal.jar">
+		<jar destfile="lib/ab3d-rt-jogl1-natives-macosx-universal.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 1 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -122,7 +122,7 @@
 			</mappedresources>
 		</jar>
 		<!--
-				<jar destfile="lib/jogl1-natives-solaris-amd64.jar">
+				<jar destfile="lib/ab3d-rt-jogl1-natives-solaris-amd64.jar">
 					<manifest>
 						<attribute name="Application-Name" value="JOGL 1 natives"/>
 						<attribute name="Permissions" value="all-permissions"/>
@@ -134,7 +134,7 @@
 					</mappedresources>
 				</jar>
 
-				<jar destfile="lib/jogl1-natives-solaris-i586.jar">
+				<jar destfile="lib/ab3d-rt-jogl1-natives-solaris-i586.jar">
 					<manifest>
 						<attribute name="Application-Name" value="JOGL 1 natives"/>
 						<attribute name="Permissions" value="all-permissions"/>
@@ -146,7 +146,7 @@
 					</mappedresources>
 				</jar>
 
-				<jar destfile="lib/jogl1-natives-solaris-sparc.jar">
+				<jar destfile="lib/ab3d-rt-jogl1-natives-solaris-sparc.jar">
 					<manifest>
 						<attribute name="Application-Name" value="JOGL 1 natives"/>
 						<attribute name="Permissions" value="all-permissions"/>
@@ -158,7 +158,7 @@
 					</mappedresources>
 				</jar>
 
-				<jar destfile="lib/jogl1-natives-solaris-sparcv9.jar">
+				<jar destfile="lib/ab3d-rt-jogl1-natives-solaris-sparcv9.jar">
 					<manifest>
 						<attribute name="Application-Name" value="JOGL 1 natives"/>
 						<attribute name="Permissions" value="all-permissions"/>
@@ -170,7 +170,7 @@
 					</mappedresources>
 				</jar>
 		-->
-		<jar destfile="lib/jogl1-natives-windows-amd64.jar">
+		<jar destfile="lib/ab3d-rt-jogl1-natives-windows-amd64.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 1 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -182,7 +182,7 @@
 			</mappedresources>
 		</jar>
 
-		<jar destfile="lib/jogl1-natives-windows-i586.jar">
+		<jar destfile="lib/ab3d-rt-jogl1-natives-windows-i586.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 1 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -219,7 +219,7 @@
 			<zipfileset src="${jogl2.jar}" excludes="META-INF/**"/>
 		</jar>
 
-		<jar destfile="lib/jogl2-natives-linux-amd64.jar">
+		<jar destfile="lib/ab3d-rt-jogl2-natives-linux-amd64.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 2 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -229,7 +229,7 @@
 			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-amd64.jar" excludes="META-INF/**"/>
 		</jar>
 		<!--
-				<jar destfile="lib/jogl2-natives-linux-armv6.jar">
+				<jar destfile="lib/ab3d-rt-jogl2-natives-linux-armv6.jar">
 					<manifest>
 						<attribute name="Application-Name" value="JOGL 2 natives"/>
 						<attribute name="Permissions" value="all-permissions"/>
@@ -239,7 +239,7 @@
 					<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-armv6.jar" excludes="META-INF/**"/>
 				</jar>
 
-				<jar destfile="lib/jogl2-natives-linux-armv6hf.jar">
+				<jar destfile="lib/ab3d-rt-jogl2-natives-linux-armv6hf.jar">
 					<manifest>
 						<attribute name="Application-Name" value="JOGL 2 natives"/>
 						<attribute name="Permissions" value="all-permissions"/>
@@ -249,7 +249,7 @@
 					<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-armv6hf.jar" excludes="META-INF/**"/>
 				</jar>
 		-->
-		<jar destfile="lib/jogl2-natives-linux-i586.jar">
+		<jar destfile="lib/ab3d-rt-jogl2-natives-linux-i586.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 2 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -259,7 +259,7 @@
 			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-linux-i586.jar" excludes="META-INF/**"/>
 		</jar>
 
-		<jar destfile="lib/jogl2-natives-macosx-universal.jar">
+		<jar destfile="lib/ab3d-rt-jogl2-natives-macosx-universal.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 2 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -269,7 +269,7 @@
 			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-macosx-universal.jar" excludes="META-INF/**"/>
 		</jar>
 
-		<jar destfile="lib/jogl2-natives-windows-amd64.jar">
+		<jar destfile="lib/ab3d-rt-jogl2-natives-windows-amd64.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 2 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -279,7 +279,7 @@
 			<zipfileset src="${jogl2.home}/jar/jogl-all-natives-windows-amd64.jar" excludes="META-INF/**"/>
 		</jar>
 
-		<jar destfile="lib/jogl2-natives-windows-i586.jar">
+		<jar destfile="lib/ab3d-rt-jogl2-natives-windows-i586.jar">
 			<manifest>
 				<attribute name="Application-Name" value="JOGL 2 natives"/>
 				<attribute name="Permissions" value="all-permissions"/>
@@ -341,71 +341,71 @@
 		<repack200 jar="lib/ab3d.jar"/>
 		<repack200 jar="lib/ab3d-rt-java2d.jar"/>
 		<repack200 jar="lib/ab3d-rt-jogl1.jar"/>
-		<repack200 jar="lib/jogl1-natives-linux-amd64.jar"/>
-		<repack200 jar="lib/jogl1-natives-linux-i586.jar"/>
-		<repack200 jar="lib/jogl1-natives-macosx-ppc.jar"/>
-		<repack200 jar="lib/jogl1-natives-macosx-universal.jar"/>
-		<!--<repack200 jar="lib/jogl1-natives-solaris-amd64.jar"/>-->
-		<!--<repack200 jar="lib/jogl1-natives-solaris-i586.jar"/>-->
-		<!--<repack200 jar="lib/jogl1-natives-solaris-sparc.jar"/>-->
-		<!--<repack200 jar="lib/jogl1-natives-solaris-sparcv9.jar"/>-->
-		<repack200 jar="lib/jogl1-natives-windows-amd64.jar"/>
-		<repack200 jar="lib/jogl1-natives-windows-i586.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl1-natives-linux-amd64.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl1-natives-linux-i586.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl1-natives-macosx-ppc.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl1-natives-macosx-universal.jar"/>
+		<!--<repack200 jar="lib/ab3d-rt-jogl1-natives-solaris-amd64.jar"/>-->
+		<!--<repack200 jar="lib/ab3d-rt-jogl1-natives-solaris-i586.jar"/>-->
+		<!--<repack200 jar="lib/ab3d-rt-jogl1-natives-solaris-sparc.jar"/>-->
+		<!--<repack200 jar="lib/ab3d-rt-jogl1-natives-solaris-sparcv9.jar"/>-->
+		<repack200 jar="lib/ab3d-rt-jogl1-natives-windows-amd64.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl1-natives-windows-i586.jar"/>
 		<repack200 jar="lib/ab3d-rt-jogl2.jar"/>
-		<repack200 jar="lib/jogl2-natives-linux-amd64.jar"/>
-		<!--<repack200 jar="lib/jogl2-natives-linux-armv6.jar"/>-->
-		<!--<repack200 jar="lib/jogl2-natives-linux-armv6hf.jar"/>-->
-		<repack200 jar="lib/jogl2-natives-linux-i586.jar"/>
-		<repack200 jar="lib/jogl2-natives-macosx-universal.jar"/>
-		<repack200 jar="lib/jogl2-natives-windows-amd64.jar"/>
-		<repack200 jar="lib/jogl2-natives-windows-i586.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl2-natives-linux-amd64.jar"/>
+		<!--<repack200 jar="lib/ab3d-rt-jogl2-natives-linux-armv6.jar"/>-->
+		<!--<repack200 jar="lib/ab3d-rt-jogl2-natives-linux-armv6hf.jar"/>-->
+		<repack200 jar="lib/ab3d-rt-jogl2-natives-linux-i586.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl2-natives-macosx-universal.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl2-natives-windows-amd64.jar"/>
+		<repack200 jar="lib/ab3d-rt-jogl2-natives-windows-i586.jar"/>
 		<repack200 jar="lib/ab3d-demos.jar"/>
 		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
 			<fileset file="lib/ab3d.jar"/>
 			<fileset file="lib/ab3d-rt-java2d.jar"/>
 			<fileset file="lib/ab3d-rt-jogl1.jar"/>
-			<fileset file="lib/jogl1-natives-linux-amd64.jar"/>
-			<fileset file="lib/jogl1-natives-linux-i586.jar"/>
-			<fileset file="lib/jogl1-natives-macosx-ppc.jar"/>
-			<fileset file="lib/jogl1-natives-macosx-universal.jar"/>
-			<!--<fileset file="lib/jogl1-natives-solaris-amd64.jar"/>-->
-			<!--<fileset file="lib/jogl1-natives-solaris-i586.jar"/>-->
-			<!--<fileset file="lib/jogl1-natives-solaris-sparc.jar"/>-->
-			<!--<fileset file="lib/jogl1-natives-solaris-sparcv9.jar"/>-->
-			<fileset file="lib/jogl1-natives-windows-amd64.jar"/>
-			<fileset file="lib/jogl1-natives-windows-i586.jar"/>
+			<fileset file="lib/ab3d-rt-jogl1-natives-linux-amd64.jar"/>
+			<fileset file="lib/ab3d-rt-jogl1-natives-linux-i586.jar"/>
+			<fileset file="lib/ab3d-rt-jogl1-natives-macosx-ppc.jar"/>
+			<fileset file="lib/ab3d-rt-jogl1-natives-macosx-universal.jar"/>
+			<!--<fileset file="lib/ab3d-rt-jogl1-natives-solaris-amd64.jar"/>-->
+			<!--<fileset file="lib/ab3d-rt-jogl1-natives-solaris-i586.jar"/>-->
+			<!--<fileset file="lib/ab3d-rt-jogl1-natives-solaris-sparc.jar"/>-->
+			<!--<fileset file="lib/ab3d-rt-jogl1-natives-solaris-sparcv9.jar"/>-->
+			<fileset file="lib/ab3d-rt-jogl1-natives-windows-amd64.jar"/>
+			<fileset file="lib/ab3d-rt-jogl1-natives-windows-i586.jar"/>
 			<fileset file="lib/ab3d-rt-jogl2.jar"/>
-			<fileset file="lib/jogl2-natives-linux-amd64.jar"/>
-			<!--<fileset file="lib/jogl2-natives-linux-armv6.jar"/>-->
-			<!--<fileset file="lib/jogl2-natives-linux-armv6hf.jar"/>-->
-			<fileset file="lib/jogl2-natives-linux-i586.jar"/>
-			<fileset file="lib/jogl2-natives-macosx-universal.jar"/>
-			<fileset file="lib/jogl2-natives-windows-amd64.jar"/>
-			<fileset file="lib/jogl2-natives-windows-i586.jar"/>
+			<fileset file="lib/ab3d-rt-jogl2-natives-linux-amd64.jar"/>
+			<!--<fileset file="lib/ab3d-rt-jogl2-natives-linux-armv6.jar"/>-->
+			<!--<fileset file="lib/ab3d-rt-jogl2-natives-linux-armv6hf.jar"/>-->
+			<fileset file="lib/ab3d-rt-jogl2-natives-linux-i586.jar"/>
+			<fileset file="lib/ab3d-rt-jogl2-natives-macosx-universal.jar"/>
+			<fileset file="lib/ab3d-rt-jogl2-natives-windows-amd64.jar"/>
+			<fileset file="lib/ab3d-rt-jogl2-natives-windows-i586.jar"/>
 			<fileset file="lib/ab3d-demos.jar"/>
 			<fileset file="ab3d-test.jar"/>
 		</signjar>
 		<pack200 jar="lib/ab3d.jar"/>
 		<pack200 jar="lib/ab3d-rt-java2d.jar"/>
 		<pack200 jar="lib/ab3d-rt-jogl1.jar"/>
-		<pack200 jar="lib/jogl1-natives-linux-amd64.jar"/>
-		<pack200 jar="lib/jogl1-natives-linux-i586.jar"/>
-		<pack200 jar="lib/jogl1-natives-macosx-ppc.jar"/>
-		<pack200 jar="lib/jogl1-natives-macosx-universal.jar"/>
-		<!--<pack200 jar="lib/jogl1-natives-solaris-amd64.jar"/>-->
-		<!--<pack200 jar="lib/jogl1-natives-solaris-i586.jar"/>-->
-		<!--<pack200 jar="lib/jogl1-natives-solaris-sparc.jar"/>-->
-		<!--<pack200 jar="lib/jogl1-natives-solaris-sparcv9.jar"/>-->
-		<pack200 jar="lib/jogl1-natives-windows-amd64.jar"/>
-		<pack200 jar="lib/jogl1-natives-windows-i586.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl1-natives-linux-amd64.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl1-natives-linux-i586.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl1-natives-macosx-ppc.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl1-natives-macosx-universal.jar"/>
+		<!--<pack200 jar="lib/ab3d-rt-jogl1-natives-solaris-amd64.jar"/>-->
+		<!--<pack200 jar="lib/ab3d-rt-jogl1-natives-solaris-i586.jar"/>-->
+		<!--<pack200 jar="lib/ab3d-rt-jogl1-natives-solaris-sparc.jar"/>-->
+		<!--<pack200 jar="lib/ab3d-rt-jogl1-natives-solaris-sparcv9.jar"/>-->
+		<pack200 jar="lib/ab3d-rt-jogl1-natives-windows-amd64.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl1-natives-windows-i586.jar"/>
 		<pack200 jar="lib/ab3d-rt-jogl2.jar"/>
-		<pack200 jar="lib/jogl2-natives-linux-amd64.jar"/>
-		<!--<pack200 jar="lib/jogl2-natives-linux-armv6.jar"/>-->
-		<!--<pack200 jar="lib/jogl2-natives-linux-armv6hf.jar"/>-->
-		<pack200 jar="lib/jogl2-natives-linux-i586.jar"/>
-		<pack200 jar="lib/jogl2-natives-macosx-universal.jar"/>
-		<pack200 jar="lib/jogl2-natives-windows-amd64.jar"/>
-		<pack200 jar="lib/jogl2-natives-windows-i586.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl2-natives-linux-amd64.jar"/>
+		<!--<pack200 jar="lib/ab3d-rt-jogl2-natives-linux-armv6.jar"/>-->
+		<!--<pack200 jar="lib/ab3d-rt-jogl2-natives-linux-armv6hf.jar"/>-->
+		<pack200 jar="lib/ab3d-rt-jogl2-natives-linux-i586.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl2-natives-macosx-universal.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl2-natives-windows-amd64.jar"/>
+		<pack200 jar="lib/ab3d-rt-jogl2-natives-windows-i586.jar"/>
 		<pack200 jar="lib/ab3d-demos.jar"/>
 	</target>
 
