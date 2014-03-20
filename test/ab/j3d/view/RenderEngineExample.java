@@ -272,7 +272,7 @@ public class RenderEngineExample
 		final Appearance green = BasicAppearance.createForColor( new Color4f( 0xC000FF00 ) );
 		final Appearance yellow = BasicAppearance.createForColor( new Color4f( 0xC0FFFF00 ) );
 		final BoxUVMap uvMap = new BoxUVMap( size );
-		return new Box3D( -size, -size, -size, size * 2.0, size * 2.0, size * 2.0, cyan, uvMap, magenta, uvMap, blue, uvMap, yellow, uvMap, red, uvMap, green, uvMap, true );
+		return new Box3D( -size, -size, -size, size * 2.0, size * 2.0, size * 2.0, cyan, uvMap, magenta, uvMap, blue, uvMap, yellow, uvMap, red, uvMap, green, uvMap, false );
 	}
 
 	/**
