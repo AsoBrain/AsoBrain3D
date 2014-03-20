@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,9 +46,13 @@ extends TestCase
 		System.out.println( CLASS_NAME + ".testIntegrity" );
 
 		final UVMap boxMap = new BoxUVMap( Scene.M );
-		SceneIntegrityChecker.ensureIntegrity( new Box3D( 1.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap ) );
-		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap ) );
-		SceneIntegrityChecker.ensureIntegrity( new Box3D( 1.0, 0.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap ) );
-		SceneIntegrityChecker.ensureIntegrity( new Box3D( 1.0, 1.0, 0.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, false ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, false ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, false ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, false ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, true ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, true ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, true ) );
+		SceneIntegrityChecker.ensureIntegrity( new Box3D( 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.ALU_PLATE, boxMap, BasicAppearances.MAGENTA, boxMap, BasicAppearances.ALU_PLATE, boxMap, true ) );
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -265,42 +265,14 @@ public class RenderEngineExample
 	 */
 	public static Object3D createCube( final double size )
 	{
-		final double min = -size;
-		final double max = size;
-
-		final Vector3D lfb = new Vector3D( min, min, min );
-		final Vector3D rfb = new Vector3D( max, min, min );
-		final Vector3D rbb = new Vector3D( max, max, min );
-		final Vector3D lbb = new Vector3D( min, max, min );
-		final Vector3D lft = new Vector3D( min, min, max );
-		final Vector3D rft = new Vector3D( max, min, max );
-		final Vector3D rbt = new Vector3D( max, max, max );
-		final Vector3D lbt = new Vector3D( min, max, max );
-
 		final Appearance red = BasicAppearance.createForColor( new Color4f( 0xC0FF0000 ) );
 		final Appearance magenta = BasicAppearance.createForColor( new Color4f( 0xC0FF00FF ) );
 		final Appearance blue = BasicAppearance.createForColor( new Color4f( 0xC00000FF ) );
 		final Appearance cyan = BasicAppearance.createForColor( new Color4f( 0xC000FFFF ) );
 		final Appearance green = BasicAppearance.createForColor( new Color4f( 0xC000FF00 ) );
 		final Appearance yellow = BasicAppearance.createForColor( new Color4f( 0xC0FFFF00 ) );
-
-		final float[] texturePoints = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
-
-		final Object3DBuilder builder = new Object3DBuilder();
-		/* top */
-		builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, red, texturePoints, null, false, false ); // Z =  size
-		/* bottom */
-		builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, green, texturePoints, null, false, false ); // Z = -size
-		/* front */
-		builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, cyan, texturePoints, null, false, false ); // Y = -size
-		/* back */
-		builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, magenta, texturePoints, null, false, false ); // Y =  size
-		/* left */
-		builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, yellow, texturePoints, null, false, false ); // X = -size
-		/* right */
-		builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, blue, texturePoints, null, false, false ); // X =  size
-
-		return builder.getObject3D();
+		final BoxUVMap uvMap = new BoxUVMap( size );
+		return new Box3D( -size, -size, -size, size * 2.0, size * 2.0, size * 2.0, cyan, uvMap, magenta, uvMap, blue, uvMap, yellow, uvMap, red, uvMap, green, uvMap, true );
 	}
 
 	/**
