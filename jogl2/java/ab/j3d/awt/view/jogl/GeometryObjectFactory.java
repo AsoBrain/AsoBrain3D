@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.*;
  * Creates appropriate {@link GeometryObject} instances based on available
  * OpenGL capabilities.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public class GeometryObjectFactory
 {
@@ -38,8 +38,12 @@ public class GeometryObjectFactory
 	 */
 	public enum Implementation
 	{
-		/** Immediate mode rendering.              */ IMMEDIATE_MODE,
-		/** Vertex buffer object, OpenGL 1.5 core. */ VERTEX_BUFFER_OBJECT_CORE,
+		/**
+		 * Immediate mode rendering.
+		 */IMMEDIATE_MODE,
+		/**
+		 * Vertex buffer object, OpenGL 1.5 core.
+		 */VERTEX_BUFFER_OBJECT_CORE,
 	}
 
 	/**
@@ -59,10 +63,10 @@ public class GeometryObjectFactory
 	/**
 	 * Constructs a new geometry object for the given face groups.
 	 *
-	 * @param   faceGroups  Face groups.
-	 * @param   type        Type of geometry to create.
+	 * @param faceGroups Face groups.
+	 * @param type       Type of geometry to create.
 	 *
-	 * @return  Geometry object.
+	 * @return Geometry object.
 	 */
 	@NotNull
 	public GeometryObject newGeometryObject( final List<FaceGroup> faceGroups, final GeometryType type )
@@ -93,7 +97,7 @@ public class GeometryObjectFactory
 	/**
 	 * Overrides the geometry object implementation used by the factory.
 	 *
-	 * @param   implementation  Implementation to be used.
+	 * @param implementation Implementation to be used.
 	 */
 	public void setImplementation( @NotNull final Implementation implementation )
 	{
@@ -104,7 +108,7 @@ public class GeometryObjectFactory
 	/**
 	 * Returns the implementation to be used.
 	 *
-	 * @return  Implementation to be used.
+	 * @return Implementation to be used.
 	 */
 	@Nullable
 	public Implementation getImplementation()
@@ -129,7 +133,7 @@ public class GeometryObjectFactory
 			{
 				// TODO: If the above 'testSupport' calls are sufficiently reliable on Intel hardware, this check may no longer be needed.
 				final String renderer = gl.glGetString( GL.GL_RENDERER );
-				final boolean isCrappyCard = renderer.contains( "Intel" );
+				final boolean isCrappyCard = renderer.contains( "Intel" ) && !renderer.contains( "HD" );
 
 				if ( isCrappyCard )
 				{
