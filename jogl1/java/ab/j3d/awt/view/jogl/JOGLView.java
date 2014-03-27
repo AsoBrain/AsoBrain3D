@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -35,12 +33,12 @@ import org.jetbrains.annotations.*;
 /**
  * JOGL view implementation.
  *
- * @author  G.B.M. Rupert
+ * @author G.B.M. Rupert
  * @version $Revision$ $Date$
  */
 public class JOGLView
-	extends View3D
-	implements GLEventListener
+extends View3D
+implements GLEventListener
 {
 	/**
 	 * Engine that created this view.
@@ -105,8 +103,8 @@ public class JOGLView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   joglEngine  Engine that created this view.
-	 * @param   scene       Scene to view.
+	 * @param joglEngine Engine that created this view.
+	 * @param scene      Scene to view.
 	 */
 	public JOGLView( final JOGLEngine joglEngine, final Scene scene )
 	{
@@ -128,6 +126,7 @@ public class JOGLView
 		capabilities.setRedBits( 8 );
 		capabilities.setGreenBits( 8 );
 		capabilities.setBlueBits( 8 );
+		capabilities.setDepthBits( 8 );
 
 		final JOGLConfiguration configuration = joglEngine.getConfiguration();
 		_configuration = configuration;
@@ -179,7 +178,7 @@ public class JOGLView
 	/**
 	 * Returns the view's rendering configuration.
 	 *
-	 * @return  Rendering configuration.
+	 * @return Rendering configuration.
 	 */
 	public JOGLConfiguration getConfiguration()
 	{
@@ -189,7 +188,7 @@ public class JOGLView
 	/**
 	 * Returns the view's rendering capabilities.
 	 *
-	 * @return  Rendering capabilities.
+	 * @return Rendering capabilities.
 	 */
 	public JOGLCapabilities getCapabilities()
 	{
@@ -277,8 +276,8 @@ public class JOGLView
 	/**
 	 * Creates an offscreen buffer of the jogl context.
 	 *
-	 * @return  Offscreen {@link GLPbuffer} of the jogl context or
-	 *          <code>NULL</code> if the graphic card doesnt have this ability.
+	 * @return Offscreen {@link GLPbuffer} of the jogl context or <code>NULL</code>
+	 *         if the graphic card doesnt have this ability.
 	 */
 	@Nullable
 	public GLPbuffer createOffscreenBuffer()
@@ -309,18 +308,18 @@ public class JOGLView
 	@Override
 	public Projector getProjector()
 	{
-		final GLCanvas  viewComponent     = _glCanvas;
-		final int       imageWidth        = viewComponent.getWidth();
-		final int       imageHeight       = viewComponent.getHeight();
-		final double    imageResolution   = getResolution();
+		final GLCanvas viewComponent = _glCanvas;
+		final int imageWidth = viewComponent.getWidth();
+		final int imageHeight = viewComponent.getHeight();
+		final double imageResolution = getResolution();
 
-		final Scene     scene             = getScene();
-		final double    viewUnit          = scene.getUnit();
+		final Scene scene = getScene();
+		final double viewUnit = scene.getUnit();
 
-		final double    fieldOfView       = getFieldOfView();
-		final double    zoomFactor        = getZoomFactor();
-		final double    frontClipDistance = _frontClipDistance;
-		final double    backClipDistance  = _backClipDistance;
+		final double fieldOfView = getFieldOfView();
+		final double zoomFactor = getZoomFactor();
+		final double frontClipDistance = _frontClipDistance;
+		final double backClipDistance = _backClipDistance;
 
 		return Projector.createInstance( getProjectionPolicy(), imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, fieldOfView, zoomFactor );
 	}
@@ -341,7 +340,7 @@ public class JOGLView
 		{
 			if ( _glCanvas.isShowing() )
 			{
-				renderThread  = new RenderThread();
+				renderThread = new RenderThread();
 				_renderThread = renderThread;
 				renderThread.start();
 			}
@@ -353,8 +352,8 @@ public class JOGLView
 	}
 
 	/**
-	 * Disposes the current renderer. It will automatically be replaced with a
-	 * new renderer when the next frame is rendered.
+	 * Disposes the current renderer. It will automatically be replaced with a new
+	 * renderer when the next frame is rendered.
 	 */
 	public void disposeRenderer()
 	{
@@ -401,16 +400,16 @@ public class JOGLView
 	 * Render loop for the view.
 	 */
 	private class RenderThread
-		extends Thread
+	extends Thread
 	{
 		/**
 		 * This thread control flag is set when <code>requestUpdate()</code> is
 		 * called. It is used to trigger the thread loop to start rendering a new
-		 * image. It is also tested at various loop points in the rendering code
-		 * to abort rendering of a previous image, so the next rendering will be
+		 * image. It is also tested at various loop points in the rendering code to
+		 * abort rendering of a previous image, so the next rendering will be
 		 * completed as soon as possible.
 		 *
-		 * @see     #requestUpdate()
+		 * @see #requestUpdate()
 		 */
 		protected boolean _updateRequested;
 
@@ -479,7 +478,8 @@ public class JOGLView
 							wait( 300L );
 						}
 					}
-					catch ( InterruptedException e ) { /*ignored*/ }
+					catch ( InterruptedException e )
+					{ /*ignored*/ }
 				}
 			}
 		}
@@ -501,7 +501,7 @@ public class JOGLView
 	/**
 	 * Initialize GL context.
 	 *
-	 * @param   glAutoDrawable  Target for performing OpenGL rendering.
+	 * @param glAutoDrawable Target for performing OpenGL rendering.
 	 */
 	public void init( final GLAutoDrawable glAutoDrawable )
 	{
@@ -557,30 +557,30 @@ public class JOGLView
 	/**
 	 * Renders a frame.
 	 *
-	 * @param   glAutoDrawable  Component to render to.
+	 * @param glAutoDrawable Component to render to.
 	 */
 	protected void displayImpl( final GLAutoDrawable glAutoDrawable )
 	{
 		final GL gl = glAutoDrawable.getGL();
 
-		final int width  = glAutoDrawable.getWidth();
+		final int width = glAutoDrawable.getWidth();
 		final int height = glAutoDrawable.getHeight();
 
 		if ( ( width > 0 ) && ( height > 0 ) )
 		{
-			final double   aspect = (double)width / (double)height;
+			final double aspect = (double)width / (double)height;
 
 			final ProjectionPolicy projectionPolicy = getProjectionPolicy();
 			if ( projectionPolicy == ProjectionPolicy.PARALLEL )
 			{
-				final Scene    scene    = getScene();
-				final double   left     = -0.5 * (double)width;
-				final double   right    =  0.5 * (double)width;
-				final double   bottom   = -0.5 * (double)height;
-				final double   top      =  0.5 * (double)height;
-				final double   scale    = getZoomFactor() * scene.getUnit() / getResolution();
-				final double   near     = _frontClipDistance * scale;
-				final double   far      = _backClipDistance  * scale;
+				final Scene scene = getScene();
+				final double left = -0.5 * (double)width;
+				final double right = 0.5 * (double)width;
+				final double bottom = -0.5 * (double)height;
+				final double top = 0.5 * (double)height;
+				final double scale = getZoomFactor() * scene.getUnit() / getResolution();
+				final double near = _frontClipDistance * scale;
+				final double far = _backClipDistance * scale;
 
 				gl.glMatrixMode( GL.GL_PROJECTION );
 				gl.glLoadIdentity();
@@ -589,9 +589,9 @@ public class JOGLView
 			}
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
-				final double fov  = Math.toDegrees( getFieldOfView() );
+				final double fov = Math.toDegrees( getFieldOfView() );
 				final double near = _frontClipDistance;
-				final double far  = _backClipDistance;
+				final double far = _backClipDistance;
 
 				/* Setup the projection matrix. */
 				gl.glMatrixMode( GL.GL_PROJECTION );
@@ -636,7 +636,7 @@ public class JOGLView
 	/**
 	 * Renders the scene.
 	 *
-	 * @param   gl  OpenGL pipeline.
+	 * @param gl OpenGL pipeline.
 	 */
 	private void renderScene( final GL gl )
 	{
@@ -661,11 +661,11 @@ public class JOGLView
 	 * Creates a renderer for the given OpenGL pipeline or returns an existing
 	 * one.
 	 *
-	 * @param   gl          OpenGL pipeline.
-	 * @param   alwaysInit  Always call {@link JOGLRenderer#init()} vs. only if
-	 *                      a new renderer was created.
+	 * @param gl         OpenGL pipeline.
+	 * @param alwaysInit Always call {@link JOGLRenderer#init()} vs. only if a new
+	 *                   renderer was created.
 	 *
-	 * @return  New or existing renderer.
+	 * @return New or existing renderer.
 	 */
 	private JOGLRenderer getOrCreateRenderer( final GL gl, final boolean alwaysInit )
 	{
@@ -686,16 +686,16 @@ public class JOGLView
 	}
 
 	/**
-	 * Canvas with a GL context that is shared with all other views created by
-	 * the same {@link JOGLEngine} instance.
+	 * Canvas with a GL context that is shared with all other views created by the
+	 * same {@link JOGLEngine} instance.
 	 */
 	private class SharedContextGLCanvas
-		extends GLCanvas
+	extends GLCanvas
 	{
 		/**
 		 * Constructs a new canvas with the specified capabilities.
 		 *
-		 * @param   capabilities    Capabilities to be requested.
+		 * @param capabilities Capabilities to be requested.
 		 */
 		SharedContextGLCanvas( final GLCapabilities capabilities )
 		{
@@ -724,8 +724,8 @@ public class JOGLView
 	 * Diposes the view when its parent window is closed.
 	 */
 	private class DisposeListener
-		extends WindowAdapter
-		implements HierarchyListener
+	extends WindowAdapter
+	implements HierarchyListener
 	{
 		/**
 		 * Root component.
@@ -763,11 +763,11 @@ public class JOGLView
 	}
 
 	/**
-	 * Chooses the optimal set of GL capabilities. Always chooses the
-	 * recommended choice at the moment.
+	 * Chooses the optimal set of GL capabilities. Always chooses the recommended
+	 * choice at the moment.
 	 */
 	private static class CapabilitiesChooser
-		extends DefaultGLCapabilitiesChooser
+	extends DefaultGLCapabilitiesChooser
 	{
 		@Override
 		public int chooseCapabilities( final GLCapabilities desired, final GLCapabilities[] available, final int windowSystemRecommendedChoice )
@@ -788,10 +788,10 @@ public class JOGLView
 	/**
 	 * Displays render statistics.
 	 *
-	 * @see     JOGLRenderer.RenderStatistics
+	 * @see JOGLRenderer.RenderStatistics
 	 */
 	private class RenderStatisticsOverlay
-		implements ViewOverlay
+	implements ViewOverlay
 	{
 		public void addView( final View3D view )
 		{
