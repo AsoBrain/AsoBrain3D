@@ -126,7 +126,7 @@ implements GLEventListener
 		capabilities.setRedBits( 8 );
 		capabilities.setGreenBits( 8 );
 		capabilities.setBlueBits( 8 );
-		capabilities.setDepthBits( 8 );
+		capabilities.setDepthBits( 24 );
 
 		final JOGLConfiguration configuration = joglEngine.getConfiguration();
 		_configuration = configuration;
