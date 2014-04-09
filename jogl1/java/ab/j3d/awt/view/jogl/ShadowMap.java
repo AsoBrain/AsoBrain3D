@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -60,7 +58,6 @@ import ab.j3d.model.*;
  * </pre>
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class ShadowMap
 {
@@ -273,7 +270,9 @@ public class ShadowMap
 			if ( light instanceof DirectionalLight3D )
 			{
 				final double zNear = -max.z;
-				gl.glOrtho( min.x, max.x, min.y, max.y, zNear, zFar );
+				gl.glOrtho( Math.floor( min.x * scene.getUnit() ) / scene.getUnit(), Math.ceil( max.x * scene.getUnit() ) / scene.getUnit(),
+				            Math.floor( min.y * scene.getUnit() ) / scene.getUnit(), Math.ceil( max.y * scene.getUnit() ) / scene.getUnit(),
+				            Math.floor( zNear * scene.getUnit() ) / scene.getUnit(), Math.ceil( zFar * scene.getUnit() ) / scene.getUnit() );
 			}
 			else
 			{
