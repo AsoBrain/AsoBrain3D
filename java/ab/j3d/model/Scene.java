@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -30,8 +28,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class defines a 3D scene.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class Scene
 {
@@ -104,7 +101,7 @@ public class Scene
 	/**
 	 * Content nodes.
 	 */
-	private final Map<Object,ContentNode> _contentNodes = new HashMap<Object,ContentNode>();
+	private final Map<Object, ContentNode> _contentNodes = new LinkedHashMap<Object, ContentNode>();
 
 	/**
 	 * List of listeners to notify about scene update events.
@@ -123,8 +120,8 @@ public class Scene
 
 	/**
 	 * Flag to indicate that this scene is animated as opposed to static. An
-	 * animated scene may be rendered continuously in order to see the
-	 * animation; rendering a static scene continuously is a waste of resources.
+	 * animated scene may be rendered continuously in order to see the animation;
+	 * rendering a static scene continuously is a waste of resources.
 	 */
 	private boolean _animated = false;
 
@@ -143,29 +140,29 @@ public class Scene
 	 * Shared listener for content node updates.
 	 */
 	private final ContentNodeUpdateListener _contentNodeUpdateListener = new ContentNodeUpdateListener()
+	{
+		public void contentsUpdated( final ContentNodeUpdateEvent event )
 		{
-			public void contentsUpdated( final ContentNodeUpdateEvent event )
-			{
-				invalidateCache();
-				fireContentNodeContentUpdated( (ContentNode)event.getSource() );
-			}
+			invalidateCache();
+			fireContentNodeContentUpdated( (ContentNode)event.getSource() );
+		}
 
-			public void renderingPropertiesUpdated( final ContentNodeUpdateEvent event )
-			{
-				fireContentNodePropertyChanged( (ContentNode)event.getSource() );
-			}
+		public void renderingPropertiesUpdated( final ContentNodeUpdateEvent event )
+		{
+			fireContentNodePropertyChanged( (ContentNode)event.getSource() );
+		}
 
-			public void transformUpdated( final ContentNodeUpdateEvent event )
-			{
-				invalidateCache();
-				fireContentNodePropertyChanged( (ContentNode)event.getSource() );
-			}
-		};
+		public void transformUpdated( final ContentNodeUpdateEvent event )
+		{
+			invalidateCache();
+			fireContentNodePropertyChanged( (ContentNode)event.getSource() );
+		}
+	};
 
 	/**
 	 * Construct new scene.
 	 *
-	 * @param   unit    Unit scale factor (e.g. {@link Scene#MM}).
+	 * @param unit Unit scale factor (e.g. {@link Scene#MM}).
 	 */
 	public Scene( final double unit )
 	{
@@ -185,11 +182,11 @@ public class Scene
 
 	/**
 	 * Flag to indicate that this scene is animated as opposed to static. An
-	 * animated scene may be rendered continuously in order to see the
-	 * animation; rendering a static scene continuously is a waste of resources.
+	 * animated scene may be rendered continuously in order to see the animation;
+	 * rendering a static scene continuously is a waste of resources.
 	 *
-	 * @return  <code>true</code> if this scene is animated;
-	 *          <code>false</code> if this scene is static.
+	 * @return <code>true</code> if this scene is animated; <code>false</code> if
+	 *         this scene is static.
 	 */
 	public boolean isAnimated()
 	{
@@ -198,11 +195,11 @@ public class Scene
 
 	/**
 	 * Set flag to indicate that this scene is animated as opposed to static. An
-	 * animated scene may be rendered continuously in order to see the
-	 * animation; rendering a static scene continuously is a waste of resources.
+	 * animated scene may be rendered continuously in order to see the animation;
+	 * rendering a static scene continuously is a waste of resources.
 	 *
-	 * @param   animated    <code>true</code> if this scene is animated;
-	 *                      <code>false</code> if this scene is static.
+	 * @param animated <code>true</code> if this scene is animated;
+	 *                 <code>false</code> if this scene is static.
 	 */
 	public void setAnimated( final boolean animated )
 	{
@@ -235,20 +232,20 @@ public class Scene
 	}
 
 	/**
-	 * Adds appropriate 'legacy lights' to the given scene. Lights will be
-	 * created to mimic the behavior of the Java3D view before April 2007, when
-	 * lights were still hard-coded into views. The added lights are given
-	 * IDs starting with "legacy-light".
+	 * Adds appropriate 'legacy lights' to the given scene. Lights will be created
+	 * to mimic the behavior of the Java3D view before April 2007, when lights were
+	 * still hard-coded into views. The added lights are given IDs starting with
+	 * "legacy-light".
 	 *
-	 * @param   scene   Scene to add legacy lights to.
+	 * @param scene Scene to add legacy lights to.
 	 */
 	public static void addLegacyLights( @NotNull final Scene scene )
 	{
 		scene.setAmbient( 0.4f, 0.4f, 0.4f );
 
-		final Light3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8,  1.0, -0.6 ) );
-		final Light3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0, -1.0,  0.4 ) );
-		final Light3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0,  0.0, -1.0 ) );
+		final Light3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8, 1.0, -0.6 ) );
+		final Light3D directional2 = new DirectionalLight3D( Vector3D.normalize( 1.0, -1.0, 0.4 ) );
+		final Light3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0, 0.0, -1.0 ) );
 
 		directional1.setIntensity( 1.0f );
 		directional1.setCastingShadows( true );
@@ -263,7 +260,7 @@ public class Scene
 	/**
 	 * Get ID's of all content nodes in the scene.
 	 *
-	 * @return  Set with ID's of all content nodes in the scene.
+	 * @return Set with ID's of all content nodes in the scene.
 	 */
 	public final Set<Object> getContentNodeIDs()
 	{
@@ -273,7 +270,7 @@ public class Scene
 	/**
 	 * Get all content nodes in the scene.
 	 *
-	 * @return  All content nodes in the scene.
+	 * @return All content nodes in the scene.
 	 */
 	public final List<ContentNode> getContentNodes()
 	{
@@ -283,10 +280,10 @@ public class Scene
 	/**
 	 * Get content node by ID.
 	 *
-	 * @param   id  ID of content node.
+	 * @param id ID of content node.
 	 *
-	 * @return  Content node with the specified ID;
-	 *          <code>null</code> if no node with the specified ID was found.
+	 * @return Content node with the specified ID; <code>null</code> if no node
+	 *         with the specified ID was found.
 	 */
 	public final ContentNode getContentNode( @NotNull final Object id )
 	{
@@ -296,9 +293,9 @@ public class Scene
 	/**
 	 * Add content node.
 	 *
-	 * @param   node    Content node to add.
+	 * @param node Content node to add.
 	 *
-	 * @return  Node that was added.
+	 * @return Node that was added.
 	 */
 	public final ContentNode addContentNode( @NotNull final ContentNode node )
 	{
@@ -318,14 +315,14 @@ public class Scene
 	}
 
 	/**
-	 * Add a new content node. If a content node with the same ID already
-	 * exists, that node will be removed before adding the new content node.
+	 * Add a new content node. If a content node with the same ID already exists,
+	 * that node will be removed before adding the new content node.
 	 *
-	 * @param   id          ID of content node.
-	 * @param   transform   Initial transform (<code>null</code> => identity).
-	 * @param   node3D      Root in the 3D scene to create a content node for.
+	 * @param id        ID of content node.
+	 * @param transform Initial transform (<code>null</code> => identity).
+	 * @param node3D    Root in the 3D scene to create a content node for.
 	 *
-	 * @return  Content node that was added.
+	 * @return Content node that was added.
 	 */
 	public final ContentNode addContentNode( @NotNull final Object id, final Matrix3D transform, @NotNull final Node3D node3D )
 	{
@@ -335,10 +332,10 @@ public class Scene
 	/**
 	 * Test if the scene contains a content node with the specified ID.
 	 *
-	 * @param   id  ID of content node.
+	 * @param id ID of content node.
 	 *
-	 * @return  <code>true</code> if a content node with the specified ID was found;
-	 *          <code>false</code> if the scene contains no such content node.
+	 * @return <code>true</code> if a content node with the specified ID was found;
+	 *         <code>false</code> if the scene contains no such content node.
 	 */
 	public final boolean hasContentNode( @NotNull final Object id )
 	{
@@ -348,7 +345,7 @@ public class Scene
 	/**
 	 * Remove content node.
 	 *
-	 * @param   id  ID of content node.
+	 * @param id ID of content node.
 	 */
 	public void removeContentNode( @NotNull final Object id )
 	{
@@ -366,8 +363,8 @@ public class Scene
 	/**
 	 * Remove all content nodes from this scene.
 	 *
-	 * @see     #removeContentNode
-	 * @see     #getContentNodeIDs
+	 * @see #removeContentNode
+	 * @see #getContentNodeIDs
 	 */
 	public final void removeAllContentNodes()
 	{
@@ -380,8 +377,7 @@ public class Scene
 	/**
 	 * Get boundsing box that contains all 3D objects in the scene.
 	 *
-	 * @return  Bounding box of scene;
-	 *          <code>null</code> if scene is empty.
+	 * @return Bounding box of scene; <code>null</code> if scene is empty.
 	 */
 	@Nullable
 	public Bounds3D getBounds()
@@ -411,10 +407,10 @@ public class Scene
 	/**
 	 * Perform tree-walk through entire scene with the given visitor.
 	 *
-	 * @param   visitor     Visitor that will be called for each visited node.
+	 * @param visitor Visitor that will be called for each visited node.
 	 *
-	 * @return  <code>true</code> if the tree walk was finished normally;
-	 *          <code>false</code> if the tree walk was aborted.
+	 * @return <code>true</code> if the tree walk was finished normally;
+	 *         <code>false</code> if the tree walk was aborted.
 	 */
 	public boolean walk( @NotNull final Node3DVisitor visitor )
 	{
@@ -425,11 +421,11 @@ public class Scene
 	 * Perform tree-walk through entire scene with the given visitor and initial
 	 * transformation matrix.
 	 *
-	 * @param   visitor     Visitor that will be called for each visited node.
-	 * @param   transform   Initial transformation matrix.
+	 * @param visitor   Visitor that will be called for each visited node.
+	 * @param transform Initial transformation matrix.
 	 *
-	 * @return  <code>true</code> if the tree walk was finished normally;
-	 *          <code>false</code> if the tree walk was aborted.
+	 * @return <code>true</code> if the tree walk was finished normally;
+	 *         <code>false</code> if the tree walk was aborted.
 	 */
 	public boolean walk( @NotNull final Node3DVisitor visitor, @NotNull final Matrix3D transform )
 	{
@@ -452,7 +448,7 @@ public class Scene
 	 * Unit scale factor in this scene in meters per unit. This factor, when
 	 * multiplied, converts units to meters.
 	 *
-	 * @return  Unit scale (meters per unit).
+	 * @return Unit scale (meters per unit).
 	 */
 	public double getUnit()
 	{
@@ -460,12 +456,12 @@ public class Scene
 	}
 
 	/**
-	 * Returns the light intensity of the ambient light in the scene for the
-	 * red color component.
+	 * Returns the light intensity of the ambient light in the scene for the red
+	 * color component.
 	 *
 	 * <p>For a definition of light intensity, see {@link Light3D}.
 	 *
-	 * @return  Ambient light intensity. (red)
+	 * @return Ambient light intensity. (red)
 	 */
 	public float getAmbientRed()
 	{
@@ -473,10 +469,10 @@ public class Scene
 	}
 
 	/**
-	 * Returns the light intensity of the ambient light in the scene for the
-	 * red color component.
+	 * Returns the light intensity of the ambient light in the scene for the red
+	 * color component.
 	 *
-	 * @return  Ambient light intensity. (green)
+	 * @return Ambient light intensity. (green)
 	 */
 	public float getAmbientGreen()
 	{
@@ -484,10 +480,10 @@ public class Scene
 	}
 
 	/**
-	 * Returns the light intensity of the ambient light in the scene for the
-	 * blue color component.
+	 * Returns the light intensity of the ambient light in the scene for the blue
+	 * color component.
 	 *
-	 * @return  Ambient light intensity. (blue)
+	 * @return Ambient light intensity. (blue)
 	 */
 	public float getAmbientBlue()
 	{
@@ -497,7 +493,7 @@ public class Scene
 	/**
 	 * Sets the light intensity of the ambient light in the scene.
 	 *
-	 * @param   intensity       Intensity of ambient light.
+	 * @param intensity Intensity of ambient light.
 	 */
 	public void setAmbient( final float intensity )
 	{
@@ -507,20 +503,20 @@ public class Scene
 	/**
 	 * Sets the light intensity of the ambient light in the scene.
 	 *
-	 * @param   redIntensity    Intensity of the red color component.
-	 * @param   greenIntensity  Intensity of the green color component.
-	 * @param   blueIntensity   Intensity of the blue color component.
+	 * @param redIntensity   Intensity of the red color component.
+	 * @param greenIntensity Intensity of the green color component.
+	 * @param blueIntensity  Intensity of the blue color component.
 	 */
 	public void setAmbient( final float redIntensity, final float greenIntensity, final float blueIntensity )
 	{
 		//noinspection FloatingPointEquality
-		if ( ( _ambientColorRed   != redIntensity   ) ||
+		if ( ( _ambientColorRed != redIntensity ) ||
 		     ( _ambientColorGreen != greenIntensity ) ||
-		     ( _ambientColorBlue  != blueIntensity  ) )
+		     ( _ambientColorBlue != blueIntensity ) )
 		{
-			_ambientColorRed   = redIntensity;
+			_ambientColorRed = redIntensity;
 			_ambientColorGreen = greenIntensity;
-			_ambientColorBlue  = blueIntensity;
+			_ambientColorBlue = blueIntensity;
 
 			fireAmbientLightChanged();
 		}
@@ -529,7 +525,7 @@ public class Scene
 	/**
 	 * Add listener for events about updated to this scene.
 	 *
-	 * @param   listener    Listener to add.
+	 * @param listener Listener to add.
 	 */
 	public void addSceneUpdateListener( @NotNull final SceneUpdateListener listener )
 	{
@@ -544,7 +540,7 @@ public class Scene
 	/**
 	 * Remove listener for events about updated to this scene.
 	 *
-	 * @param   listener    Listener to remove.
+	 * @param listener Listener to remove.
 	 */
 	public void removeSceneUpdateListener( final SceneUpdateListener listener )
 	{
@@ -555,7 +551,7 @@ public class Scene
 	 * Send event about content node added to the scene to all registered
 	 * listeners.
 	 *
-	 * @param   node    Content node that was added.
+	 * @param node Content node that was added.
 	 */
 	public void fireContentNodeAdded( final ContentNode node )
 	{
@@ -575,7 +571,7 @@ public class Scene
 	 * Send event about content node that was removed from the scene to all
 	 * registered listeners.
 	 *
-	 * @param   node    Content node that was removed.
+	 * @param node Content node that was removed.
 	 */
 	public void fireContentNodeRemoved( final ContentNode node )
 	{
@@ -592,10 +588,10 @@ public class Scene
 	}
 
 	/**
-	 * Send event about updated content node content in the scene to all
-	 * registered listeners.
+	 * Send event about updated content node content in the scene to all registered
+	 * listeners.
 	 *
-	 * @param   node    Content node that was updated.
+	 * @param node Content node that was updated.
 	 */
 	public void fireContentNodeContentUpdated( final ContentNode node )
 	{
@@ -615,7 +611,7 @@ public class Scene
 	 * Send event about an updated content node property in the scene to all
 	 * registered listeners.
 	 *
-	 * @param   node    Content node that was updated.
+	 * @param node Content node that was updated.
 	 */
 	public void fireContentNodePropertyChanged( final ContentNode node )
 	{
@@ -652,7 +648,7 @@ public class Scene
 	/**
 	 * Returns plane controls that apply to the entire scene.
 	 *
-	 * @return  Plane controls.
+	 * @return Plane controls.
 	 */
 	@NotNull
 	public List<ScenePlaneControl> getPlaneControls()
@@ -663,7 +659,7 @@ public class Scene
 	/**
 	 * Adds the given plane control to the scene.
 	 *
-	 * @param   planeControl    Plane control to be added.
+	 * @param planeControl Plane control to be added.
 	 */
 	public void addPlaneControl( @NotNull final ScenePlaneControl planeControl )
 	{
@@ -673,7 +669,7 @@ public class Scene
 	/**
 	 * Removes the given plane control to the scene.
 	 *
-	 * @param   planeControl    Plane control to be removed.
+	 * @param planeControl Plane control to be removed.
 	 */
 	public void removePlaneControl( @NotNull final ScenePlaneControl planeControl )
 	{
@@ -683,7 +679,7 @@ public class Scene
 	/**
 	 * Returns a new scene update instance.
 	 *
-	 * @return  Scene update.
+	 * @return Scene update.
 	 */
 	public SceneUpdate createUpdate()
 	{
@@ -694,7 +690,7 @@ public class Scene
 	/**
 	 * Returns a sequence number for a newly created {@link SceneUpdate}.
 	 *
-	 * @return  Scene update sequence number.
+	 * @return Scene update sequence number.
 	 */
 	int incrementAndGetUpdateSequenceNumber()
 	{
@@ -704,7 +700,7 @@ public class Scene
 	/**
 	 * Returns the sequence number of the newest {@link SceneUpdate}.
 	 *
-	 * @return  Scene update sequence number.
+	 * @return Scene update sequence number.
 	 */
 	int getUpdateSequenceNumber()
 	{

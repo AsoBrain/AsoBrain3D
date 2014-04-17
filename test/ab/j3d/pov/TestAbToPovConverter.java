@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -75,6 +75,54 @@ extends TestCase
 		"/*\n" +
 		" * Texture definitions\n" +
 		" */\n" +
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <1.0,0.001,0.001>\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    rgb <1.0,0.0,0.0>\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <0.001,1.0,0.001>\n" +
+		"\t\t\ttransmit   0.8\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    rgb <0.0,1.0,0.0>\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <0.001,0.001,1.0>\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    rgb <0.0,0.0,1.0>\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
 
 		"#declare TEX_" + textureIterator.next() + " =\n" +
 		"\ttexture\n" +
@@ -119,11 +167,189 @@ extends TestCase
 		"\t{\n" +
 		"\t\tpigment\n" +
 		"\t\t{\n" +
-		"\t\t\tcolor      rgb <0.001,0.001,1.0>\n" +
+		"\t\t\tcolor      rgb <0.001,1.0,1.0>\n" +
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
-		"\t\t\tambient    rgb <0.0,0.0,1.0>\n" +
+		"\t\t\tambient    rgb <0.0,1.0,1.0>\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <1.0,0.001,1.0>\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <1.0,1.0,1.0>\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <1.0,0.7,0.7>\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\tcolor      rgb <1.0,0.38,0.001>\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    rgb <1.0,1.0,0.0>\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      0.2\n" +
+		"\t\t\tphong_size 8.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_TOP.jpg\"\n" +
+		"\t\t\t}\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\"\n" +
+		"\t\t\t}\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\"\n" +
+		"\t\t\t}\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BACK.jpg\"\n" +
+		"\t\t\t}\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\"\n" +
+		"\t\t\t}\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
+		"\t\t\tdiffuse    1.0\n" +
+		"\t\t\tphong      1.0\n" +
+		"\t\t\tphong_size 4.0\n" +
+		"\t\t}\n" +
+		"\t}\n\n" +
+
+		"#declare TEX_" + textureIterator.next() + " =\n" +
+		"\ttexture\n" +
+		"\t{\n" +
+		"\t\tpigment\n" +
+		"\t\t{\n" +
+		"\t\t\timage_map\n" +
+		"\t\t\t{\n" +
+		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\"\n" +
+		"\t\t\t}\n" +
+		"\t\t}\n" +
+		"\t\tfinish\n" +
+		"\t\t{\n" +
+		"\t\t\tambient    1.0\n" +
 		"\t\t\tdiffuse    1.0\n" +
 		"\t\t\tphong      1.0\n" +
 		"\t\t\tphong_size 4.0\n" +
@@ -299,233 +525,6 @@ extends TestCase
 		"\t\t}\n" +
 		"\t\tfinish\n" +
 		"\t\t{\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" + /* ORANGE */
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <1.0,0.38,0.001>\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    rgb <1.0,1.0,0.0>\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      0.2\n" +
-		"\t\t\tphong_size 8.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" + /* PINK */
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <1.0,0.7,0.7>\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\timage_map\n" +
-		"\t\t\t{\n" +
-		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_TOP.jpg\"\n" +
-		"\t\t\t}\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\timage_map\n" +
-		"\t\t\t{\n" +
-		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\"\n" +
-		"\t\t\t}\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\timage_map\n" +
-		"\t\t\t{\n" +
-		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\"\n" +
-		"\t\t\t}\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\timage_map\n" +
-		"\t\t\t{\n" +
-		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_BACK.jpg\"\n" +
-		"\t\t\t}\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\timage_map\n" +
-		"\t\t\t{\n" +
-		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\"\n" +
-		"\t\t\t}\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\timage_map\n" +
-		"\t\t\t{\n" +
-		"\t\t\t\tjpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\"\n" +
-		"\t\t\t}\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <1.0,0.001,1.0>\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <0.001,1.0,1.0>\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    rgb <0.0,1.0,1.0>\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <0.001,1.0,0.001>\n" +
-		"\t\t\ttransmit   0.8\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    rgb <0.0,1.0,0.0>\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <1.0,1.0,1.0>\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    1.0\n" +
-		"\t\t\tdiffuse    1.0\n" +
-		"\t\t\tphong      1.0\n" +
-		"\t\t\tphong_size 4.0\n" +
-		"\t\t}\n" +
-		"\t}\n\n" +
-
-		"#declare TEX_" + textureIterator.next() + " =\n" +
-		"\ttexture\n" +
-		"\t{\n" +
-		"\t\tpigment\n" +
-		"\t\t{\n" +
-		"\t\t\tcolor      rgb <1.0,0.001,0.001>\n" +
-		"\t\t}\n" +
-		"\t\tfinish\n" +
-		"\t\t{\n" +
-		"\t\t\tambient    rgb <1.0,0.0,0.0>\n" +
-		"\t\t\tdiffuse    1.0\n" +
 		"\t\t\tphong      1.0\n" +
 		"\t\t\tphong_size 4.0\n" +
 		"\t\t}\n" +
