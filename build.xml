@@ -360,7 +360,7 @@
 		<repack200 jar="lib/ab3d-rt-jogl2-natives-windows-amd64.jar"/>
 		<repack200 jar="lib/ab3d-rt-jogl2-natives-windows-i586.jar"/>
 		<repack200 jar="lib/ab3d-demos.jar"/>
-		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
+		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}" tsaurl="http://tsa.starfieldtech.com/">
 			<fileset file="lib/ab3d.jar"/>
 			<fileset file="lib/ab3d-rt-java2d.jar"/>
 			<fileset file="lib/ab3d-rt-jogl1.jar"/>
