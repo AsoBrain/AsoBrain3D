@@ -706,6 +706,17 @@ public class Alpha
 	}
 
 	/**
+	 * Get whether the function is finished. This is true when the alpha is not
+	 * repeating and the current time is after the end time.
+	 *
+	 * @return {@code true} if function is finished.
+	 */
+	public boolean isFinished()
+	{
+		return ( getRepeatDelay() <= 0 ) && ( System.currentTimeMillis() >= ( getStartAt() + getLength() ) );
+	}
+
+	/**
 	 * Interface for interpolation functions.
 	 */
 	public interface InterpolationFunction
