@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2014 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -82,6 +82,11 @@ public class TextureCache
 	 * Event listeners.
 	 */
 	private final List<TextureCacheListener> _listeners;
+
+	/**
+	 * Whether textures should be loaded asynchronously.
+	 */
+	private boolean _asynchronous = true;
 
 	/**
 	 * Construct new texture cache.
@@ -342,10 +347,10 @@ public class TextureCache
 	/**
 	 * Asynchronously loads the given texture.
 	 *
-	 * @param   key             Key identifying the texture.
-	 * @param   textureProxy    Texture to be loaded.
+	 * @param key          Key identifying the texture.
+	 * @param textureProxy Texture to be loaded.
 	 */
-	private void loadTexture( @NotNull final Object key , @NotNull final TextureProxy textureProxy )
+	private void loadTexture( @NotNull final Object key, @NotNull final TextureProxy textureProxy )
 	{
 		_textures.put( key, textureProxy );
 
@@ -359,6 +364,22 @@ public class TextureCache
 				fireTextureChange( textureProxy );
 			}
 		} );
+
+		if ( !isAsynchronous() )
+		{
+			try
+			{
+				textureData.get();
+			}
+			catch ( InterruptedException e )
+			{
+				throw new RuntimeException( e );
+			}
+			catch ( ExecutionException e )
+			{
+				throw new RuntimeException( e );
+			}
+		}
 	}
 
 	/**
@@ -394,10 +415,30 @@ public class TextureCache
 			{
 				for ( final TextureCacheListener listener : _listeners )
 				{
-					listener.textureChanged( TextureCache.this , textureProxy );
+					listener.textureChanged( TextureCache.this, textureProxy );
 				}
 			}
 		} );
+	}
+
+	/**
+	 * Sets whether textures should be loaded asynchronously.
+	 *
+	 * @param asynchronous {@code true} to load textures asynchronously (default).
+	 */
+	public void setAsynchronous( final boolean asynchronous )
+	{
+		_asynchronous = asynchronous;
+	}
+
+	/**
+	 * Returns whether textures should be loaded asynchronously.
+	 *
+	 * @return {@code true} to load textures asynchronously.
+	 */
+	public boolean isAsynchronous()
+	{
+		return _asynchronous;
 	}
 
 	/**

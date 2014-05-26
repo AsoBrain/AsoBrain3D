@@ -553,6 +553,28 @@ public abstract class View3D
 	public abstract Component getComponent();
 
 	/**
+	 * Returns the width of the view, in pixels.
+	 *
+	 * @return View width in pixels.
+	 */
+	protected int getWidth()
+	{
+		final Component viewComponent = getComponent();
+		return viewComponent.getWidth();
+	}
+
+	/**
+	 * Returns the height of the view, in pixels.
+	 *
+	 * @return View height in pixels.
+	 */
+	protected int getHeight()
+	{
+		final Component viewComponent = getComponent();
+		return viewComponent.getHeight();
+	}
+
+	/**
 	 * Get resolution of image in meters per pixel.
 	 *
 	 * @return  Resolution of image in meters per pixel.
@@ -596,8 +618,7 @@ public abstract class View3D
 	 */
 	public double getAspectRatio()
 	{
-		final Component component = getComponent();
-		return (double)component.getWidth() / (double)component.getHeight();
+		return (double)getWidth() / (double)getHeight();
 	}
 
 	/**
@@ -926,13 +947,12 @@ public abstract class View3D
 
 		final Scene scene = getScene();
 		final double unscaledPixels2units = getResolution() / scene.getUnit();
-		final Component viewComponent = getComponent();
 		final double aspectRatio = getAspectRatio();
 		final double fieldOfView = getFieldOfView();
 		final double frontClipDistance = getFrontClipDistance();
 
-		final double scaleX = (double)viewComponent.getWidth() / viewSizeX;
-		final double scaleY = (double)viewComponent.getHeight() / viewSizeY;
+		final double scaleX = (double)getWidth() / viewSizeX;
+		final double scaleY = (double)getHeight() / viewSizeY;
 		final double zoomFactor = Math.min( scaleX, scaleY ) * unscaledPixels2units;
 
 		final double eyeDistance2width = 2.0 * Math.tan( fieldOfView / 2.0 );
