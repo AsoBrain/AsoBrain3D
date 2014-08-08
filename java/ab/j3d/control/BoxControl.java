@@ -374,6 +374,36 @@ public class BoxControl
 		}
 	}
 
+	public void mouseEntered( final ControlInputEvent event, final ContentNode contentNode )
+	{
+		boolean hover = false;
+		for ( final BoxSide side : _sides )
+		{
+			side.mouseEntered( event, contentNode );
+			hover |= side.isHover();
+		}
+		_hover = hover;
+
+		if ( _listener != null )
+		{
+			_listener.mouseEntered( event, contentNode );
+		}
+	}
+
+	public void mouseExited( final ControlInputEvent event, final ContentNode contentNode )
+	{
+		for ( final BoxSide side : _sides )
+		{
+			side.mouseExited( event, contentNode );
+		}
+		_hover = false;
+
+		if ( _listener != null )
+		{
+			_listener.mouseExited( event, contentNode );
+		}
+	}
+
 	public void paintOverlay( final View3D view, final Graphics2D g )
 	{
 		for ( final BoxSide side : _sides )

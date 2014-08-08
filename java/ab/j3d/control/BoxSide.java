@@ -1038,6 +1038,24 @@ public abstract class BoxSide
 		}
 	}
 
+	public void mouseEntered( final ControlInputEvent event, final ContentNode contentNode )
+	{
+	}
+
+	public void mouseExited( final ControlInputEvent event, final ContentNode contentNode )
+	{
+		if ( _hover || ( _hoverEdgeX != null ) || ( _hoverEdgeY != null ) )
+		{
+			_hover = false;
+			_hoverEdgeX = null;
+			_hoverEdgeY = null;
+
+			final ViewControlInput source = event.getSource();
+			final View3D view = source.getView();
+			view.update();
+		}
+	}
+
 	public void paintOverlay( final View3D view, final Graphics2D g )
 	{
 		if ( isVisible() )

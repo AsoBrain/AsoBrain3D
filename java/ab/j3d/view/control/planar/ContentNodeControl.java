@@ -98,4 +98,20 @@ public interface ContentNodeControl
 	 * @param   contentNode     Node whose plane is controlled.
 	 */
 	void mouseReleased( ControlInputEvent event, ContentNode contentNode);
+
+	/**
+	 * Notifies the control that mouse cursor entered the control.
+	 *
+	 * @param   event           Event from control.
+	 * @param   contentNode     Node whose plane is controlled.
+	 */
+	void mouseEntered( ControlInputEvent event, ContentNode contentNode );
+
+	/**
+	 * Notifies the control that mouse cursor exited the control.
+	 *
+	 * @param   event           Event from control.
+	 * @param   contentNode     Node whose plane is controlled.
+	 */
+	void mouseExited( ControlInputEvent event, ContentNode contentNode );
 }

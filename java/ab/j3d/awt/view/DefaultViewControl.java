@@ -94,6 +94,11 @@ public class DefaultViewControl
 	private List<ContentNode> _previousContentNodes = null;
 
 	/**
+	 * Content nodes that the mouse has entered.
+	 */
+	private ContentNode _hoverNode = null;
+
+	/**
 	 * Returns content nodes with a {@link ContentNodeControl} in the appropriate order
 	 * for the given event.
 	 *
@@ -482,6 +487,8 @@ public class DefaultViewControl
 
 		boolean update = false;
 
+		ContentNode hoverNode = null;
+
 		final List<ContentNode> controlledContentNodes = getControlledContentNodes( event );
 		for ( final ContentNode contentNode : controlledContentNodes )
 		{
@@ -490,10 +497,35 @@ public class DefaultViewControl
 			{
 				if ( control.getDepth( event.getPointerRay() ) != null )
 				{
-					control.mouseMoved( event, contentNode );
+					hoverNode = contentNode;
 					break;
 				}
 			}
+		}
+
+		final ContentNode currentHoverNode = _hoverNode;
+		if ( currentHoverNode != hoverNode )
+		{
+			if ( currentHoverNode != null )
+			{
+				final ContentNodeControl control = currentHoverNode.getControl();
+				if ( control != null )
+				{
+					control.mouseExited( event, currentHoverNode );
+				}
+			}
+
+			if ( hoverNode != null )
+			{
+				final ContentNodeControl control = hoverNode.getControl();
+				if ( control != null )
+				{
+					control.mouseEntered( event, hoverNode );
+					control.mouseMoved( event, hoverNode );
+				}
+			}
+
+			_hoverNode = hoverNode;
 		}
 
 		for ( final ScenePlaneControl planeControl : scene.getPlaneControls() )
