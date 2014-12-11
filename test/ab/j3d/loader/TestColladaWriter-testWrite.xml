@@ -102,12 +102,12 @@
 				<vertices id="o1-vertices">
 					<input semantic="POSITION" source="#o1-position"/>
 				</vertices>
-				<trifans count="6" material="m1">
+				<triangles count="6" material="m1">
 					<input semantic="VERTEX" source="#o1-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o1-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o1-texcoord" offset="1" set="0"/>
-					<p>0 0 1 1 2 2 3 3 4 4 5 5 6 6 7 7 </p>
-				</trifans>
+					<p>0 0 1 1 2 2 0 0 2 2 3 3 0 0 3 3 4 4 0 0 4 4 5 5 0 0 5 5 6 6 0 0 6 6 7 7 </p>
+				</triangles>
 				<triangles count="2" material="m2">
 					<input semantic="VERTEX" source="#o1-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o1-normal" offset="1"/>
@@ -156,12 +156,12 @@
 					<input semantic="TEXCOORD" source="#o1-texcoord" offset="1" set="0"/>
 					<p>0 36 7 37 15 38 0 36 15 38 8 39 </p>
 				</triangles>
-				<trifans count="6" material="m3">
+				<triangles count="6" material="m3">
 					<input semantic="VERTEX" source="#o1-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o1-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o1-texcoord" offset="1" set="0"/>
-					<p>15 40 14 41 13 42 12 43 11 44 10 45 9 46 8 47 </p>
-				</trifans>
+					<p>15 40 14 41 13 42 15 40 13 42 12 43 15 40 12 43 11 44 15 40 11 44 10 45 15 40 10 45 9 46 15 40 9 46 8 47 </p>
+				</triangles>
 			</mesh>
 		</geometry>
 		<geometry id="o2">
@@ -198,390 +198,390 @@
 				<vertices id="o2-vertices">
 					<input semantic="POSITION" source="#o2-position"/>
 				</vertices>
-				<trifans count="1" material="m4">
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>2 2 1 1 0 0 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>3 5 2 4 0 3 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>4 8 3 7 0 6 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>5 11 4 10 0 9 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>6 14 5 13 0 12 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>7 17 6 16 0 15 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>8 20 7 19 0 18 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>1 23 8 22 0 21 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>10 27 9 26 1 25 2 24 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>10 27 9 26 1 25 10 27 1 25 2 24 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>11 31 10 30 2 29 3 28 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>11 31 10 30 2 29 11 31 2 29 3 28 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>12 35 11 34 3 33 4 32 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>12 35 11 34 3 33 12 35 3 33 4 32 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>13 39 12 38 4 37 5 36 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>13 39 12 38 4 37 13 39 4 37 5 36 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>14 43 13 42 5 41 6 40 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>14 43 13 42 5 41 14 43 5 41 6 40 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>15 47 14 46 6 45 7 44 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>15 47 14 46 6 45 15 47 6 45 7 44 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>16 51 15 50 7 49 8 48 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>16 51 15 50 7 49 16 51 7 49 8 48 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>9 55 16 54 8 53 1 52 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>9 55 16 54 8 53 9 55 8 53 1 52 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>18 59 17 58 9 57 10 56 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>18 59 17 58 9 57 18 59 9 57 10 56 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>19 63 18 62 10 61 11 60 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>19 63 18 62 10 61 19 63 10 61 11 60 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>20 67 19 66 11 65 12 64 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>20 67 19 66 11 65 20 67 11 65 12 64 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>21 71 20 70 12 69 13 68 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>21 71 20 70 12 69 21 71 12 69 13 68 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>22 75 21 74 13 73 14 72 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>22 75 21 74 13 73 22 75 13 73 14 72 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>23 79 22 78 14 77 15 76 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>23 79 22 78 14 77 23 79 14 77 15 76 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>24 83 23 82 15 81 16 80 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>24 83 23 82 15 81 24 83 15 81 16 80 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>17 87 24 86 16 85 9 84 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>17 87 24 86 16 85 17 87 16 85 9 84 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>26 91 25 90 17 89 18 88 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>26 91 25 90 17 89 26 91 17 89 18 88 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>27 95 26 94 18 93 19 92 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>27 95 26 94 18 93 27 95 18 93 19 92 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>28 99 27 98 19 97 20 96 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>28 99 27 98 19 97 28 99 19 97 20 96 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>29 103 28 102 20 101 21 100 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>29 103 28 102 20 101 29 103 20 101 21 100 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>30 107 29 106 21 105 22 104 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>30 107 29 106 21 105 30 107 21 105 22 104 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>31 111 30 110 22 109 23 108 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>31 111 30 110 22 109 31 111 22 109 23 108 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>32 115 31 114 23 113 24 112 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>32 115 31 114 23 113 32 115 23 113 24 112 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>25 119 32 118 24 117 17 116 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>25 119 32 118 24 117 25 119 24 117 17 116 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>34 123 33 122 25 121 26 120 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>34 123 33 122 25 121 34 123 25 121 26 120 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>35 127 34 126 26 125 27 124 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>35 127 34 126 26 125 35 127 26 125 27 124 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>36 131 35 130 27 129 28 128 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>36 131 35 130 27 129 36 131 27 129 28 128 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>37 135 36 134 28 133 29 132 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>37 135 36 134 28 133 37 135 28 133 29 132 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>38 139 37 138 29 137 30 136 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>38 139 37 138 29 137 38 139 29 137 30 136 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>39 143 38 142 30 141 31 140 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>39 143 38 142 30 141 39 143 30 141 31 140 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>40 147 39 146 31 145 32 144 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>40 147 39 146 31 145 40 147 31 145 32 144 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>33 151 40 150 32 149 25 148 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>33 151 40 150 32 149 33 151 32 149 25 148 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>42 155 41 154 33 153 34 152 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>42 155 41 154 33 153 42 155 33 153 34 152 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>43 159 42 158 34 157 35 156 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>43 159 42 158 34 157 43 159 34 157 35 156 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>44 163 43 162 35 161 36 160 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>44 163 43 162 35 161 44 163 35 161 36 160 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>45 167 44 166 36 165 37 164 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>45 167 44 166 36 165 45 167 36 165 37 164 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>46 171 45 170 37 169 38 168 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>46 171 45 170 37 169 46 171 37 169 38 168 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>47 175 46 174 38 173 39 172 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>47 175 46 174 38 173 47 175 38 173 39 172 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>48 179 47 178 39 177 40 176 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>48 179 47 178 39 177 48 179 39 177 40 176 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>41 183 48 182 40 181 33 180 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>41 183 48 182 40 181 41 183 40 181 33 180 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>50 187 49 186 41 185 42 184 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>50 187 49 186 41 185 50 187 41 185 42 184 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>51 191 50 190 42 189 43 188 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>51 191 50 190 42 189 51 191 42 189 43 188 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>52 195 51 194 43 193 44 192 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>52 195 51 194 43 193 52 195 43 193 44 192 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>53 199 52 198 44 197 45 196 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>53 199 52 198 44 197 53 199 44 197 45 196 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>54 203 53 202 45 201 46 200 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>54 203 53 202 45 201 54 203 45 201 46 200 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>55 207 54 206 46 205 47 204 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>55 207 54 206 46 205 55 207 46 205 47 204 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>56 211 55 210 47 209 48 208 </p>
-				</trifans>
-				<trifans count="2" material="m4">
+					<p>56 211 55 210 47 209 56 211 47 209 48 208 </p>
+				</triangles>
+				<triangles count="2" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
-					<p>49 215 56 214 48 213 41 212 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+					<p>49 215 56 214 48 213 49 215 48 213 41 212 </p>
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 218 49 217 50 216 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 221 50 220 51 219 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 224 51 223 52 222 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 227 52 226 53 225 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 230 53 229 54 228 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 233 54 232 55 231 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 236 55 235 56 234 </p>
-				</trifans>
-				<trifans count="1" material="m4">
+				</triangles>
+				<triangles count="1" material="m4">
 					<input semantic="VERTEX" source="#o2-vertices" offset="0"/>
 					<input semantic="NORMAL" source="#o2-normal" offset="1"/>
 					<input semantic="TEXCOORD" source="#o2-texcoord" offset="1" set="0"/>
 					<p>57 239 56 238 49 237 </p>
-				</trifans>
+				</triangles>
 			</mesh>
 		</geometry>
 		<geometry id="o3">
