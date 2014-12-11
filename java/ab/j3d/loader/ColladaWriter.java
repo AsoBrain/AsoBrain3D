@@ -652,11 +652,33 @@ public class ColladaWriter
 
 					if ( primitive instanceof TriangleFan )
 					{
-						tagName = "trifans";
+						/*
+						 * There appears to be a bug in Blender's COLLADA
+						 * importer. Tested against version 2.72.
+						 *
+						 * The bug also appears in the current master HEAD.
+						 * See source code at: http://git.blender.org/gitweb/gitweb.cgi/blender.git/blob/2309def874da2986d1bc31b1233671936bcd39f1:/source/blender/collada/MeshImporter.cpp#l639
+						 *
+						 * Line 639-639:
+						 * Notice that the pointer 'position_indices' is not
+						 * incremented in the inner loop. So only the first
+						 * triangle is created (possibly multiple times).
+						 */
+						final boolean blenderBug = true;
+						if ( blenderBug )
+						{
+							tagName = "triangles";
+							vertices = primitive.getTriangles();
+							count = vertices.length / 3;
+						}
+						else
+						{
+							tagName = "trifans";
 
-						// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
-						vertices = primitive.getVertices();
-						count = vertices.length - 2;
+							// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
+							vertices = primitive.getVertices();
+							count = vertices.length - 2;
+						}
 					}
 					else if ( primitive instanceof TriangleStrip )
 					{
