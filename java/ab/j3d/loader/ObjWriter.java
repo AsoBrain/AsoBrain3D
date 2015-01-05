@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,6 @@ import org.jetbrains.annotations.*;
  * Writes a {@link Node3D} in OBJ format.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class ObjWriter
 {
@@ -63,19 +62,100 @@ public class ObjWriter
 	private final Collection<String> _uniqueNames = new HashSet<String>();
 
 	/**
-	 * Texture vertices.
+	 * Vertex positions.
 	 */
 	private final HashList<Vector3D> _vertices = new HashList<Vector3D>();
 
 	/**
-	 * Texture vertices.
+	 * Vertex texture coordinates.
 	 */
 	private final HashList<Vector2f> _textureVertices = new HashList<Vector2f>();
 
 	/**
-	 * Texture vertices.
+	 * Vertex normals.
 	 */
 	private final HashList<Vector3D> _normals = new HashList<Vector3D>();
+
+	/**
+	 * Converter for image URLs used in MTL files.
+	 */
+	private UrlConverter _imageUrlConverter = new DefaultUrlConverter();
+
+	/**
+	 * Whether unsupported reflection properties are written as comments.
+	 */
+	private boolean _reflectionCommentsEnabled = false;
+
+	/**
+	 * Whether {@link Object3D objects} should be written as named polygon
+	 * groups, instead of individual objects.
+	 */
+	private boolean _writeObjectsAsGroups = false;
+
+	/**
+	 * Returns the converter for image URLs used in MTL files.
+	 *
+	 * @return URL converter.
+	 */
+	public UrlConverter getImageUrlConverter()
+	{
+		return _imageUrlConverter;
+	}
+
+	/**
+	 * Returns whether unsupported reflection properties are written as
+	 * comments.
+	 *
+	 * @return {@code true} to write comments with unsupported reflection
+	 * properties.
+	 */
+	public boolean isReflectionCommentsEnabled()
+	{
+		return _reflectionCommentsEnabled;
+	}
+
+	/**
+	 * Sets whether unsupported reflection properties are written as comments.
+	 *
+	 * @param reflectionCommentsEnabled {@code true} to write comments with
+	 *                                unsupported reflection properties.
+	 */
+	public void setReflectionCommentsEnabled( final boolean reflectionCommentsEnabled )
+	{
+		_reflectionCommentsEnabled = reflectionCommentsEnabled;
+	}
+
+	/**
+	 * Returns whether {@link Object3D objects} should be written as named
+	 * polygon groups, instead of individual objects.
+	 *
+	 * @return {@code true} when writing objects as groups.
+	 */
+	public boolean isWriteObjectsAsGroups()
+	{
+		return _writeObjectsAsGroups;
+	}
+
+	/**
+	 * Sets whether {@link Object3D objects} should be written as named polygon
+	 * groups, instead of individual objects.
+	 *
+	 * @param writeObjectsAsGroups {@code true} to write objects as groups.
+	 */
+	public void setWriteObjectsAsGroups( final boolean writeObjectsAsGroups )
+	{
+		_writeObjectsAsGroups = writeObjectsAsGroups;
+	}
+
+	/**
+	 * Sets the converter for image URLs used in MTL files.
+	 *
+	 * @param imageUrlConverter URL converter to set.
+	 */
+	public void setImageUrlConverter( final UrlConverter imageUrlConverter )
+	{
+		_imageUrlConverter = imageUrlConverter;
+	}
 
 	/**
 	 * Add {@link Appearance} to MTL file. If the appearance was added before,
@@ -85,13 +165,8 @@ public class ObjWriter
 	 *
 	 * @return Name of appearance.
 	 */
-	public String addAppearance( final Appearance appearance )
+	public String addAppearance( @NotNull final Appearance appearance )
 	{
-		if ( appearance == null )
-		{
-			throw new IllegalArgumentException( "can't add 'null' appearance" );
-		}
-
 		final Map<Appearance, String> appearanceNames = _appearanceNames;
 
 		String result = appearanceNames.get( appearance );
@@ -114,7 +189,7 @@ public class ObjWriter
 	 * @throws IllegalArgumentException if the appearance was already added with
 	 * another name.
 	 */
-	public void addAppearance( final String name, final Appearance appearance )
+	public void addAppearance( final String name, @NotNull final Appearance appearance )
 	{
 		final Map<Appearance, String> appearanceNames = _appearanceNames;
 		final String oldName = appearanceNames.put( appearance, name );
@@ -150,11 +225,10 @@ public class ObjWriter
 	 * @param out             Stream to write to.
 	 * @param node            Node to be written.
 	 * @param name            Name for the OBJ/MTL files (without extension).
-	 * @param removeUrlPrefix Prefix to remove from URLs (optional).
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public void writeZIP( final OutputStream out, final Node3D node, final String name, final String removeUrlPrefix )
+	public void writeZIP( final OutputStream out, final Node3D node, final String name )
 	throws IOException
 	{
 		final ZipOutputStream zipOut = new ZipOutputStream( new BufferedOutputStream( out ) );
@@ -170,7 +244,7 @@ public class ObjWriter
 		}
 
 		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
-		writeMTL( zipOut, appearances, removeUrlPrefix );
+		writeMTL( zipOut, appearances );
 		zipOut.closeEntry();
 
 		zipOut.finish();
@@ -181,19 +255,60 @@ public class ObjWriter
 	 * Writes an MTL file containing the given appearances.
 	 *
 	 * @param out             Stream to write to.
-	 * @param appearances     Appearances to be written.
-	 * @param removeUrlPrefix Prefix to remove from URLs (optional).
+	 * @param node            Node to write appearances for.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public void writeMTL( final OutputStream out, final Map<String, ? extends Appearance> appearances, final String removeUrlPrefix )
+	public void writeMTL( final OutputStream out, final Node3D node )
+	throws IOException
+	{
+		Node3DTreeWalker.walk( new Node3DVisitor()
+		{
+			public boolean visitNode( @NotNull final Node3DPath path )
+			{
+				final Node3D node = path.getNode();
+				if ( node instanceof Object3D )
+				{
+					final Object3D object = (Object3D)node;
+					for ( final FaceGroup faceGroup : object.getFaceGroups() )
+					{
+						final Appearance appearance = faceGroup.getAppearance();
+						if ( appearance != null )
+						{
+							addAppearance( appearance );
+						}
+					}
+				}
+				return true;
+			}
+		}, node );
+
+		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+
+		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
+		{
+			writeMtlRecord( mtlWriter, entry.getValue(), entry.getKey() );
+		}
+
+		mtlWriter.flush();
+	}
+
+	/**
+	 * Writes an MTL file containing the given appearances.
+	 *
+	 * @param out             Stream to write to.
+	 * @param appearances     Appearances to be written.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public void writeMTL( final OutputStream out, final Map<String, ? extends Appearance> appearances )
 	throws IOException
 	{
 		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
 
 		for ( final Map.Entry<String, ? extends Appearance> entry : appearances.entrySet() )
 		{
-			writeMtlRecord( mtlWriter, entry.getKey(), entry.getValue(), removeUrlPrefix );
+			writeMtlRecord( mtlWriter, entry.getKey(), entry.getValue() );
 		}
 
 		mtlWriter.flush();
@@ -202,14 +317,13 @@ public class ObjWriter
 	/**
 	 * Writes a definition of the given appearance.
 	 *
-	 * @param out             Character stream to write record to.
-	 * @param materialName    Material name used in the MTL.
-	 * @param appearance      Appearance to be written.
-	 * @param removeUrlPrefix Prefix to remove from URLs (optional).
+	 * @param out          Character stream to write record to.
+	 * @param materialName Material name used in the MTL.
+	 * @param appearance   Appearance to be written.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	private static void writeMtlRecord( final Appendable out, final CharSequence materialName, final Appearance appearance, final String removeUrlPrefix )
+	private void writeMtlRecord( final Appendable out, final CharSequence materialName, final Appearance appearance )
 	throws IOException
 	{
 		//noinspection SpellCheckingInspection
@@ -263,14 +377,8 @@ public class ObjWriter
 			final URL colorMapImageUrl = colorMap.getImageUrl();
 			if ( colorMapImageUrl != null )
 			{
-				String url = colorMapImageUrl.toExternalForm();
-				if ( ( removeUrlPrefix != null ) && url.startsWith( removeUrlPrefix ) )
-				{
-					url = url.substring( removeUrlPrefix.length() );
-				}
-
 				out.append( "map_Kd " );
-				out.append( url );
+				out.append( _imageUrlConverter.convertToString( colorMapImageUrl ) );
 				out.append( "\r\n" );
 			}
 		}
@@ -281,14 +389,22 @@ public class ObjWriter
 			final URL bumpMapImageUrl = bumpMap.getImageUrl();
 			if ( bumpMapImageUrl != null )
 			{
-				String url = bumpMapImageUrl.toExternalForm();
-				if ( ( removeUrlPrefix != null ) && url.startsWith( removeUrlPrefix ) )
-				{
-					url = url.substring( removeUrlPrefix.length() );
-				}
-
 				out.append( "bump " );
-				out.append( url );
+				out.append( _imageUrlConverter.convertToString( bumpMapImageUrl ) );
+				out.append( "\r\n" );
+			}
+		}
+
+		final CubeMap reflectionMap = appearance.getReflectionMap();
+		if ( reflectionMap != null )
+		{
+			if ( isReflectionCommentsEnabled() )
+			{
+				// NOTE: MTL doesn't support minimum/maximum reflectivity. Write as comment instead.
+				out.append( "#reflect " );
+				out.append( String.valueOf( appearance.getReflectionMin() ) );
+				out.append( " " );
+				out.append( String.valueOf( appearance.getReflectionMax() ) );
 				out.append( "\r\n" );
 			}
 		}
@@ -427,7 +543,7 @@ public class ObjWriter
 			final Object3D object = (Object3D)path.getNode();
 			final Map<Vertex3D, ObjVertex> vertexMap = vertexMaps.get( path );
 
-			out.append( "o " );
+			out.append( isWriteObjectsAsGroups() ? "g " : "o " );
 			out.append( getObjectName( object ) );
 			out.append( "\r\n" );
 
@@ -605,15 +721,31 @@ public class ObjWriter
 					final Vector3D faceNormal = face.getNormal();
 					final int vertexCount = face.getVertexCount();
 
+					boolean hasTextureVertex = false;
+					boolean hasVertexNormal = false;
+
+					for ( int i = 0; i < vertexCount; i++ )
+					{
+						final Vertex3D vertex = face.getVertex( i );
+						if ( !Double.isNaN( vertex.colorMapU ) && !Double.isNaN( vertex.colorMapV ) )
+						{
+							hasTextureVertex = true;
+						}
+
+						final Vector3D vertexNormal = face.getVertexNormal( i );
+						if ( vertexNormal.isNonZero() && !vertexNormal.almostEquals( faceNormal ) )
+						{
+							hasVertexNormal = true;
+						}
+					}
+
 					for ( int i = 0; i < vertexCount; i++ )
 					{
 						final Vertex3D vertex = face.getVertex( i );
 						final Vector3D vertexNormal = face.getVertexNormal( i );
-						final boolean hasTextureVertex = !Double.isNaN( vertex.colorMapU ) && !Double.isNaN( vertex.colorMapV );
-						final boolean hasVertexNormal = vertexNormal.isNonZero() && !vertexNormal.almostEquals( faceNormal );
 
 						final int v = 1 + vertices.indexOfOrAdd( transform.transform( vertex.point ) );
-						final int vt = hasTextureVertex ? ( 1 + textureVertices.indexOfOrAdd( new Vector2f( vertex.colorMapU, vertex.colorMapV ) ) ) : 0;
+						final int vt = hasTextureVertex ? ( 1 + textureVertices.indexOfOrAdd( new Vector2f( Float.isNaN( vertex.colorMapU ) ? 0.0f : vertex.colorMapU, Float.isNaN( vertex.colorMapV ) ? 0.0f : vertex.colorMapV ) ) ) : 0;
 						final int vn = hasVertexNormal ? 1 + normals.indexOfOrAdd( transform.rotate( vertexNormal ) ) : 0;
 
 						vertexMap.put( vertex, new ObjVertex( v, vt, vn ) );
