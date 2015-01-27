@@ -262,6 +262,22 @@ public class ObjWriter
 	public void writeMTL( final OutputStream out, final Node3D node )
 	throws IOException
 	{
+		final BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		writeMTL( writer, node );
+		writer.flush();
+	}
+
+	/**
+	 * Writes an MTL file containing the given appearances.
+	 *
+	 * @param writer          Stream to write to.
+	 * @param node            Node to write appearances for.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public void writeMTL( final BufferedWriter writer, final Node3D node )
+	throws IOException
+	{
 		Node3DTreeWalker.walk( new Node3DVisitor()
 		{
 			public boolean visitNode( @NotNull final Node3DPath path )
@@ -283,14 +299,10 @@ public class ObjWriter
 			}
 		}, node );
 
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
-
 		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
 		{
-			writeMtlRecord( mtlWriter, entry.getValue(), entry.getKey() );
+			writeMtlRecord( writer, entry.getValue(), entry.getKey() );
 		}
-
-		mtlWriter.flush();
 	}
 
 	/**
@@ -304,14 +316,26 @@ public class ObjWriter
 	public void writeMTL( final OutputStream out, final Map<String, ? extends Appearance> appearances )
 	throws IOException
 	{
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		writeMTL( writer, appearances );
+		writer.flush();
+	}
 
+	/**
+	 * Writes an MTL file containing the given appearances.
+	 *
+	 * @param writer          Stream to write to.
+	 * @param appearances     Appearances to be written.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	private void writeMTL( final BufferedWriter writer, final Map<String, ? extends Appearance> appearances )
+	throws IOException
+	{
 		for ( final Map.Entry<String, ? extends Appearance> entry : appearances.entrySet() )
 		{
-			writeMtlRecord( mtlWriter, entry.getKey(), entry.getValue() );
+			writeMtlRecord( writer, entry.getKey(), entry.getValue() );
 		}
-
-		mtlWriter.flush();
 	}
 
 	/**
