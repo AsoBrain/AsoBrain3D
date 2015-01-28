@@ -161,7 +161,7 @@ implements GLEventListener
 			public void run()
 			{
 				final GLOffscreenAutoDrawable drawable = _drawable;
-				drawable.setSize( width, height );
+				drawable.setSurfaceSize( width, height );
 
 				final GLContext context = drawable.getContext();
 				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
@@ -184,7 +184,7 @@ implements GLEventListener
 				try
 				{
 					final GL gl = context.getGL();
-					gl.glViewport( 0, 0, drawable.getWidth(), drawable.getHeight() );
+					gl.glViewport( 0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight() );
 					display( drawable );
 
 					final AWTGLReadBufferUtil readBufferUtil = new AWTGLReadBufferUtil( drawable.getGLProfile(), false );
@@ -308,8 +308,8 @@ implements GLEventListener
 	public Projector getProjector()
 	{
 		final GLDrawable viewComponent = _drawable;
-		final int imageWidth = viewComponent.getWidth();
-		final int imageHeight = viewComponent.getHeight();
+		final int imageWidth = viewComponent.getSurfaceWidth();
+		final int imageHeight = viewComponent.getSurfaceHeight();
 		final double imageResolution = getResolution();
 
 		final Scene scene = getScene();
@@ -332,13 +332,13 @@ implements GLEventListener
 	@Override
 	protected int getWidth()
 	{
-		return _drawable.getWidth();
+		return _drawable.getSurfaceWidth();
 	}
 
 	@Override
 	protected int getHeight()
 	{
-		return _drawable.getHeight();
+		return _drawable.getSurfaceHeight();
 	}
 
 	/**
@@ -397,8 +397,8 @@ implements GLEventListener
 		final GL gl = GLContext.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
 
-		final int width = glAutoDrawable.getWidth();
-		final int height = glAutoDrawable.getHeight();
+		final int width = glAutoDrawable.getSurfaceWidth();
+		final int height = glAutoDrawable.getSurfaceHeight();
 
 		if ( ( width > 0 ) && ( height > 0 ) )
 		{
