@@ -957,9 +957,9 @@ public class JOGLGraphics2D
 		final TextRenderer renderer = getTextRenderer();
 
 		renderer.setColor( getColor() );
-		renderer.beginRendering( gla.getWidth() , gla.getHeight() );
+		renderer.beginRendering( gla.getSurfaceWidth() , gla.getSurfaceHeight() );
 		// Draw text
-		renderer.draw( str , x , gla.getHeight() - y );
+		renderer.draw( str , x , gla.getSurfaceHeight() - y );
 		// Clean up rendering
 		renderer.endRendering();
 	}

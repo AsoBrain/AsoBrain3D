@@ -32,7 +32,6 @@ import javax.swing.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import com.jogamp.nativewindow.awt.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -280,30 +279,6 @@ implements GLEventListener
 			graphics2D.dispose();
 			_graphics2D = null;
 		}
-	}
-
-	/**
-	 * Creates an offscreen buffer of the jogl context.
-	 *
-	 * @return Offscreen {@link GLPbuffer} of the jogl context or <code>NULL</code>
-	 *         if the graphic card doesnt have this ability.
-	 *
-	 * @deprecated Uses {@link GLPbuffer}, which is deprecated.
-	 */
-	@Nullable
-	public GLPbuffer createOffscreenBuffer()
-	{
-		GLPbuffer buffer = null;
-
-		final GLProfile profile = GLProfile.get( GLProfile.GL2 );
-		final GLDrawableFactory factory = GLDrawableFactory.getFactory( profile );
-		final AbstractGraphicsDevice graphicsDevice = AWTGraphicsDevice.createDefault();
-		if ( factory.canCreateGLPbuffer( graphicsDevice, profile ) )
-		{
-			buffer = factory.createGLPbuffer( graphicsDevice, _glCanvas.getChosenGLCapabilities(), null, _glCanvas.getWidth(), _glCanvas.getHeight(), _glCanvas.getContext() );
-		}
-
-		return buffer;
 	}
 
 	@Override
@@ -579,8 +554,8 @@ implements GLEventListener
 		final GL gl = glAutoDrawable.getGL();
 		final GL2 gl2 = gl.getGL2();
 
-		final int width = glAutoDrawable.getWidth();
-		final int height = glAutoDrawable.getHeight();
+		final int width = glAutoDrawable.getSurfaceWidth();
+		final int height = glAutoDrawable.getSurfaceHeight();
 
 		if ( ( width > 0 ) && ( height > 0 ) )
 		{
