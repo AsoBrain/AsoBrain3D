@@ -262,7 +262,7 @@ public class ObjWriter
 	public void writeMTL( final OutputStream out, final Node3D node )
 	throws IOException
 	{
-		final BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final Writer writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
 		writeMTL( writer, node );
 		writer.flush();
 	}
@@ -275,7 +275,7 @@ public class ObjWriter
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public void writeMTL( final BufferedWriter writer, final Node3D node )
+	public void writeMTL( final Writer writer, final Node3D node )
 	throws IOException
 	{
 		Node3DTreeWalker.walk( new Node3DVisitor()
@@ -316,7 +316,7 @@ public class ObjWriter
 	public void writeMTL( final OutputStream out, final Map<String, ? extends Appearance> appearances )
 	throws IOException
 	{
-		final BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final Writer writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
 		writeMTL( writer, appearances );
 		writer.flush();
 	}
@@ -329,7 +329,7 @@ public class ObjWriter
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	private void writeMTL( final BufferedWriter writer, final Map<String, ? extends Appearance> appearances )
+	private void writeMTL( final Writer writer, final Map<String, ? extends Appearance> appearances )
 	throws IOException
 	{
 		for ( final Map.Entry<String, ? extends Appearance> entry : appearances.entrySet() )
@@ -446,7 +446,7 @@ public class ObjWriter
 	public void write( final OutputStream out, final Node3D node, final String... materialLibraries )
 	throws IOException
 	{
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final Writer objWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
 		write( objWriter, node, materialLibraries );
 		objWriter.flush();
 	}
