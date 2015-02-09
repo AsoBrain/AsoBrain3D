@@ -298,6 +298,9 @@
 			<fileset dir="classes/java">
 				<include name="ab/j3d/demo/**"/>
 			</fileset>
+			<fileset dir="images">
+				<include name="maps/alu-plate*.jpg,maps/reflect-sky-bw.jpg"/>
+			</fileset>
 		</jar>
 
 		<jar destfile="ab3d-test.jar" basedir="classes/test"/>
