@@ -410,6 +410,21 @@ public final class MathTools
 	}
 
 	/**
+	 * Limits the given value to the specified range. If the given value is
+	 * <code>NaN</code>, the result will be <code>minimum</code>.
+	 *
+	 * @param   value       Value.
+	 * @param   minimum     Minimum value in the range.
+	 * @param   maximum     Maximum value in the range.
+	 *
+	 * @return  Value from the specified range.
+	 */
+	public static double clamp( final double value, final double minimum, final double maximum )
+	{
+		return ( value >= minimum ) ? ( value <= maximum ) ? value : maximum : minimum;
+	}
+
+	/**
 	 * Returns the distance between the given ranges. The ranges, as
 	 * well as their respective end-points may be specified in any order.
 	 *
