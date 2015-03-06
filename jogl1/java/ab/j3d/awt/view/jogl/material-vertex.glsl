@@ -14,5 +14,5 @@ varying vec2 colorMapCoord;
 void texture()
 {
 	diffuseColor = gl_Color;
-	colorMapCoord = ( gl_TextureMatrix[ 0 ] * gl_MultiTexCoord0 ).st;
+	colorMapCoord = ( gl_TextureMatrix[ TEXTURE_UNIT_COLOR ] * gl_MultiTexCoord0 ).st;
 }

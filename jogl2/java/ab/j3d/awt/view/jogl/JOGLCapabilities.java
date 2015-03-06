@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -169,6 +169,26 @@ public class JOGLCapabilities
 	private String _shadingLanguageVersion = null;
 
 	/**
+	 * Maximum number of varying floats.
+	 */
+	private int _maxVaryingFloats = -1;
+
+	/**
+	 * Maximum number of combined texture image units.
+	 */
+	private int _maxCombinedTextureImageUnits = -1;
+
+	/**
+	 * Maximum number of texture image units.
+	 */
+	private int _maxTextureImageUnits = -1;
+
+	/**
+	 * Maximum number of fragment shader uniform components.
+	 */
+	private int _maxFragmentUniformComponents = -1;
+
+	/**
 	 * Constructs a JOGL capabilities instance for the given OpenGL context.
 	 *
 	 * @param context OpenGL context to be used.
@@ -322,7 +342,7 @@ public class JOGLCapabilities
 		out.println();
 		out.print( "OpenGL extensions:    " );
 		out.println( _extensions );
-		out.print( "Open GL capabilities: " );
+		out.print( "OpenGL capabilities: " );
 		out.print( "shaderObjects=" );
 		out.print( ( _shaderObjects ? "yes (core)" : _shaderObjectsARB ? "yes (ARB)" : "no" ) );
 		out.print( ", framebufferObject=" );
@@ -352,6 +372,7 @@ public class JOGLCapabilities
 		out.print( ", nonPowerOfTwo=" );
 		out.print( ( _nonPowerOfTwo ? _nonPowerOfTwoARB ? "yes (core,ARB)" : "yes (core)" : _nonPowerOfTwoARB ? "yes (ARB)" : "no" ) );
 		out.println();
+		out.println( "OpenGL limitations: uniforms " + _maxFragmentUniformComponents + ", varyings " + _maxVaryingFloats + ", combined tex units " + _maxCombinedTextureImageUnits + ", tex units " + _maxTextureImageUnits );
 	}
 
 	/**
@@ -431,18 +452,18 @@ public class JOGLCapabilities
 			// Limits the complexity of shaders we can use.
 			if ( _shaderObjects )
 			{
-				getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
-				getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
-				getInteger( gl, GL2ES2.GL_MAX_TEXTURE_IMAGE_UNITS );
-				getInteger( gl, GL2GL3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_maxVaryingFloats = getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
+				_maxCombinedTextureImageUnits = getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				_maxTextureImageUnits = getInteger( gl, GL2ES2.GL_MAX_TEXTURE_IMAGE_UNITS );
+				_maxFragmentUniformComponents = getInteger( gl, GL2ES3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
 				_shadingLanguageVersion = gl.glGetString( GL2ES2.GL_SHADING_LANGUAGE_VERSION );
 			}
 			else if ( _shaderObjectsARB )
 			{
-				getInteger( gl, GL2.GL_MAX_VARYING_FLOATS );
-				getInteger( gl, GL2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
-				getInteger( gl, GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
-				getInteger( gl, GL2.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_maxVaryingFloats = getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
+				_maxCombinedTextureImageUnits = getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				_maxTextureImageUnits = getInteger( gl, GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
+				_maxFragmentUniformComponents = getInteger( gl, GL2ES3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
 				_shadingLanguageVersion = gl.glGetString( GL2.GL_SHADING_LANGUAGE_VERSION_ARB );
 			}
 

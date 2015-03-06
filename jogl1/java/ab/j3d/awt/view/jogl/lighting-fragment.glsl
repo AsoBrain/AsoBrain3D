@@ -26,7 +26,7 @@ vec4 lighting( in vec4 color )
 	{
 		vec3 N = normalize( normal );
 		vec3 E = normalize( -vertex );
-		vec3 R = ( gl_TextureMatrix[ 2 ] * vec4( -reflect( E , N ) , 1 ) ).xyz;
+		vec3 R = ( gl_TextureMatrix[ TEXTURE_UNIT_ENVIRONMENT ] * vec4( -reflect( E , N ) , 1 ) ).xyz;
 		float reflectivity = reflectionMin + ( reflectionMax - reflectionMin ) * max( 1.0 - dot( N , E ) , 0.0 );
 		vec3 reflection = reflectionColor * textureCube( reflectionMap , R ).rgb;
 		result.rgb += reflectivity * reflection;

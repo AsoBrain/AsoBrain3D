@@ -1,4 +1,6 @@
+varying vec4 v_shadowCoord;
+
 void shadow()
 {
-	gl_TexCoord[ 7 ] = gl_TextureMatrix[ 7 ] * gl_ModelViewMatrix * gl_Vertex;
+	v_shadowCoord = gl_TextureMatrix[ TEXTURE_UNIT_SHADOW ] * gl_ModelViewMatrix * gl_Vertex;
 }
