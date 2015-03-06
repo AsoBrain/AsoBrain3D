@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ implements GLEventListener
 	/**
 	 * Provides information about OpenGL capabilities.
 	 */
-	private JOGLCapabilities _capabilities;
+	private JOGLCapabilities _capabilities = null;
 
 	/**
 	 * Scene input translator for this View.
@@ -89,6 +89,11 @@ implements GLEventListener
 	 * Prevents the view from being disposed multiple times.
 	 */
 	private boolean _disposed = false;
+
+	/**
+	 * Copies the framebuffer to an AWT buffered image.
+	 */
+	private AWTGLReadBufferUtil _framebufferReader = null;
 
 	/**
 	 * Construct new view.
@@ -161,7 +166,10 @@ implements GLEventListener
 			public void run()
 			{
 				final GLOffscreenAutoDrawable drawable = _drawable;
-				drawable.setSurfaceSize( width, height );
+				if ( ( drawable.getSurfaceWidth() != width ) || ( drawable.getSurfaceHeight() != height ) )
+				{
+					drawable.setSurfaceSize( width, height );
+				}
 
 				final GLContext context = drawable.getContext();
 				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
@@ -187,7 +195,7 @@ implements GLEventListener
 					gl.glViewport( 0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight() );
 					display( drawable );
 
-					final AWTGLReadBufferUtil readBufferUtil = new AWTGLReadBufferUtil( drawable.getGLProfile(), false );
+					final AWTGLReadBufferUtil readBufferUtil = getFramebufferReader();
 					result[ 0 ] = readBufferUtil.readPixelsToBufferedImage( gl, true );
 				}
 				finally
@@ -198,6 +206,23 @@ implements GLEventListener
 		} );
 
 		return result[ 0 ];
+	}
+
+	/**
+	 * Returns an instance of {@link AWTGLReadBufferUtil} to copy the contents
+	 * of the framebuffer to a buffered image.
+	 *
+	 * @return Created or re-used instance.
+	 */
+	private AWTGLReadBufferUtil getFramebufferReader()
+	{
+		AWTGLReadBufferUtil result = _framebufferReader;
+		if ( result == null )
+		{
+			result = new AWTGLReadBufferUtil( _drawable.getGLProfile(), false );
+			_framebufferReader = result;
+		}
+		return result;
 	}
 
 	/**
@@ -252,10 +277,12 @@ implements GLEventListener
 
 				super.dispose();
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				e.printStackTrace();
 			}
+
+			_framebufferReader = null;
 		}
 	}
 
@@ -272,7 +299,7 @@ implements GLEventListener
 			{
 				context.release();
 			}
-			catch ( GLException gle )
+			catch ( final GLException gle )
 			{
 				// expected
 			}
@@ -357,7 +384,7 @@ implements GLEventListener
 
 			getOrCreateRenderer( gl, true );
 		}
-		catch ( Throwable t )
+		catch ( final Throwable t )
 		{
 			t.printStackTrace();
 		}
@@ -379,7 +406,7 @@ implements GLEventListener
 		{
 			displayImpl( glAutoDrawable );
 		}
-		catch ( Throwable t )
+		catch ( final Throwable t )
 		{
 			t.printStackTrace();
 		}
