@@ -1060,6 +1060,7 @@ public class JOGLRenderer
 		final boolean shadowPass = _shadowPass;
 
 		final Map<StyledObject3D, List<Node3DPath>> objectPathsByGroup = new LinkedHashMap<StyledObject3D, List<Node3DPath>>();
+		final Map<JOGLNode3D, List<Node3DPath>> renderNodes = new LinkedHashMap<JOGLNode3D, List<Node3DPath>>();
 
 		for ( final ContentNode node : nodes )
 		{
@@ -1098,6 +1099,19 @@ public class JOGLRenderer
 							paths.add( path );
 						}
 					}
+					else if ( node instanceof JOGLNode3D )
+					{
+						final JOGLNode3D renderNode = (JOGLNode3D)node;
+
+						List<Node3DPath> paths = renderNodes.get( renderNode );
+						if ( paths == null )
+						{
+							paths = new ArrayList<Node3DPath>();
+							renderNodes.put( renderNode, paths );
+						}
+
+						paths.add( path );
+					}
 					return true;
 				}
 			}, node.getTransform(), node.getNode3D() );
@@ -1108,6 +1122,25 @@ public class JOGLRenderer
 			final StyledObject3D objectGroup = objectGroupEntry.getKey();
 			final List<Node3DPath> paths = objectGroupEntry.getValue();
 			renderObject( objectGroup.getObject(), paths, objectGroup.getRenderStyle() );
+		}
+
+		final GL gl = _gl;
+		final GL2 gl2 = gl.getGL2();
+		final GLStateHelper state = _state;
+		final ShaderManager shaderManager = _shaderManager;
+
+		for ( final Map.Entry<JOGLNode3D, List<Node3DPath>> entry : renderNodes.entrySet() )
+		{
+			final JOGLNode3D node = entry.getKey();
+			final List<Node3DPath> paths = entry.getValue();
+			for ( final Node3DPath path : paths )
+			{
+				final Matrix3D object2world = path.getTransform();
+				gl2.glPushMatrix();
+				JOGLTools.glMultMatrixd( gl, object2world );
+				node.render( gl, state, shaderManager );
+				gl2.glPopMatrix();
+			}
 		}
 	}
 
