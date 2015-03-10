@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,7 +64,7 @@ public class JOGLRenderer
 	/**
 	 * Texture unit used for shadow mapping.
 	 */
-	static final int TEXTURE_UNIT_SHADOW = GL.GL_TEXTURE7;
+	static final int TEXTURE_UNIT_SHADOW = GL.GL_TEXTURE3;
 
 	/**
 	 * OpenGL pipeline.

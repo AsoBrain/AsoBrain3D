@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -413,23 +411,19 @@ public class ShaderManager
 			sourceIn.close();
 		}
 
-		final Shader result = shaderImplementation.createShader( shaderType );
-		if ( prefixLines.length == 0 )
+		final List<String> prefixedSource = new ArrayList<String>();
+		prefixedSource.add( "#define TEXTURE_UNIT_COLOR " + ( JOGLRenderer.TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 ) + "\n" );
+		prefixedSource.add( "#define TEXTURE_UNIT_BUMP " + ( JOGLRenderer.TEXTURE_UNIT_BUMP - GL.GL_TEXTURE0 ) + "\n" );
+		prefixedSource.add( "#define TEXTURE_UNIT_ENVIRONMENT " + ( JOGLRenderer.TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 ) + "\n" );
+		prefixedSource.add( "#define TEXTURE_UNIT_SHADOW " + ( JOGLRenderer.TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 ) + "\n" );
+		for ( final String prefixLine : prefixLines )
 		{
-			result.setSource( source );
+			prefixedSource.add( prefixLine + '\n' );
 		}
-		else
-		{
-			final String[] prefixedSource = new String[ prefixLines.length + 1 ];
-			for ( int i = 0 ; i < prefixLines.length ; i++ )
-			{
-				final String prefixLine = prefixLines[ i ];
-				prefixedSource[ i ] = prefixLine + '\n';
-			}
-			prefixedSource[ prefixLines.length ] = source;
-			result.setSource( prefixedSource );
-		}
+		prefixedSource.add( source );
 
+		final Shader result = shaderImplementation.createShader( shaderType );
+		result.setSource( prefixedSource.toArray( new String[ prefixedSource.size() ] ) );
 		return result;
 	}
 
