@@ -231,6 +231,21 @@ public class ObjWriter
 	public void writeZIP( final OutputStream out, final Node3D node, final String name )
 	throws IOException
 	{
+		writeZIP( out, node, name, false );
+	}
+
+	/**
+	 * Writes a ZIP file with an OBJ and MTL file for the given node.
+	 *
+	 * @param out             Stream to write to.
+	 * @param node            Node to be written.
+	 * @param name            Name for the OBJ/MTL files (without extension).
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public void writeZIP( final OutputStream out, final Node3D node, final String name, final boolean includeTextures )
+	throws IOException
+	{
 		final ZipOutputStream zipOut = new ZipOutputStream( new BufferedOutputStream( out ) );
 
 		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
@@ -246,6 +261,44 @@ public class ObjWriter
 		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
 		writeMTL( zipOut, appearances );
 		zipOut.closeEntry();
+
+		if ( includeTextures )
+		{
+			final byte[] buffer = new byte[ 10000 ];
+
+			final Set<URL> textures = new LinkedHashSet<URL>();
+			for ( final Appearance appearance : _appearanceNames.keySet() )
+			{
+				final TextureMap colorMap = appearance.getColorMap();
+				if ( colorMap != null )
+				{
+					final URL imageUrl = colorMap.getImageUrl();
+					textures.add( imageUrl );
+				}
+			}
+
+			for ( final URL imageUrl : textures )
+			{
+				final String imageName = _imageUrlConverter.convertToString( imageUrl );
+				zipOut.putNextEntry( new ZipEntry( imageName ) );
+
+				final InputStream imageIn = imageUrl.openStream();
+				try
+				{
+					int bytesRead;
+					while ( ( bytesRead = imageIn.read( buffer ) ) != -1 )
+					{
+						zipOut.write( buffer, 0, bytesRead );
+					}
+				}
+				finally
+				{
+					imageIn.close();
+				}
+
+				zipOut.closeEntry();
+			}
+		}
 
 		zipOut.finish();
 		zipOut.flush();
