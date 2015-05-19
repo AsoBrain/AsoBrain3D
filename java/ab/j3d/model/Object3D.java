@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -378,6 +378,16 @@ extends Node3D
 	public void addFaceGroup( @NotNull final FaceGroup faceGroup )
 	{
 		_faceGroups.add( faceGroup );
+	}
+
+	/**
+	 * Remove a face group from this object.
+	 *
+	 * @param faceGroup Face group to remove.
+	 */
+	public void removeFaceGroup( @NotNull final FaceGroup faceGroup )
+	{
+		_faceGroups.remove( faceGroup );
 	}
 
 	/**
