@@ -23,6 +23,7 @@ import java.net.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Pov Texture / material definition.
@@ -338,7 +339,7 @@ extends PovObject
 	public PovTexture( final Appearance appearance )
 	{
 		this();
-		_name = "APPEARANCE_" + Integer.toHexString( System.identityHashCode( appearance ) );
+		_name = getName( appearance );
 
 		final Color4 ambientColor = appearance.getAmbientColor();
 		final Color4 diffuseColor = appearance.getDiffuseColor();
@@ -378,6 +379,19 @@ extends PovObject
 				setReflection( reflectionMin, reflectionMax );
 			}
 		}
+	}
+
+	/**
+	 * Returns the name used when a texture is created for the given appearance.
+	 *
+	 * @param appearance Appearance to generate a name for.
+	 *
+	 * @return Texture name based on the given appearance.
+	 */
+	@NotNull
+	public static String getName( final Appearance appearance )
+	{
+		return "APPEARANCE_" + Integer.toHexString( System.identityHashCode( appearance ) );
 	}
 
 	/**

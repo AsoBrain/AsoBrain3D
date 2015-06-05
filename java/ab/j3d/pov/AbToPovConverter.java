@@ -489,13 +489,12 @@ public class AbToPovConverter
 	@Nullable
 	private PovTexture convertMaterialToPovTexture( final Appearance appearance )
 	{
-
-		final PovTexture newTexture = new PovTexture( appearance );
-		final String textureName = newTexture.getName();
+		final String textureName = PovTexture.getName( appearance );
 
 		PovTexture result = _scene.getTexture( textureName );
 		if ( result == null )
 		{
+			final PovTexture newTexture = new PovTexture( appearance );
 //			newTexture.setReflection( 0.05 );
 			newTexture.setDeclared();
 			_scene.addTexture( textureName, newTexture );
