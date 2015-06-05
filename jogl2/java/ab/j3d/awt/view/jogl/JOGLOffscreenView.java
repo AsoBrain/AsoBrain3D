@@ -37,8 +37,7 @@ import com.jogamp.opengl.util.awt.*;
  * @author Gerrit Meinders
  */
 public class JOGLOffscreenView
-extends View3D
-implements GLEventListener
+extends OffscreenView3D
 {
 	/**
 	 * Engine that created this view.
@@ -96,12 +95,24 @@ implements GLEventListener
 	private AWTGLReadBufferUtil _framebufferReader = null;
 
 	/**
-	 * Construct new view.
+	 * Construct new view with an alpha channel.
 	 *
 	 * @param joglEngine Engine that created this view.
 	 * @param scene      Scene to view.
 	 */
 	public JOGLOffscreenView( final JOGLEngine joglEngine, final Scene scene )
+	{
+		this( joglEngine, scene, true );
+	}
+
+	/**
+	 * Construct new view.
+	 *
+	 * @param joglEngine Engine that created this view.
+	 * @param scene      Scene to view.
+	 * @param alpha      {@code true} to include an alpha channel.
+	 */
+	public JOGLOffscreenView( final JOGLEngine joglEngine, final Scene scene, final boolean alpha )
 	{
 		super( scene );
 
@@ -120,8 +131,12 @@ implements GLEventListener
 		capabilities.setRedBits( 8 );
 		capabilities.setGreenBits( 8 );
 		capabilities.setBlueBits( 8 );
+		capabilities.setAlphaBits( alpha ? 8 : 0 );
 		capabilities.setDepthBits( 24 );
-		capabilities.setFBO( true );
+		capabilities.setHardwareAccelerated( true );
+		capabilities.setOnscreen( false );
+		capabilities.setDoubleBuffered( false );
+		capabilities.setBackgroundOpaque( !alpha );
 
 		final GLDrawableFactory drawableFactory = GLDrawableFactory.getFactory( profile );
 		final GLOffscreenAutoDrawable drawable = drawableFactory.createOffscreenAutoDrawable( null, capabilities, null, 640, 480 );
@@ -148,14 +163,7 @@ implements GLEventListener
 		update();
 	}
 
-	/**
-	 * Renders the view to a buffered image with the specified size.
-	 *
-	 * @param width  Width of the image.
-	 * @param height Height of the image.
-	 *
-	 * @return Rendered image.
-	 */
+	@Override
 	public BufferedImage renderImage( final int width, final int height )
 	{
 		final BufferedImage[] result = new BufferedImage[ 1 ];
@@ -219,7 +227,8 @@ implements GLEventListener
 		AWTGLReadBufferUtil result = _framebufferReader;
 		if ( result == null )
 		{
-			result = new AWTGLReadBufferUtil( _drawable.getGLProfile(), false );
+			final GLCapabilitiesImmutable chosenGLCapabilities = _drawable.getChosenGLCapabilities();
+			result = new AWTGLReadBufferUtil( _drawable.getGLProfile(), !chosenGLCapabilities.isBackgroundOpaque() );
 			_framebufferReader = result;
 		}
 		return result;
@@ -373,7 +382,7 @@ implements GLEventListener
 	 *
 	 * @param glAutoDrawable Target for performing OpenGL rendering.
 	 */
-	public void init( final GLAutoDrawable glAutoDrawable )
+	private void init( final GLAutoDrawable glAutoDrawable )
 	{
 		_capabilities = new JOGLCapabilities( _drawable.getContext() );
 
@@ -390,15 +399,12 @@ implements GLEventListener
 		}
 	}
 
-	public void dispose( final GLAutoDrawable glAutoDrawable )
-	{
-	}
-
-	public void reshape( final GLAutoDrawable glAutoDrawable, final int x, final int y, final int width, final int height )
-	{
-	}
-
-	public final void display( final GLAutoDrawable glAutoDrawable )
+	/**
+	 * Renders a frame.
+	 *
+	 * @param glAutoDrawable Target for performing OpenGL rendering.
+	 */
+	private void display( final GLAutoDrawable glAutoDrawable )
 	{
 		fireBeforeFrameEvent();
 

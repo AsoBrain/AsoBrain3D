@@ -647,7 +647,7 @@ public class JOGLRenderer
 			else
 			{
 				_multiPassReflectionsDisabled = true;
-				gl.glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+				gl.glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 				gl.glClearDepth( 1.0 );
 				gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
 				gl2.glLightModelfv( GL2ES1.GL_LIGHT_MODEL_AMBIENT, new float[] { 0.0f, 0.0f, 0.0f, 1.0f }, 0 );

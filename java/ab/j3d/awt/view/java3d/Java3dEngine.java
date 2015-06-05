@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.java3d;
 
@@ -35,7 +33,6 @@ import org.jetbrains.annotations.*;
  * Java 3D render engine implementation.
  *
  * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
  */
 public final class Java3dEngine
 	implements RenderEngine , SceneUpdateListener
@@ -278,6 +275,11 @@ public final class Java3dEngine
 			throw new IllegalArgumentException( "Java 3D only supports one scene" );
 
 		return new Java3dView( scene , _universe );
+	}
+
+	public OffscreenView3D createOffscreenView( final Scene scene )
+	{
+		throw new UnsupportedOperationException( "Offscreen view is not supported." );
 	}
 
 	public void dispose()

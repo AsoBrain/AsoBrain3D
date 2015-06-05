@@ -18,40 +18,36 @@
  */
 package ab.j3d.view;
 
+import java.awt.image.*;
+
 import ab.j3d.model.*;
+import org.jetbrains.annotations.*;
 
 /**
- * This class provides functionality to create {@link Scene} views.
+ * Offscreen 3D view.
  *
- * @author Peter S. Heijnen
+ * @author Gerrit Meinders
  */
-public interface RenderEngine
+public abstract class OffscreenView3D
+extends View3D
 {
 	/**
-	 * Create a new view for the specified scene. Please call {@link
-	 * View3D#dispose()} if you no longer use the created view.
+	 * Construct new view.
 	 *
 	 * @param scene Scene to view.
-	 *
-	 * @return View that was created.
 	 */
-	View3D createView( Scene scene );
+	protected OffscreenView3D( @NotNull final Scene scene )
+	{
+		super( scene );
+	}
 
 	/**
-	 * Create a new offscreen view for the specified scene. Please call {@link
-	 * View3D#dispose()} if you no longer use the created view.
+	 * Renders the view to a buffered image with the specified size.
 	 *
-	 * @param scene Scene to view.
+	 * @param width  Width of the image.
+	 * @param height Height of the image.
 	 *
-	 * @return View that was created.
-	 *
-	 * @throws UnsupportedOperationException if offscreen rendering is not
-	 * supported by this engine.
+	 * @return Rendered image.
 	 */
-	OffscreenView3D createOffscreenView( Scene scene );
-
-	/**
-	 * Disposes the render engine, releasing any resources it uses.
-	 */
-	void dispose();
+	public abstract BufferedImage renderImage( int width, int height );
 }

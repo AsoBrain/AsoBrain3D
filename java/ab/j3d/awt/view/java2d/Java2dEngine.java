@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.java2d;
 
@@ -29,7 +27,6 @@ import ab.j3d.view.*;
  * Java 2D render engine implementation.
  *
  * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
  */
 public class Java2dEngine
 	implements RenderEngine
@@ -63,6 +60,11 @@ public class Java2dEngine
 	public View3D createView( final Scene scene )
 	{
 		return new Java2dView( scene, _background );
+	}
+
+	public OffscreenView3D createOffscreenView( final Scene scene )
+	{
+		throw new UnsupportedOperationException( "Offscreen view is not supported." );
 	}
 
 	public void dispose()
