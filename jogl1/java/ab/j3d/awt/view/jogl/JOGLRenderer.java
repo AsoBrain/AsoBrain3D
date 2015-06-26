@@ -21,6 +21,7 @@ package ab.j3d.awt.view.jogl;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.*;
 import javax.imageio.*;
 import javax.media.opengl.*;
 
@@ -41,6 +42,11 @@ import org.jetbrains.annotations.*;
  */
 public class JOGLRenderer
 {
+	/**
+	 * Log used for messages related to this class.
+	 */
+	private static final Logger LOG = Logger.getLogger( JOGLRenderer.class.getName() );
+
 	/**
 	 * If enabled, objects are drawn with lines for face and vertex normals.
 	 */
@@ -284,7 +290,7 @@ public class JOGLRenderer
 
 		final JOGLConfiguration configuration = _configuration;
 		final JOGLCapabilities capabilities = new JOGLCapabilities( GLContext.getCurrent() );
-		capabilities.printSummary( System.out );
+		capabilities.logSummary( LOG, Level.FINE );
 		_capabilities = capabilities;
 
 		final ShaderManager shaderManager;

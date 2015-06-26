@@ -18,7 +18,7 @@
  */
 package ab.j3d.awt.view.jogl;
 
-import java.io.*;
+import java.util.logging.*;
 import javax.media.opengl.*;
 
 import ab.j3d.view.*;
@@ -316,63 +316,41 @@ public class JOGLCapabilities
 	}
 
 	/**
-	 * Prints a summary of OpenGL information and capabilities to the given output
-	 * stream.
+	 * Logs a summary of OpenGL information and capabilities to the given
+	 * logger.
 	 *
-	 * @param out Stream to write to.
+	 * @param logger Logger.
+	 * @param level  Log level.
 	 */
-	public void printSummary( final PrintStream out )
+	public void logSummary( final Logger logger, final Level level )
 	{
-		determineCapabilities();
+		if ( logger.isLoggable( level ) )
+		{
+			determineCapabilities();
 
-		out.println();
-		out.print( "OpenGL driver:        " );
-		out.print( "vendor='" );
-		out.print( _vendor );
-		out.print( '\'' );
-		out.print( ", renderer='" );
-		out.print( _renderer );
-		out.print( '\'' );
-		out.print( ", version='" );
-		out.print( _version );
-		out.print( '\'' );
-		out.print( ", shaders='" );
-		out.print( ( _shadingLanguageVersion != null ) ? _shadingLanguageVersion : "none" );
-		out.print( '\'' );
-		out.println();
-		out.print( "OpenGL extensions:    " );
-		out.println( _extensions );
-		out.print( "OpenGL capabilities: " );
-		out.print( "shaderObjects=" );
-		out.print( ( _shaderObjects ? "yes (core)" : _shaderObjectsARB ? "yes (ARB)" : "no" ) );
-		out.print( ", framebufferObject=" );
-		out.print( ( _framebufferObject ? "yes" : "no" ) );
-		out.print( ", drawBuffers=" );
-		out.print( ( _drawBuffers ? "yes (core)" : _drawBuffersARB ? "yes (ARB)" : "no" ) );
-		out.print( ", occlusionQuery=" );
-		out.print( ( _occlusionQuery ? "yes (core)" : _occlusionQueryARB ? "yes (ARB)" : "no" ) );
-		out.print( ", shadowFuncs=" );
-		out.print( ( _shadowFuncs ? "yes" : "no" ) );
-		out.print( ", depthTexture=" );
-		out.print( ( _depthTexture ? "yes" : "no" ) );
-		out.print( ", depthBufferBits=" );
-		out.print( ( _depthBits < 0 ) ? "unknown" : String.valueOf( _depthBits ) );
-		out.print( ", shadow=" );
-		out.print( ( _shadow ? "yes" : "no" ) );
-		out.print( ", textureRectangle=" );
-		out.print( ( _textureRectangle ? "yes" : "no" ) );
-		out.print( ", multitexture=" );
-		out.print( ( _multitexture ? "yes" : "no" ) );
-		out.print( ", generateMipmap=" );
-		out.print( ( _generateMipmap ? "yes" : "no" ) );
-		out.print( ", blendFuncSeperate=" );
-		out.print( ( _blendFuncSeperate ? "yes" : "no" ) );
-		out.print( ", edgeClamp=" );
-		out.print( ( _edgeClamp ? "yes" : "no" ) );
-		out.print( ", nonPowerOfTwo=" );
-		out.print( ( _nonPowerOfTwo ? _nonPowerOfTwoARB ? "yes (core,ARB)" : "yes (core)" : _nonPowerOfTwoARB ? "yes (ARB)" : "no" ) );
-		out.println();
-		out.println( "OpenGL limitations: uniforms " + _maxFragmentUniformComponents + ", varyings " + _maxVaryingFloats + ", combined tex units " + _maxCombinedTextureImageUnits + ", tex units " + _maxTextureImageUnits );
+			logger.log( level, "OpenGL driver:       vendor={0}, renderer={1}, version={2}, shaders={3}",
+			            new Object[] { _vendor, _renderer, _version, ( ( _shadingLanguageVersion != null ) ? _shadingLanguageVersion : "none" ) } );
+			logger.log( level, "OpenGL extensions:   {0}", _extensions );
+			logger.log( level, "OpenGL capabilities: shaderObjects={0}, framebufferObject={1}, drawBuffers={2}, occlusionQuery={3}, shadowFuncs={4}, depthTexture={5}, depthBufferBits={6}, shadow={7}, textureRectangle={8}, multitexture={9}, generateMipmap={10}, blendFuncSeperate={11}, edgeClamp={12}, nonPowerOfTwo={13}",
+			            new Object[] {
+			            ( _shaderObjects ? "yes (core)" : _shaderObjectsARB ? "yes (ARB)" : "no" ),
+			            ( _framebufferObject ? "yes" : "no" ),
+			            ( _drawBuffers ? "yes (core)" : _drawBuffersARB ? "yes (ARB)" : "no" ),
+			            ( _occlusionQuery ? "yes (core)" : _occlusionQueryARB ? "yes (ARB)" : "no" ),
+			            ( _shadowFuncs ? "yes" : "no" ),
+			            ( _depthTexture ? "yes" : "no" ),
+			            ( _depthBits < 0 ) ? "unknown" : String.valueOf( _depthBits ),
+			            ( _shadow ? "yes" : "no" ),
+			            ( _textureRectangle ? "yes" : "no" ),
+			            ( _multitexture ? "yes" : "no" ),
+			            ( _generateMipmap ? "yes" : "no" ),
+			            ( _blendFuncSeperate ? "yes" : "no" ),
+			            ( _edgeClamp ? "yes" : "no" ),
+			            ( _nonPowerOfTwo ? _nonPowerOfTwoARB ? "yes (core,ARB)" : "yes (core)" : _nonPowerOfTwoARB ? "yes (ARB)" : "no" )
+			            } );
+			logger.log( level, "OpenGL limitations:  uniforms {0}, varyings {1}, combined tex units {2}, tex units {3}",
+			            new Object[] { String.valueOf( _maxFragmentUniformComponents ), String.valueOf( _maxVaryingFloats ), String.valueOf( _maxCombinedTextureImageUnits ), String.valueOf( _maxTextureImageUnits ) } );
+		}
 	}
 
 	/**

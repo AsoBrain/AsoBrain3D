@@ -27,6 +27,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.*;
 import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -53,6 +54,11 @@ public class ProbeUI
 	 * URL to directory containing this class.
 	 */
 	private static final URL PROBE_UI_URL = ProbeUI.class.getResource( "/ab/j3d/probe/" );
+
+	/**
+	 * Log used for messages related to this class.
+	 */
+	private static final Logger LOG = Logger.getLogger( ProbeUI.class.getName() );
 
 	/**
 	 * View with rendered image.
@@ -235,7 +241,7 @@ public class ProbeUI
 			view.disposeRenderer();
 
 			final JOGLCapabilities capabilities = view.getCapabilities();
-			capabilities.printSummary( System.out );
+			capabilities.logSummary( LOG, Level.INFO );
 		}
 
 		protected abstract void createScene( final Scene scene );
