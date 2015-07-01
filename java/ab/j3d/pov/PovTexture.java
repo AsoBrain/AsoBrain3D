@@ -928,8 +928,13 @@ extends PovObject
 		final PovVector rgb = _rgb;
 
 		final URL image = _image;
-		if ( ( image != null ) && "file".equals( image.getProtocol() ) )
+		if ( image != null )
 		{
+			if ( !"file".equals( image.getProtocol() ) )
+			{
+				throw new IOException( "POV-Ray can only access files, not URLs with protocol " + image.getProtocol() );
+			}
+
 			final String imageType = getImageType();
 
 			final URI imageURI;
@@ -1258,8 +1263,13 @@ extends PovObject
 		out.indentIn();
 
 		final URL image = _image;
-		if ( ( image != null ) && "file".equals( image.getProtocol() ) )
+		if ( image != null )
 		{
+			if ( !"file".equals( image.getProtocol() ) )
+			{
+				throw new IOException( "POV-Ray can only access files, not URLs with protocol " + image.getProtocol() );
+			}
+
 			final String imageType = getImageType();
 
 			out.write( "image_map  { " );
