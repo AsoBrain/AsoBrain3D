@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.geom;
 
@@ -26,8 +23,7 @@ import ab.j3d.*;
 /**
  * 3D linear function of the form f(x) = ax + b.
  *
- * @author  G. Meinders
- * @version $Revision$ $Date$
+ * @author G. Meinders
  */
 public class LinearFunction3D
 {
@@ -42,21 +38,21 @@ public class LinearFunction3D
 	private Vector3D _constant;
 
 	/**
-	 * Finds a specific linear function f(x) = ax + b based on the given
-	 * points (x, f(x)), by solving for a and b. If the parameters are equal
-	 * along a given axis, it follows that both values must also be equal
-	 * (otherwise, the result is not a function); in this case the function
-	 * will pass through the origin and the given point along that axis.
-	 * If the parameters are not equal, but the values are equal along a given
-	 * axis, the result vector will be constant along that axis and equal to the
-	 * corresponding component of {@code valueA}.
+	 * Finds a specific linear function f(x) = ax + b based on the given points
+	 * (x, f(x)), by solving for a and b. If the parameters are equal along a
+	 * given axis, it follows that both values must also be equal (otherwise,
+	 * the result is not a function); in this case the function will pass
+	 * through the origin and the given point along that axis. If the parameters
+	 * are not equal, but the values are equal along a given axis, the result
+	 * vector will be constant along that axis and equal to the corresponding
+	 * component of {@code valueA}.
 	 *
-	 * @param   parameterA  First value of x.
-	 * @param   valueA      First value of f(x).
-	 * @param   parameterB  Second value of x.
-	 * @param   valueB      Second value of f(x).
+	 * @param parameterA First value of x.
+	 * @param valueA     First value of f(x).
+	 * @param parameterB Second value of x.
+	 * @param valueB     Second value of f(x).
 	 *
-	 * @return  Specified linear function.
+	 * @return Specified linear function.
 	 */
 	public static LinearFunction3D fromPoints( final Vector3D parameterA, final Vector3D valueA, final Vector3D parameterB, final Vector3D valueB )
 	{
@@ -65,23 +61,18 @@ public class LinearFunction3D
 		final double gradientX;
 		final double constantX;
 
-		if ( MathTools.almostEqual( parameterA.x, parameterB.x, epsilon ) )
-		{
-			if ( !MathTools.almostEqual( valueA.x, valueB.x, epsilon ) )
-			{
-				throw new IllegalArgumentException( "Can't determine X-gradient, because X-parameters are the same, but X values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
-			}
-
-			gradientX = MathTools.almostEqual( parameterA.x, 0.0, epsilon ) ? 0.0 : valueA.x / parameterA.x;
-			constantX = 0.0;
-		}
-		else if ( MathTools.almostEqual( valueA.x, valueB.x, epsilon ) )
+		if ( MathTools.almostEqual( valueA.x, valueB.x, epsilon ) )
 		{
 			gradientX = 0.0;
 			constantX = valueA.x;
 		}
 		else
 		{
+			if ( MathTools.almostEqual( parameterA.x, parameterB.x, epsilon ) )
+			{
+				throw new IllegalArgumentException( "Can't determine X-gradient, because X-parameters are the same, but X values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
+			}
+
 			gradientX = ( valueB.x - valueA.x ) / ( parameterB.x - parameterA.x );
 			constantX = valueA.x - gradientX * parameterA.x;
 		}
@@ -89,23 +80,18 @@ public class LinearFunction3D
 		final double gradientY;
 		final double constantY;
 
-		if ( MathTools.almostEqual( parameterA.y, parameterB.y, epsilon ) )
-		{
-			if ( !MathTools.almostEqual( valueA.y, valueB.y, epsilon ) )
-			{
-				throw new IllegalArgumentException( "Can't determine Y-gradient, because Y-parameters are the same, but Y values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
-			}
-
-			gradientY = MathTools.almostEqual( parameterA.y, 0.0, epsilon ) ? 0.0 : valueA.y / parameterA.y;
-			constantY = 0.0;
-		}
-		else if ( MathTools.almostEqual( valueA.y, valueB.y, epsilon ) )
+		if ( MathTools.almostEqual( valueA.y, valueB.y, epsilon ) )
 		{
 			gradientY = 0.0;
 			constantY = valueA.y;
 		}
 		else
 		{
+			if ( MathTools.almostEqual( parameterA.y, parameterB.y, epsilon ) )
+			{
+				throw new IllegalArgumentException( "Can't determine Y-gradient, because Y-parameters are the same, but Y values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
+			}
+
 			gradientY = ( valueB.y - valueA.y ) / ( parameterB.y - parameterA.y );
 			constantY = valueA.y - gradientY * parameterA.y;
 		}
@@ -113,23 +99,18 @@ public class LinearFunction3D
 		final double gradientZ;
 		final double constantZ;
 
-		if ( MathTools.almostEqual( parameterA.z, parameterB.z, epsilon ) )
-		{
-			if ( !MathTools.almostEqual( valueA.z, valueB.z, epsilon ) )
-			{
-				throw new IllegalArgumentException( "Can't determine Z-gradient, because Z-parameters are the same, but Z values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
-			}
-
-			gradientZ = MathTools.almostEqual( parameterA.z, 0.0, epsilon ) ? 0.0 : valueA.z / parameterA.z;
-			constantZ = 0.0;
-		}
-		else if ( MathTools.almostEqual( valueA.z, valueB.z, epsilon ) )
+		if ( MathTools.almostEqual( valueA.z, valueB.z, epsilon ) )
 		{
 			gradientZ = 0.0;
 			constantZ = valueA.z;
 		}
 		else
 		{
+			if ( MathTools.almostEqual( parameterA.z, parameterB.z, epsilon ) )
+			{
+				throw new IllegalArgumentException( "Can't determine Z-gradient, because Z-parameters are the same, but Z values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
+			}
+
 			gradientZ = ( valueB.z - valueA.z ) / ( parameterB.z - parameterA.z );
 			constantZ = valueA.z - gradientZ * parameterA.z;
 		}
@@ -140,8 +121,8 @@ public class LinearFunction3D
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param   gradient      Gradient a in f(x) = ax + b.
-	 * @param   constant    Constant b in f(x) = ax + b.
+	 * @param gradient Gradient a in f(x) = ax + b.
+	 * @param constant Constant b in f(x) = ax + b.
 	 */
 	public LinearFunction3D( final Vector3D gradient, final Vector3D constant )
 	{
@@ -152,9 +133,9 @@ public class LinearFunction3D
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param   x   X function.
-	 * @param   y   Y function.
-	 * @param   z   Z function.
+	 * @param x X function.
+	 * @param y Y function.
+	 * @param z Z function.
 	 */
 	public LinearFunction3D( final LinearFunction1D x, final LinearFunction1D y, final LinearFunction1D z )
 	{
@@ -164,7 +145,7 @@ public class LinearFunction3D
 	/**
 	 * Returns the gradient, i.e. the gradient a in f(x) = ax + b.
 	 *
-	 * @return  Gradient.
+	 * @return Gradient.
 	 */
 	public Vector3D getGradient()
 	{
@@ -174,7 +155,7 @@ public class LinearFunction3D
 	/**
 	 * Sets the gradient, i.e. the gradient a in f(x) = ax + b.
 	 *
-	 * @param   gradient    Gradient.
+	 * @param gradient Gradient.
 	 */
 	public void setGradient( final Vector3D gradient )
 	{
@@ -184,7 +165,7 @@ public class LinearFunction3D
 	/**
 	 * Returns the constant, i.e. the constant b in f(x) = ax + b.
 	 *
-	 * @return  Constant.
+	 * @return Constant.
 	 */
 	public Vector3D getConstant()
 	{
@@ -194,7 +175,7 @@ public class LinearFunction3D
 	/**
 	 * Sets the constant, i.e. the constant b in f(x) = ax + b.
 	 *
-	 * @param   constant    Constant.
+	 * @param constant Constant.
 	 */
 	public void setConstant( final Vector3D constant )
 	{
@@ -204,7 +185,7 @@ public class LinearFunction3D
 	/**
 	 * Get linear function for X-axis.
 	 *
-	 * @return  Linear function for X-axis.
+	 * @return Linear function for X-axis.
 	 */
 	public LinearFunction1D getX()
 	{
@@ -217,7 +198,7 @@ public class LinearFunction3D
 	/**
 	 * Get linear function for Y-axis.
 	 *
-	 * @return  Linear function for Y-axis.
+	 * @return Linear function for Y-axis.
 	 */
 	public LinearFunction1D getY()
 	{
@@ -230,7 +211,7 @@ public class LinearFunction3D
 	/**
 	 * Get linear function for Z-axis.
 	 *
-	 * @return  Linear function for Z-axis.
+	 * @return Linear function for Z-axis.
 	 */
 	public LinearFunction1D getZ()
 	{
@@ -243,9 +224,9 @@ public class LinearFunction3D
 	/**
 	 * Returns the value of the function for the given parameter.
 	 *
-	 * @param   parameter   Parameter x in f(x) = ax + b.
+	 * @param parameter Parameter x in f(x) = ax + b.
 	 *
-	 * @return  Value of the function.
+	 * @return Value of the function.
 	 */
 	public Vector3D get( final Vector3D parameter )
 	{
@@ -263,10 +244,10 @@ public class LinearFunction3D
 	}
 
 	/**
-	 * Create human-readable representation of this object.
-	 * This is especially useful for debugging purposes.
+	 * Create human-readable representation of this object. This is especially
+	 * useful for debugging purposes.
 	 *
-	 * @return  Human-readable representation of this object.
+	 * @return Human-readable representation of this object.
 	 */
 	public String toFriendlyString()
 	{
@@ -277,9 +258,9 @@ public class LinearFunction3D
 	/**
 	 * Returns the sum of this function and the given function.
 	 *
-	 * @param   other   Linear function.
+	 * @param other Linear function.
 	 *
-	 * @return  Sum of the two functions.
+	 * @return Sum of the two functions.
 	 */
 	public LinearFunction3D plus( final LinearFunction3D other )
 	{
@@ -291,9 +272,9 @@ public class LinearFunction3D
 	/**
 	 * Returns the result of subtracting the given function from this function.
 	 *
-	 * @param   other   Linear function.
+	 * @param other Linear function.
 	 *
-	 * @return  (Signed) difference of the two functions.
+	 * @return (Signed) difference of the two functions.
 	 */
 	public LinearFunction3D minus( final LinearFunction3D other )
 	{
