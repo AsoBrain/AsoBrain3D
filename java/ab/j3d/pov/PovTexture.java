@@ -344,7 +344,13 @@ extends PovObject
 		final Color4 ambientColor = appearance.getAmbientColor();
 		final Color4 diffuseColor = appearance.getDiffuseColor();
 		final Color4 specularColor = appearance.getSpecularColor();
+
 		final TextureMap colorMap = appearance.getColorMap();
+		if ( ( colorMap != null ) && !"file".equals( colorMap.getImageUrl().getProtocol() ) )
+		{
+			throw new IllegalArgumentException( "Color map image URL should use 'file' protocol for POV-Ray." );
+		}
+
 		final int shininess = appearance.getShininess();
 		final CubeMap reflectionMap = appearance.getReflectionMap();
 

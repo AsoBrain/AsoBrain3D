@@ -485,8 +485,8 @@ public class PovScene
 			if ( file != result )
 			{
 				result.delete();
-				result = null;
 			}
+			throw e;
 		}
 
 		return result;
