@@ -277,12 +277,10 @@ extends OffscreenView3D
 		{
 			_disposed = true;
 
-			final JOGLEngine engine = _joglEngine;
-			engine.unregisterView();
-
 			try
 			{
 				disposeContext();
+				_drawable.destroy();
 
 				super.dispose();
 			}

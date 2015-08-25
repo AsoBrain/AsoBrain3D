@@ -228,14 +228,12 @@ implements GLEventListener
 		{
 			_disposed = true;
 
-			final JOGLEngine engine = _joglEngine;
-			engine.unregisterView();
-
 			try
 			{
 				disposeContext();
+				_glCanvas.destroy();
 
-				final TextureCache textureCache = engine.getTextureCache();
+				final TextureCache textureCache = _joglEngine.getTextureCache();
 				textureCache.removeListener( _textureCacheListener );
 
 				super.dispose();

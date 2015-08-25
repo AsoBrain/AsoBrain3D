@@ -32,11 +32,6 @@ public class JOGLEngine
 	implements RenderEngine
 {
 	/**
-	 * Shared OpenGL rendering context.
-	 */
-	private GLContext _context = null;
-
-	/**
 	 * Texture cache.
 	 */
 	private final TextureCache _textureCache;
@@ -45,11 +40,6 @@ public class JOGLEngine
 	 * Configuration settings.
 	 */
 	private JOGLConfiguration _configuration;
-
-	/**
-	 * Number of registered views. All views may share the same context.
-	 */
-	private int _registeredViewCount;
 
 	/**
 	 * Provides a shared off-screen GL context.
@@ -149,35 +139,5 @@ public class JOGLEngine
 	TextureCache getTextureCache()
 	{
 		return _textureCache;
-	}
-
-	/**
-	 * Registers a view that uses the engine's shared context.
-	 */
-	void registerView()
-	{
-		_registeredViewCount++;
-	}
-
-	/**
-	 * Unregisters a view that uses the engine's shared context.
-	 */
-	void unregisterView()
-	{
-		if ( _registeredViewCount == 0 )
-		{
-			throw new IllegalStateException( "No registered views." );
-		}
-		_registeredViewCount--;
-	}
-
-	/**
-	 * Returns the number of registered views.
-	 *
-	 * @return  Number of registered views.
-	 */
-	int getRegisteredViewCount()
-	{
-		return _registeredViewCount;
 	}
 }
