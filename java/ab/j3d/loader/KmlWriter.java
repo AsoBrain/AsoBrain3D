@@ -114,11 +114,26 @@ public class KmlWriter
 		for ( final String modelHref : _modelHrefs )
 		{
 			writer.startTag( NS_KML_2_2, "Model" );
+
+			// Location is required by Sketchup Pro 2015
+			writer.startTag( NS_KML_2_2, "Location" );
+			writer.startTag( NS_KML_2_2, "latitude" );
+			writer.text( "0" );
+			writer.endTag( NS_KML_2_2, "latitude" );
+			writer.startTag( NS_KML_2_2, "longitude" );
+			writer.text( "0" );
+			writer.endTag( NS_KML_2_2, "longitude" );
+			writer.startTag( NS_KML_2_2, "altitude" );
+			writer.text( "0" );
+			writer.endTag( NS_KML_2_2, "altitude" );
+			writer.endTag( NS_KML_2_2, "Location" );
+
 			writer.startTag( NS_KML_2_2, "Link" );
 			writer.startTag( NS_KML_2_2, "href" );
 			writer.text( modelHref );
 			writer.endTag( NS_KML_2_2, "href" );
 			writer.endTag( NS_KML_2_2, "Link" );
+
 			writer.endTag( NS_KML_2_2, "Model" );
 		}
 		writer.endTag( NS_KML_2_2, "Placemark" );
