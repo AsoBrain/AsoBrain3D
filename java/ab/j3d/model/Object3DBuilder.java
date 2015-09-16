@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -30,16 +28,16 @@ import org.jetbrains.annotations.*;
 /**
  * This class can be used to create an {@link Object3D} instance.
  *
- * @author  HRM Bleumink
- * @author  G.B.M. Rupert
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author HRM Bleumink
+ * @author G.B.M. Rupert
+ * @author Peter S. Heijnen
  */
 public class Object3DBuilder
 {
 	/**
 	 * The {@link Object3D} being build.
 	 */
+	@NotNull
 	private final Object3D _target;
 
 	/**
@@ -53,18 +51,95 @@ public class Object3DBuilder
 	/**
 	 * Construct builder.
 	 *
-	 * @param   target  Target object.
+	 * @param target Target object.
 	 */
-	Object3DBuilder( final Object3D target )
+	public Object3DBuilder( @NotNull final Object3D target )
 	{
+		this( target, true );
+	}
+
+	/**
+	 * Construct builder from existing 3D object.
+	 *
+	 * @param object Existing 3D object.
+	 * @param copy   {@code true} to create new object copy; {@code false} to
+	 *               modify existing object.
+	 */
+	Object3DBuilder( @NotNull final Object3D object, final boolean copy )
+	{
+		final Object3D target;
+		if ( copy )
+		{
+			target = new Object3D( object.getVertexCoordinates() );
+
+			for ( final FaceGroup originalFaceGroup : object.getFaceGroups() )
+			{
+				final FaceGroup faceGroup = new FaceGroup( originalFaceGroup.getAppearance(), originalFaceGroup.isSmooth(), originalFaceGroup.isTwoSided() );
+				target.addFaceGroup( faceGroup );
+
+				for ( final Face3D face : originalFaceGroup.getFaces() )
+				{
+					faceGroup.addFace( face );
+				}
+			}
+		}
+		else
+		{
+			target = object;
+		}
 		_target = target;
+	}
+
+	/**
+	 * Add {@link Object3D} content to this object.
+	 *
+	 * @param object Object to add to this object.
+	 */
+	public void addObject( @NotNull final Object3D object )
+	{
+		for ( final FaceGroup originalFaceGroup : object.getFaceGroups() )
+		{
+			// try to reuse existing 'FaceGroup'; create new one if necessary
+			final boolean smooth = originalFaceGroup.isSmooth();
+			final boolean twoSided = originalFaceGroup.isTwoSided();
+			final Appearance appearance = originalFaceGroup.getAppearance();
+
+			FaceGroup faceGroup = null;
+			for ( final FaceGroup existingFaceGroup : _target.getFaceGroups() )
+			{
+				if ( ( existingFaceGroup.isSmooth() == smooth ) && ( existingFaceGroup.isTwoSided() == twoSided ) && ( ( appearance == null ) ? ( existingFaceGroup.getAppearance() == null ) : appearance.equals( existingFaceGroup.getAppearance() ) ) )
+				{
+					faceGroup = existingFaceGroup;
+				}
+			}
+
+			if ( faceGroup == null )
+			{
+				faceGroup = new FaceGroup( appearance, smooth, twoSided );
+				_target.addFaceGroup( faceGroup );
+			}
+
+			// clone faces
+			for ( final Face3D originalFace : originalFaceGroup.getFaces() )
+			{
+				final List<Vertex3D> originalVertices = originalFace.getVertices();
+				final List<Vertex3D> vertices = new ArrayList<Vertex3D>( originalVertices.size() );
+				for ( final Vertex3D originalVertex : originalVertices )
+				{
+					vertices.add( new Vertex3D( originalVertex.point, originalVertex.normal, _target.getVertexIndex( originalVertex.point ), originalVertex.colorMapU, originalVertex.colorMapV ) );
+				}
+
+				faceGroup.addFace( new Face3D( originalFace.getNormal(), originalFace.getDistance(), vertices, originalFace.getTessellation() ) );
+			}
+		}
 	}
 
 	/**
 	 * Get {@link Node3D} that was built.
 	 *
-	 * @return  The {@link Node3D} that was built.
+	 * @return The {@link Node3D} that was built.
 	 */
+	@NotNull
 	public Object3D getObject3D()
 	{
 		return _target;
@@ -74,9 +149,9 @@ public class Object3DBuilder
 	 * Get index of vertex at the specified point. If no vertex was found at the
 	 * specified point, a new one is created.
 	 *
-	 * @param   point   Point to get vertex index of.
+	 * @param point Point to get vertex index of.
 	 *
-	 * @return  Vertex index.
+	 * @return Vertex index.
 	 */
 	public int getVertexIndex( @NotNull final Vector3D point )
 	{
@@ -86,7 +161,7 @@ public class Object3DBuilder
 	/**
 	 * Get number of vertices in object.
 	 *
-	 * @return  Number of vertices.
+	 * @return Number of vertices.
 	 */
 	public int getVertexCount()
 	{
@@ -98,7 +173,7 @@ public class Object3DBuilder
 	 * safely if no faces have been added yet, since the object integrity may
 	 * otherwise be compromised.
 	 *
-	 * @param   vertexCoordinates   Vertex coordinates.
+	 * @param vertexCoordinates Vertex coordinates.
 	 */
 	public void setVertexCoordinates( @NotNull final Collection<Vector3D> vertexCoordinates )
 	{
@@ -108,15 +183,16 @@ public class Object3DBuilder
 	/**
 	 * Add arc.
 	 *
-	 * @param   centerPoint     Center-point of circle on which the arc is defined.
-	 * @param   radius          Radius of circle on which the arc is defined.
-	 * @param   startAngle      Start-angle of arc relative to X-axis (radians).
-	 * @param   endAngle        End-angle of arc relative to X-axis (radians).
-	 * @param   startWidth      Start-width of arc (0.0 => no width).
-	 * @param   endWidth        End-width of arc (0.0 => no width).
-	 * @param   extrusion       Extrusion to apply ({@code null} or 0-vector => no extrusion).
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   fill            Create filled shape vs. create wireframe.
+	 * @param centerPoint Center-point of circle on which the arc is defined.
+	 * @param radius      Radius of circle on which the arc is defined.
+	 * @param startAngle  Start-angle of arc relative to X-axis (radians).
+	 * @param endAngle    End-angle of arc relative to X-axis (radians).
+	 * @param startWidth  Start-width of arc (0.0 => no width).
+	 * @param endWidth    End-width of arc (0.0 => no width).
+	 * @param extrusion   Extrusion to apply ({@code null} or 0-vector => no
+	 *                    extrusion).
+	 * @param appearance  Appearance specification to use for shading.
+	 * @param fill        Create filled shape vs. create wireframe.
 	 */
 	public void addArc( @NotNull final Vector3D centerPoint, final double radius, final double startAngle, final double endAngle, final double startWidth, final double endWidth, @Nullable final Vector3D extrusion, @Nullable final Appearance appearance, final boolean fill )
 	{
@@ -128,23 +204,23 @@ public class Object3DBuilder
 			enclosedAngle += twoPI;
 		}
 
-		final int     nrSegments = ( enclosedAngle < Math.PI / 4.0 ) ? 3 : (int)( ( 32.0 * enclosedAngle ) / twoPI + 0.5 );
-		final double  angleStep  = enclosedAngle / (double)nrSegments;
-		final boolean extruded   = ( extrusion != null ) && !extrusion.almostEquals( Vector3D.ZERO );
+		final int nrSegments = ( enclosedAngle < Math.PI / 4.0 ) ? 3 : (int)( ( 32.0 * enclosedAngle ) / twoPI + 0.5 );
+		final double angleStep = enclosedAngle / (double)nrSegments;
+		final boolean extruded = ( extrusion != null ) && !extrusion.almostEquals( Vector3D.ZERO );
 
 		if ( ( startWidth == 0.0 ) && ( endWidth == 0.0 ) )
 		{
-			double angle       = startAngle;
-			double cos         = Math.cos( angle );
-			double sin         = Math.sin( angle );
+			double angle = startAngle;
+			double cos = Math.cos( angle );
+			double sin = Math.sin( angle );
 
 			Vector3D point1 = centerPoint.plus( radius * cos, radius * sin, 0.0 );
 
-			for ( int i = 0 ; i < nrSegments ; i++ )
+			for ( int i = 0; i < nrSegments; i++ )
 			{
 				angle += angleStep;
-				cos   = Math.cos( angle );
-				sin   = Math.sin( angle );
+				cos = Math.cos( angle );
+				sin = Math.sin( angle );
 
 				final Vector3D point2 = centerPoint.plus( radius * cos, radius * sin, 0.0 );
 
@@ -167,22 +243,22 @@ public class Object3DBuilder
 		{
 			final double radiusStep = ( endWidth - startWidth ) / (double)( 2 * nrSegments );
 
-			double angle       = startAngle;
-			double cos         = Math.cos( angle );
-			double sin         = Math.sin( angle );
+			double angle = startAngle;
+			double cos = Math.cos( angle );
+			double sin = Math.sin( angle );
 			double innerRadius = radius - startWidth / 2.0;
 			double outerRadius = innerRadius + startWidth;
 
 			Vector3D inner1 = centerPoint.plus( innerRadius * cos, innerRadius * sin, 0.0 );
 			Vector3D outer1 = centerPoint.plus( outerRadius * cos, outerRadius * sin, 0.0 );
 
-			for ( int i = 0 ; i < nrSegments ; i++ )
+			for ( int i = 0; i < nrSegments; i++ )
 			{
-				angle       += angleStep;
+				angle += angleStep;
 				innerRadius -= radiusStep;
 				outerRadius += radiusStep;
-				cos         = Math.cos( angle );
-				sin         = Math.sin( angle );
+				cos = Math.cos( angle );
+				sin = Math.sin( angle );
 
 				final Vector3D inner2 = centerPoint.plus( innerRadius * cos, innerRadius * sin, 0.0 );
 				final Vector3D outer2 = centerPoint.plus( outerRadius * cos, outerRadius * sin, 0.0 );
@@ -195,7 +271,7 @@ public class Object3DBuilder
 					final Vector3D extrudedInner2 = inner2.plus( extrusion );
 
 					final boolean isFirst = ( i == 0 );
-					final boolean isLast  = ( i == ( nrSegments -1 ) );
+					final boolean isLast = ( i == ( nrSegments - 1 ) );
 
 					addQuad( outer1, outer2, inner2, inner1, null, appearance, fill, true );
 
@@ -208,7 +284,7 @@ public class Object3DBuilder
 
 					addQuad( inner2, outer2, extrudedOuter2, extrudedInner2, null, appearance, fill, true );
 
-					if ( isLast  )
+					if ( isLast )
 					{
 						addQuad( outer2, outer1, extrudedOuter1, extrudedOuter2, null, appearance, fill, true );
 					}
@@ -229,20 +305,23 @@ public class Object3DBuilder
 	/**
 	 * Add cylinder primitive.
 	 *
-	 * @param   origin              Origin of cylinder.
-	 * @param   direction           Direction of cylinder.
-	 * @param   height              Height of cylinder (z-axis).
-	 * @param   radiusBottom        Radius at bottom (z=0).
-	 * @param   radiusTop           Radius at top (z=height).
-	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   sideAppearance      Appearance of cylinder circumference.
-	 * @param   sideMap             UV map to use for circumference.
-	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
-	 * @param   topAppearance       Appearance for top cap ({@code null} => no cap).
-	 * @param   topMap              UV map for top cap.
-	 * @param   bottomAppearance    Appearance for bottom cap ({@code null} => no cap).
-	 * @param   bottomMap           UV map for bottom cap.
-	 * @param   flipNormals         If set, flip normals.
+	 * @param origin              Origin of cylinder.
+	 * @param direction           Direction of cylinder.
+	 * @param height              Height of cylinder (z-axis).
+	 * @param radiusBottom        Radius at bottom (z=0).
+	 * @param radiusTop           Radius at top (z=height).
+	 * @param numEdges            Number of edges to approximate circle
+	 *                            (minimum: 3).
+	 * @param sideAppearance      Appearance of cylinder circumference.
+	 * @param sideMap             UV map to use for circumference.
+	 * @param smoothCircumference Apply smoothing to circumference of cylinder.
+	 * @param topAppearance       Appearance for top cap ({@code null} => no
+	 *                            cap).
+	 * @param topMap              UV map for top cap.
+	 * @param bottomAppearance    Appearance for bottom cap ({@code null} => no
+	 *                            cap).
+	 * @param bottomMap           UV map for bottom cap.
+	 * @param flipNormals         If set, flip normals.
 	 */
 	public void addCylinder( @NotNull final Vector3D origin, @NotNull final Vector3D direction, final double height, final double radiusBottom, final double radiusTop, final int numEdges, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
@@ -251,10 +330,10 @@ public class Object3DBuilder
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean  hasBottom         = ( radiusBottom > 0.0 );
-		final boolean  hasTop            = ( radiusTop    > 0.0 );
-		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final int[]    vertexIndices     = new int[ vertexCount ];
+		final boolean hasBottom = ( radiusBottom > 0.0 );
+		final boolean hasTop = ( radiusTop > 0.0 );
+		final int vertexCount = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final int[] vertexIndices = new int[ vertexCount ];
 
 		final double radStep = 2.0 * Math.PI / (double)numEdges;
 
@@ -265,7 +344,7 @@ public class Object3DBuilder
 
 		if ( hasBottom )
 		{
-			for ( int i = 0 ; i < numEdges ; i++ )
+			for ( int i = 0; i < numEdges; i++ )
 			{
 				final double rad = (double)i * radStep;
 				vertexIndices[ v++ ] = getVertexIndex( base.transform( Math.sin( rad ) * radiusBottom, -Math.cos( rad ) * radiusBottom, 0.0 ) );
@@ -278,7 +357,7 @@ public class Object3DBuilder
 
 		if ( hasTop )
 		{
-			for ( int i = 0 ; i < numEdges ; i++ )
+			for ( int i = 0; i < numEdges; i++ )
 			{
 				final double rad = (double)i * radStep;
 				vertexIndices[ v++ ] = getVertexIndex( base.transform( Math.sin( rad ) * radiusTop, -Math.cos( rad ) * radiusTop, height ) );
@@ -295,7 +374,7 @@ public class Object3DBuilder
 		if ( hasBottom && ( bottomAppearance != null ) )
 		{
 			final int[] faceVertices = new int[ numEdges ];
-			for ( int i = 0 ; i < numEdges ; i++ )
+			for ( int i = 0; i < numEdges; i++ )
 			{
 				faceVertices[ i ] = flipNormals ? ( numEdges - 1 - i ) : i;
 			}
@@ -308,7 +387,7 @@ public class Object3DBuilder
 		 */
 		if ( hasTop || hasBottom )
 		{
-			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
+			for ( int i1 = 0; i1 < numEdges; i1++ )
 			{
 				final int i2 = ( i1 + 1 ) % numEdges;
 
@@ -340,7 +419,7 @@ public class Object3DBuilder
 
 			final int lastVertex = ( hasBottom ? numEdges : 1 ) + numEdges - 1;
 
-			for ( int i = 0 ; i < numEdges ; i++ )
+			for ( int i = 0; i < numEdges; i++ )
 			{
 				faceVertices[ i ] = vertexIndices[ flipNormals ? ( lastVertex - numEdges + 1 + i ) : ( lastVertex - i ) ];
 			}
@@ -352,9 +431,9 @@ public class Object3DBuilder
 	/**
 	 * Add line primitive.
 	 *
-	 * @param   point1      First point.
-	 * @param   point2      Second point.
-	 * @param   appearance  Appearance specification to use for shading.
+	 * @param point1     First point.
+	 * @param point2     Second point.
+	 * @param appearance Appearance specification to use for shading.
 	 */
 	public void addLine( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @Nullable final Appearance appearance )
 	{
@@ -364,11 +443,12 @@ public class Object3DBuilder
 	/**
 	 * Add line.
 	 *
-	 * @param   point1      First point.
-	 * @param   point2      Second point.
-	 * @param   extrusion   Extrusion to apply ({@code null} or 0-vector => no extrusion).
-	 * @param   appearance  Appearance specification to use for shading.
-	 * @param   fill        Create filled shape vs. create wireframe.
+	 * @param point1     First point.
+	 * @param point2     Second point.
+	 * @param extrusion  Extrusion to apply ({@code null} or 0-vector => no
+	 *                   extrusion).
+	 * @param appearance Appearance specification to use for shading.
+	 * @param fill       Create filled shape vs. create wireframe.
 	 */
 	public void addLine( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @Nullable final Vector3D extrusion, @Nullable final Appearance appearance, final boolean fill )
 	{
@@ -388,10 +468,10 @@ public class Object3DBuilder
 	/**
 	 * Add face without texture.
 	 *
-	 * @param   points          Vertex coordinates that define the face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param points     Vertex coordinates that define the face.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param smooth     Face is smooth/curved vs. flat.
+	 * @param twoSided   Face is two-sided.
 	 */
 	public void addFace( @NotNull final Vector3D[] points, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
@@ -401,10 +481,10 @@ public class Object3DBuilder
 	/**
 	 * Add face without texture.
 	 *
-	 * @param   vertexIndices   Vertex indices of added face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param vertexIndices Vertex indices of added face.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param smooth        Face is smooth/curved vs. flat.
+	 * @param twoSided      Face is two-sided.
 	 */
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
@@ -414,12 +494,12 @@ public class Object3DBuilder
 	/**
 	 * Add face with texture.
 	 *
-	 * @param   points          Vertex coordinates that define the face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Flip texture direction.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param points      Vertex coordinates that define the face.
+	 * @param appearance  Appearance specification to use for shading.
+	 * @param uvMap       UV-map used to generate texture coordinates.
+	 * @param flipTexture Flip texture direction.
+	 * @param smooth      Face is smooth/curved vs. flat.
+	 * @param twoSided    Face is two-sided.
 	 */
 	public void addFace( @NotNull final Vector3D[] points, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
@@ -429,18 +509,18 @@ public class Object3DBuilder
 	/**
 	 * Add face with texture.
 	 *
-	 * @param   points          Vertex coordinates that define the face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   vertexNormals   Normal for each vertex.
-	 * @param   flipTexture     Flip texture direction.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param points        Vertex coordinates that define the face.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param uvMap         UV-map used to generate texture coordinates.
+	 * @param vertexNormals Normal for each vertex.
+	 * @param flipTexture   Flip texture direction.
+	 * @param smooth        Face is smooth/curved vs. flat.
+	 * @param twoSided      Face is two-sided.
 	 */
 	public void addFace( @NotNull final Vector3D[] points, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, @Nullable final Vector3D[] vertexNormals, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
 		final int[] vertexIndices = new int[ points.length ];
-		for ( int i = 0 ; i < points.length ; i++ )
+		for ( int i = 0; i < points.length; i++ )
 		{
 			vertexIndices[ i ] = getVertexIndex( points[ i ] );
 		}
@@ -451,12 +531,12 @@ public class Object3DBuilder
 	/**
 	 * Add face with texture.
 	 *
-	 * @param   vertexIndices   Vertex indices of added face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Flip texture direction.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param vertexIndices Vertex indices of added face.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param uvMap         UV-map used to generate texture coordinates.
+	 * @param flipTexture   Flip texture direction.
+	 * @param smooth        Face is smooth/curved vs. flat.
+	 * @param twoSided      Face is two-sided.
 	 */
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
@@ -466,13 +546,13 @@ public class Object3DBuilder
 	/**
 	 * Add face with texture.
 	 *
-	 * @param   vertexIndices   Vertex indices of added face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   vertexNormals   Normal for each vertex.
-	 * @param   flipTexture     Flip texture direction.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param vertexIndices Vertex indices of added face.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param uvMap         UV-map used to generate texture coordinates.
+	 * @param vertexNormals Normal for each vertex.
+	 * @param flipTexture   Flip texture direction.
+	 * @param smooth        Face is smooth/curved vs. flat.
+	 * @param twoSided      Face is two-sided.
 	 */
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final Vector3D[] vertexNormals, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
@@ -482,19 +562,19 @@ public class Object3DBuilder
 	/**
 	 * Add face.
 	 *
-	 * @param   points          Points for vertices that define the face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   texturePoints   Texture coordiantes for each vertex.
-	 * @param   vertexNormals   Normal for each vertex.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param points        Points for vertices that define the face.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param texturePoints Texture coordiantes for each vertex.
+	 * @param vertexNormals Normal for each vertex.
+	 * @param smooth        Face is smooth/curved vs. flat.
+	 * @param twoSided      Face is two-sided.
 	 */
 	public void addFace( @NotNull final Vector3D[] points, @Nullable final Appearance appearance, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
-		final int   vertexCount   = points.length;
+		final int vertexCount = points.length;
 		final int[] vertexIndices = new int[ vertexCount ];
 
-		for ( int i = 0 ; i < vertexCount ; i++ )
+		for ( int i = 0; i < vertexCount; i++ )
 		{
 			vertexIndices[ i ] = getVertexIndex( points[ i ] );
 		}
@@ -505,12 +585,12 @@ public class Object3DBuilder
 	/**
 	 * Add face.
 	 *
-	 * @param   vertexIndices   Vertex indices of added face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   texturePoints   Texture coordiantes for each vertex.
-	 * @param   vertexNormals   Normal for each vertex.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param vertexIndices Vertex indices of added face.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param texturePoints Texture coordiantes for each vertex.
+	 * @param vertexNormals Normal for each vertex.
+	 * @param smooth        Face is smooth/curved vs. flat.
+	 * @param twoSided      Face is two-sided.
 	 */
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
@@ -520,12 +600,12 @@ public class Object3DBuilder
 	/**
 	 * Add quad primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   point4          Fourth vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param point4     Fourth vertex coordinates.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Appearance appearance, final boolean twoSided )
 	{
@@ -537,13 +617,13 @@ public class Object3DBuilder
 	/**
 	 * Add quad primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   point4          Fourth vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param point4     Fourth vertex coordinates.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param uvMap      UV-map used to generate texture coordinates.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean twoSided )
 	{
@@ -553,14 +633,14 @@ public class Object3DBuilder
 	/**
 	 * Add quad primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   point4          Fourth vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param point4     Fourth vertex coordinates.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param uvMap      UV-map used to generate texture coordinates.
+	 * @param smooth     Face is smooth/curved vs. flat.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean smooth, final boolean twoSided )
 	{
@@ -570,16 +650,16 @@ public class Object3DBuilder
 	/**
 	 * Add textured quad.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   texturePoint1   First vertex texture coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   texturePoint2   Second vertex texture coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   texturePoint3   Third vertex texture coordinates.
-	 * @param   point4          Fourth vertex coordinates.
-	 * @param   texturePoint4   Fourth vertex texture coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1        First vertex coordinates.
+	 * @param texturePoint1 First vertex texture coordinates.
+	 * @param point2        Second vertex coordinates.
+	 * @param texturePoint2 Second vertex texture coordinates.
+	 * @param point3        Third vertex coordinates.
+	 * @param texturePoint3 Third vertex texture coordinates.
+	 * @param point4        Fourth vertex coordinates.
+	 * @param texturePoint4 Fourth vertex texture coordinates.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param twoSided      Flag to indicate if face has a backface.
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector2f texturePoint1, @NotNull final Vector3D point2, @NotNull final Vector2f texturePoint2, @NotNull final Vector3D point3, @NotNull final Vector2f texturePoint3, @NotNull final Vector3D point4, @NotNull final Vector2f texturePoint4, @Nullable final Appearance appearance, final boolean twoSided )
 	{
@@ -589,14 +669,15 @@ public class Object3DBuilder
 	/**
 	 * Add quad with optional extrusion.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   point4          Fourth vertex coordinates.
-	 * @param   extrusion       Extrusion to apply ({@code null} or 0-vector => no extrusion).
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   fill            Create filled shape vs. create wireframe.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param point4     Fourth vertex coordinates.
+	 * @param extrusion  Extrusion to apply ({@code null} or 0-vector => no
+	 *                   extrusion).
+	 * @param appearance Appearance specification to use for shading.
+	 * @param fill       Create filled shape vs. create wireframe.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Vector3D extrusion, @Nullable final Appearance appearance, final boolean fill, final boolean twoSided )
 	{
@@ -656,8 +737,7 @@ public class Object3DBuilder
 	 * many smaller quads. This improves rendering quality for large quads when
 	 * per-vertex lighting is used.
 	 *
-	 * <p>
-	 * Example of a quad subdivided into 3 by 2 subdivisions:
+	 * <p> Example of a quad subdivided into 3 by 2 subdivisions:
 	 * <pre>
 	 * p4             p3
 	 *   o---+---+---o
@@ -671,16 +751,16 @@ public class Object3DBuilder
 	 * <p>This implementation uses a single triangle strip to represent all of
 	 * the quads.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   point4          Fourth vertex coordinates.
-	 * @param   segmentsX       Number of subdivisions along the local X-axis.
-	 * @param   segmentsY       Number of subdivisions along the local Y-axis.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param point4     Fourth vertex coordinates.
+	 * @param segmentsX  Number of subdivisions along the local X-axis.
+	 * @param segmentsY  Number of subdivisions along the local Y-axis.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param uvMap      UV-map used to generate texture coordinates.
+	 * @param smooth     Face is smooth/curved vs. flat.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addSubdividedQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, final int segmentsX, final int segmentsY, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean smooth, final boolean twoSided )
 	{
@@ -747,11 +827,11 @@ public class Object3DBuilder
 	/**
 	 * Add triangle primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Appearance appearance, final boolean twoSided )
 	{
@@ -761,12 +841,12 @@ public class Object3DBuilder
 	/**
 	 * Add triangle primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param uvMap      UV-map used to generate texture coordinates.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean twoSided )
 	{
@@ -776,13 +856,13 @@ public class Object3DBuilder
 	/**
 	 * Add triangle primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param appearance Appearance specification to use for shading.
+	 * @param uvMap      UV-map used to generate texture coordinates.
+	 * @param smooth     Face is smooth/curved vs. flat.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean smooth, final boolean twoSided )
 	{
@@ -792,14 +872,14 @@ public class Object3DBuilder
 	/**
 	 * Add triangle primitive.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   texturePoint1   First vertex texture coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   texturePoint2   Second vertex texture coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   texturePoint3   Third vertex texture coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1        First vertex coordinates.
+	 * @param texturePoint1 First vertex texture coordinates.
+	 * @param point2        Second vertex coordinates.
+	 * @param texturePoint2 Second vertex texture coordinates.
+	 * @param point3        Third vertex coordinates.
+	 * @param texturePoint3 Third vertex texture coordinates.
+	 * @param appearance    Appearance specification to use for shading.
+	 * @param twoSided      Flag to indicate if face has a backface.
 	 */
 	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector2f texturePoint1, @NotNull final Vector3D point2, @NotNull final Vector2f texturePoint2, @NotNull final Vector3D point3, @NotNull final Vector2f texturePoint3, @Nullable final Appearance appearance, final boolean twoSided )
 	{
@@ -809,13 +889,14 @@ public class Object3DBuilder
 	/**
 	 * Add triangle with optional extrusion.
 	 *
-	 * @param   point1          First vertex coordinates.
-	 * @param   point2          Second vertex coordinates.
-	 * @param   point3          Third vertex coordinates.
-	 * @param   extrusion       Extrusion to apply ({@code null} or 0-vector => no extrusion).
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   fill            Create filled shape vs. create wireframe.
-	 * @param   twoSided        Flag to indicate if face has a backface.
+	 * @param point1     First vertex coordinates.
+	 * @param point2     Second vertex coordinates.
+	 * @param point3     Third vertex coordinates.
+	 * @param extrusion  Extrusion to apply ({@code null} or 0-vector => no
+	 *                   extrusion).
+	 * @param appearance Appearance specification to use for shading.
+	 * @param fill       Create filled shape vs. create wireframe.
+	 * @param twoSided   Flag to indicate if face has a backface.
 	 */
 	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Vector3D extrusion, @Nullable final Appearance appearance, final boolean fill, final boolean twoSided )
 	{
@@ -865,30 +946,30 @@ public class Object3DBuilder
 
 	/**
 	 * This constructor can be used to create a 3D object that is constructed
-	 * using a 2D outline which is rotated around the Y-axis. If requested,
-	 * the ends will be closed (if not done so already).
+	 * using a 2D outline which is rotated around the Y-axis. If requested, the
+	 * ends will be closed (if not done so already).
 	 *
-	 * The 'detail' parameter is used to specify the number of segments used
-	 * to rotate around the Z-axis (minimum: 3).
+	 * The 'detail' parameter is used to specify the number of segments used to
+	 * rotate around the Z-axis (minimum: 3).
 	 *
 	 * NOTE: To construct an outer surface, use increasing values for Z!
 	 *
-	 * @param   transform           Optional transform to apply to points.
-	 * @param   radii               X coordinates of 2D outline.
-	 * @param   zCoordinates        Z coordinates of 2D outline.
-	 * @param   detail              Number of segments around the Y-axis.
-	 * @param   appearance          Appearance specification to use for shading.
-	 * @param   smoothCircumference Set 'smooth' flag for circumference faces.
-	 * @param   closeEnds           Close ends of shape (make solid).
+	 * @param transform           Optional transform to apply to points.
+	 * @param radii               X coordinates of 2D outline.
+	 * @param zCoordinates        Z coordinates of 2D outline.
+	 * @param detail              Number of segments around the Y-axis.
+	 * @param appearance          Appearance specification to use for shading.
+	 * @param smoothCircumference Set 'smooth' flag for circumference faces.
+	 * @param closeEnds           Close ends of shape (make solid).
 	 */
 	public void addRotatedObject( @Nullable final Matrix3D transform, final double[] radii, final double[] zCoordinates, final int detail, @Nullable final Appearance appearance, final boolean smoothCircumference, final boolean closeEnds )
 	{
 		int[] prevVertexIndices = null;
 
-		for ( int i = 0 ; i < radii.length ; i++ )
+		for ( int i = 0; i < radii.length; i++ )
 		{
 			final double radius = radii[ i ];
-			final double z      = zCoordinates[ i ];
+			final double z = zCoordinates[ i ];
 
 			/*
 			 * Based on 'radius', create a list of vertex indices at this point.
@@ -904,11 +985,11 @@ public class Object3DBuilder
 				vertexIndices = new int[ detail ];
 
 				final double stepSize = 2.0 * Math.PI / (double)detail;
-				for ( int step = 0 ; step < detail ; step++ )
+				for ( int step = 0; step < detail; step++ )
 				{
 					final double angle = (double)step * stepSize;
-					final double x     =  Math.sin( angle ) * radius;
-					final double y     = -Math.cos( angle ) * radius;
+					final double x = Math.sin( angle ) * radius;
+					final double y = -Math.cos( angle ) * radius;
 
 					final Vector3D point = ( transform != null ) ? transform.transform( x, y, z ) : new Vector3D( x, y, z );
 					vertexIndices[ step ] = getVertexIndex( point );
@@ -923,7 +1004,7 @@ public class Object3DBuilder
 					else if ( i == radii.length - 1 )
 					{
 						final int[] reversed = new int[ detail ];
-						for ( int step = 0 ; step < detail ; step++ )
+						for ( int step = 0; step < detail; step++ )
 						{
 							reversed[ step ] = vertexIndices[ detail - 1 - step ];
 						}
@@ -942,7 +1023,7 @@ public class Object3DBuilder
 				{
 					if ( prevVertexIndices.length > 1 )
 					{
-						for ( int step = 0 ; step < detail ; step++ )
+						for ( int step = 0; step < detail; step++ )
 						{
 							final int nextStep = ( step + 1 ) % detail;
 							addFace( new int[] { prevVertexIndices[ step ], vertexIndices[ step ], vertexIndices[ nextStep ], prevVertexIndices[ nextStep ] }, appearance, smoothCircumference, false );
@@ -950,7 +1031,7 @@ public class Object3DBuilder
 					}
 					else
 					{
-						for ( int step = 0 ; step < detail ; step++ )
+						for ( int step = 0; step < detail; step++ )
 						{
 							addFace( new int[] { prevVertexIndices[ 0 ], vertexIndices[ step ], vertexIndices[ ( step + 1 ) % detail ] }, appearance, smoothCircumference, false );
 						}
@@ -958,7 +1039,7 @@ public class Object3DBuilder
 				}
 				else if ( prevVertexIndices.length > 1 )
 				{
-					for ( int step = 0 ; step < detail ; step++ )
+					for ( int step = 0; step < detail; step++ )
 					{
 						addFace( new int[] { prevVertexIndices[ step ], vertexIndices[ 0 ], prevVertexIndices[ ( step + 1 ) % detail ] }, appearance, smoothCircumference, false );
 					}
@@ -971,29 +1052,31 @@ public class Object3DBuilder
 	/**
 	 * Add extruded shape with caps.
 	 *
-	 * @param   tessellator         Tessellator that defines the shape.
-	 * @param   extrusion           Extrusion vector (control-point displacement).
-	 * @param   extrusionLines      Include extrusion (out)lines.
-	 * @param   transform           Transform to apply.
-	 * @param   top                 {@code true} to include a top face.
-	 * @param   topAppearance       Appearance to apply to the top cap.
-	 * @param   topMap              Provides UV coordinates for top cap.
-	 * @param   topFlipTexture      Whether the top texture direction is flipped.
-	 * @param   bottom              {@code true} to include a bottom face.
-	 * @param   bottomAppearance    Appearance to apply to the bottom cap.
-	 * @param   bottomMap           Provides UV coordinates for bottom cap.
-	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
-	 * @param   side                {@code true} to include side faces.
-	 * @param   sideAppearance      Appearance to apply to the extruded sides.
-	 * @param   sideMap             Provides UV coordinates for extruded sides.
-	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
-	 * @param   twoSided            Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals         If {@code true}, normals are flipped to
-	 *                              point in the opposite direction.
-	 * @param   smooth              Shape is smooth.
+	 * @param tessellator       Tessellator that defines the shape.
+	 * @param extrusion         Extrusion vector (control-point displacement).
+	 * @param extrusionLines    Include extrusion (out)lines.
+	 * @param transform         Transform to apply.
+	 * @param top               {@code true} to include a top face.
+	 * @param topAppearance     Appearance to apply to the top cap.
+	 * @param topMap            Provides UV coordinates for top cap.
+	 * @param topFlipTexture    Whether the top texture direction is flipped.
+	 * @param bottom            {@code true} to include a bottom face.
+	 * @param bottomAppearance  Appearance to apply to the bottom cap.
+	 * @param bottomMap         Provides UV coordinates for bottom cap.
+	 * @param bottomFlipTexture Whether the bottom texture direction is
+	 *                          flipped.
+	 * @param side              {@code true} to include side faces.
+	 * @param sideAppearance    Appearance to apply to the extruded sides.
+	 * @param sideMap           Provides UV coordinates for extruded sides.
+	 * @param sideFlipTexture   Whether the side texture direction is flipped.
+	 * @param twoSided          Flag to indicate if extruded faces are
+	 *                          two-sided.
+	 * @param flipNormals       If {@code true}, normals are flipped to point in
+	 *                          the opposite direction.
+	 * @param smooth            Shape is smooth.
 	 *
-	 * @throws  IllegalArgumentException if the shape is not extruded along
-	 *          the z-axis.
+	 * @throws IllegalArgumentException if the shape is not extruded along the
+	 * z-axis.
 	 */
 	public void addExtrudedShape( @NotNull final Tessellator tessellator, @NotNull final Vector3D extrusion, final boolean extrusionLines, @NotNull final Matrix3D transform, final boolean top, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
@@ -1005,28 +1088,29 @@ public class Object3DBuilder
 	/**
 	 * Add extruded shape with caps.
 	 *
-	 *
-	 * @param   tessellator         Tessellator that defines the shape.
-	 * @param   flipVertexOrder     Flip (counter-)clockwise vertex order.
-	 * @param   bottomTransform     Transforms 2D points to bottom face points.
-	 * @param   topTransform        Transforms 2D points to top face points.
-	 * @param   extrusionLines      Include extrusion (out)lines.
-	 * @param   top                 {@code true} to include a top face.
-	 * @param   topAppearance       Appearance to apply to the top cap.
-	 * @param   topMap              Provides UV coordinates for top cap.
-	 * @param   topFlipTexture      Whether the top texture direction is flipped.
-	 * @param   bottom              {@code true} to include a bottom face.
-	 * @param   bottomAppearance    Appearance to apply to the bottom cap.
-	 * @param   bottomMap           Provides UV coordinates for bottom cap.
-	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
-	 * @param   side                {@code true} to include side faces.
-	 * @param   sideAppearance      Appearance to apply to the extruded sides.
-	 * @param   sideMap             Provides UV coordinates for extruded sides.
-	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
-	 * @param   twoSided            Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals         If {@code true}, normals are flipped to
-	 *                              point in the opposite direction.
-	 * @param   smooth              Shape is smooth.
+	 * @param tessellator       Tessellator that defines the shape.
+	 * @param flipVertexOrder   Flip (counter-)clockwise vertex order.
+	 * @param bottomTransform   Transforms 2D points to bottom face points.
+	 * @param topTransform      Transforms 2D points to top face points.
+	 * @param extrusionLines    Include extrusion (out)lines.
+	 * @param top               {@code true} to include a top face.
+	 * @param topAppearance     Appearance to apply to the top cap.
+	 * @param topMap            Provides UV coordinates for top cap.
+	 * @param topFlipTexture    Whether the top texture direction is flipped.
+	 * @param bottom            {@code true} to include a bottom face.
+	 * @param bottomAppearance  Appearance to apply to the bottom cap.
+	 * @param bottomMap         Provides UV coordinates for bottom cap.
+	 * @param bottomFlipTexture Whether the bottom texture direction is
+	 *                          flipped.
+	 * @param side              {@code true} to include side faces.
+	 * @param sideAppearance    Appearance to apply to the extruded sides.
+	 * @param sideMap           Provides UV coordinates for extruded sides.
+	 * @param sideFlipTexture   Whether the side texture direction is flipped.
+	 * @param twoSided          Flag to indicate if extruded faces are
+	 *                          two-sided.
+	 * @param flipNormals       If {@code true}, normals are flipped to point in
+	 *                          the opposite direction.
+	 * @param smooth            Shape is smooth.
 	 */
 	public void addExtrudedShape( @NotNull final Tessellator tessellator, final boolean flipVertexOrder, @NotNull final Matrix3D bottomTransform, @NotNull final Matrix3D topTransform, final boolean extrusionLines, final boolean top, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
@@ -1127,19 +1211,19 @@ public class Object3DBuilder
 	/**
 	 * Add extruded shape without caps.
 	 *
-	 * @param   contours        Contours that define the shape.
-	 * @param   extrusion       Extrusion vector (control-point displacement).
-	 * @param   transform       Transform to apply.
-	 * @param   uvMap           Provides UV coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   flipTexture     Whether the side texture direction is flipped.
-	 * @param   twoSided        Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals     If {@code true}, normals are flipped to
-	 *                          point in the opposite direction.
-	 * @param   smooth          Shape is smooth.
+	 * @param contours    Contours that define the shape.
+	 * @param extrusion   Extrusion vector (control-point displacement).
+	 * @param transform   Transform to apply.
+	 * @param uvMap       Provides UV coordinates.
+	 * @param appearance  Appearance specification to use for shading.
+	 * @param flipTexture Whether the side texture direction is flipped.
+	 * @param twoSided    Flag to indicate if extruded faces are two-sided.
+	 * @param flipNormals If {@code true}, normals are flipped to point in the
+	 *                    opposite direction.
+	 * @param smooth      Shape is smooth.
 	 *
-	 * @throws  IllegalArgumentException if the shape is not extruded along
-	 *          the z-axis.
+	 * @throws IllegalArgumentException if the shape is not extruded along the
+	 * z-axis.
 	 */
 	public void addExtrudedShape( @NotNull final Iterable<Contour> contours, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
@@ -1203,13 +1287,13 @@ public class Object3DBuilder
 	/**
 	 * Add filled tessellated shape.
 	 *
-	 * @param   transform       Transforms 2D to 3D coordinates.
-	 * @param   tessellator     Tessellator that defines the shape.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Whether the bottom texture direction is flipped.
-	 * @param   flipNormals     Flip normals using CW instead of CCW triangles.
-	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 * @param transform   Transforms 2D to 3D coordinates.
+	 * @param tessellator Tessellator that defines the shape.
+	 * @param appearance  Appearance specification to use for shading.
+	 * @param uvMap       UV-map used to generate texture coordinates.
+	 * @param flipTexture Whether the bottom texture direction is flipped.
+	 * @param flipNormals Flip normals using CW instead of CCW triangles.
+	 * @param twoSided    Resulting face will be two-sided (has backface).
 	 */
 	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Tessellator tessellator, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
 	{
@@ -1225,12 +1309,12 @@ public class Object3DBuilder
 	/**
 	 * Create vertices for 3D face using the specified tessellation.
 	 *
-	 * @param   points          3D points used as vertex coordinates.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Whether the bottom texture direction is flipped.
+	 * @param points      3D points used as vertex coordinates.
+	 * @param appearance  Appearance specification to use for shading.
+	 * @param uvMap       UV-map used to generate texture coordinates.
+	 * @param flipTexture Whether the bottom texture direction is flipped.
 	 *
-	 * @return  Vertices for 3D face.
+	 * @return Vertices for 3D face.
 	 */
 	protected List<Vertex3D> createVertices( final List<Vector3D> points, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture )
 	{
@@ -1264,10 +1348,10 @@ public class Object3DBuilder
 	/**
 	 * Transforms points from a 2D plane into points in 3D space.
 	 *
-	 * @param   transform   Transforms 2D to 3D coordinates.
-	 * @param   points      2D points to transform.
+	 * @param transform Transforms 2D to 3D coordinates.
+	 * @param points    2D points to transform.
 	 *
-	 * @return  3D points.
+	 * @return 3D points.
 	 */
 	protected static List<Vector3D> transform( @NotNull final Matrix3D transform, @NotNull final Collection<? extends Vector2D> points )
 	{
@@ -1284,11 +1368,11 @@ public class Object3DBuilder
 	/**
 	 * Add face to current 3D object.
 	 *
-	 * @param   vertices        Vertices that defines the face.
-	 * @param   tessellation    Tessellation of face.
-	 * @param   appearance      Appearance specification to use for shading.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 * @param vertices     Vertices that defines the face.
+	 * @param tessellation Tessellation of face.
+	 * @param appearance   Appearance specification to use for shading.
+	 * @param smooth       Face is smooth/curved vs. flat.
+	 * @param twoSided     Resulting face will be two-sided (has backface).
 	 */
 	public void addFace( @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{

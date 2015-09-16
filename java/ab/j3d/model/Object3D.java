@@ -102,7 +102,7 @@ extends Node3D
 	@NotNull
 	public Object3DBuilder getBuilder()
 	{
-		return new Object3DBuilder( this );
+		return new Object3DBuilder( this, false );
 	}
 
 	/**
