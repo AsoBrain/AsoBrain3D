@@ -153,6 +153,7 @@ public class KmzWriter
 			zipOut.closeEntry();
 		}
 
-		zipOut.close();
+		zipOut.finish();
+		zipOut.flush();
 	}
 }
