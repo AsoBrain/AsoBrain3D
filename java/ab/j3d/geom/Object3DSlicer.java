@@ -61,14 +61,14 @@ public class Object3DSlicer
 	private boolean _intersectFaces = true;
 
 	/**
-	 * This flag indicates whether triangles are intersected. If this is disabled,
-	 * intersecting triangles are simply omitted from the result.
+	 * This flag indicates whether triangles are intersected. If this is
+	 * disabled, intersecting triangles are simply omitted from the result.
 	 */
 	private boolean _intersectTriangles = true;
 
 	/**
-	 * This flag indicate whether duplicate vertices will be removed from resulting
-	 * objects.
+	 * This flag indicate whether duplicate vertices will be removed from
+	 * resulting objects.
 	 *
 	 * It may be wise to set this to {@code false} for large meshes, because the
 	 * required look-ups may not be worth the cost (duplicate vertices are only
@@ -122,8 +122,8 @@ public class Object3DSlicer
 	private Appearance _topAppearance = null;
 
 	/**
-	 * Appearance override for {@link #_bottomObject}. If set to {@code null}, the
-	 * original appearance will be maintained.
+	 * Appearance override for {@link #_bottomObject}. If set to {@code null},
+	 * the original appearance will be maintained.
 	 *
 	 * This should be set before a slice operation is started.
 	 */
@@ -226,9 +226,14 @@ public class Object3DSlicer
 	private DoubleArray _outlineIntersectionPositions = null;
 
 	/**
-	 * New outline buffer, (re)used by {@link #processOutline}.
+	 * New top outline buffer, (re)used by {@link #processOutline}.
 	 */
-	private IntArray _newOutline = null;
+	private IntArray _newTopOutline = null;
+
+	/**
+	 * New bottom outline buffer, (re)used by {@link #processOutline}.
+	 */
+	private IntArray _newBottomOutline = null;
 
 	/**
 	 * Slice object using the given cutting plane.
@@ -292,11 +297,11 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Get appearance for top object. This overrides the appearance of the original
-	 * object.
+	 * Get appearance for top object. This overrides the appearance of the
+	 * original object.
 	 *
 	 * @return Appearance override for top object; {@code null} if original
-	 *         appearance is kept.
+	 * appearance is kept.
 	 */
 	public Appearance getTopAppearance()
 	{
@@ -304,11 +309,11 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Set appearance for top object. This overrides the appearance of the original
-	 * object.
+	 * Set appearance for top object. This overrides the appearance of the
+	 * original object.
 	 *
-	 * @param appearance Appearance override for top object; {@code null} to keep
-	 *                   original appearance.
+	 * @param appearance Appearance override for top object; {@code null} to
+	 *                   keep original appearance.
 	 */
 	public void setTopAppearance( final Appearance appearance )
 	{
@@ -318,8 +323,8 @@ public class Object3DSlicer
 	/**
 	 * Test whether the top object should be capped.
 	 *
-	 * @return {@code true} if the top object is capped; {@code false} if the top
-	 *         object is not capped.
+	 * @return {@code true} if the top object is capped; {@code false} if the
+	 * top object is not capped.
 	 */
 	public boolean isTopCapped()
 	{
@@ -340,8 +345,8 @@ public class Object3DSlicer
 	/**
 	 * Test whether creation of the top object is enabled.
 	 *
-	 * @return {@code true} if a top object may be created; {@code false} if a top
-	 *         object is never created.
+	 * @return {@code true} if a top object may be created; {@code false} if a
+	 * top object is never created.
 	 */
 	public boolean isTopEnabled()
 	{
@@ -351,8 +356,8 @@ public class Object3DSlicer
 	/**
 	 * Set whether creation of the top object is enabled.
 	 *
-	 * @param enabled {@code true} if a top object may be created; {@code false} if
-	 *                a top object should not be created.
+	 * @param enabled {@code true} if a top object may be created; {@code false}
+	 *                if a top object should not be created.
 	 */
 	public void setTopEnabled( final boolean enabled )
 	{
@@ -362,8 +367,8 @@ public class Object3DSlicer
 	/**
 	 * Get 3D object with top part of last sliced object.
 	 *
-	 * @return Top part of last sliced object; {@code null} the sliced object was
-	 *         completely below the cutting plane, or no object was sliced yet.
+	 * @return Top part of last sliced object; {@code null} the sliced object
+	 * was completely below the cutting plane, or no object was sliced yet.
 	 */
 	public Object3D getTopObject()
 	{
@@ -380,11 +385,11 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Get whether faces are intersected. If this is disabled, intersecting faces
-	 * are simply omitted from the result.
+	 * Get whether faces are intersected. If this is disabled, intersecting
+	 * faces are simply omitted from the result.
 	 *
-	 * @return {@code true} if faces are intersected; {@code false} if intersecting
-	 *         faces are removed.
+	 * @return {@code true} if faces are intersected; {@code false} if
+	 * intersecting faces are removed.
 	 */
 	public boolean isIntersectFaces()
 	{
@@ -392,8 +397,8 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Set whether faces are intersected. If this is disabled, intersecting faces
-	 * are simply omitted from the result.
+	 * Set whether faces are intersected. If this is disabled, intersecting
+	 * faces are simply omitted from the result.
 	 *
 	 * @param enabled {@code true} if faces are intersected; {@code false} if
 	 *                intersecting faces are removed.
@@ -408,7 +413,7 @@ public class Object3DSlicer
 	 * triangles are simply omitted from the result.
 	 *
 	 * @return {@code true} if triangles are intersected; {@code false} if
-	 *         intersecting triangles are removed.
+	 * intersecting triangles are removed.
 	 */
 	public boolean isIntersectTriangles()
 	{
@@ -419,8 +424,8 @@ public class Object3DSlicer
 	 * Set whether triangles are intersected. If this is disabled, intersecting
 	 * triangles are simply omitted from the result.
 	 *
-	 * @param enabled {@code true} if triangles are intersected; {@code false} if
-	 *                intersecting triangles are removed.
+	 * @param enabled {@code true} if triangles are intersected; {@code false}
+	 *                if intersecting triangles are removed.
 	 */
 	public void setIntersectTriangles( final boolean enabled )
 	{
@@ -435,8 +440,8 @@ public class Object3DSlicer
 	 * required look-ups may not be worth the cost (duplicate vertices are only
 	 * created for intersection points).
 	 *
-	 * @return {@code true} if duplicate object vertices are removed; {@code false}
-	 *         if duplicate vertices are accepted.
+	 * @return {@code true} if duplicate object vertices are removed; {@code
+	 * false} if duplicate vertices are accepted.
 	 */
 	public boolean isRemoveDuplicateVertices()
 	{
@@ -451,8 +456,8 @@ public class Object3DSlicer
 	 * required look-ups may not be worth the cost (duplicate vertices are only
 	 * created for intersection points).
 	 *
-	 * @param enabled {@code true} if duplicate object vertices are removed; {@code
-	 *                false} if duplicate vertices are accepted.
+	 * @param enabled {@code true} if duplicate object vertices are removed;
+	 *                {@code false} if duplicate vertices are accepted.
 	 */
 	public void setRemoveDuplicateVertices( final boolean enabled )
 	{
@@ -483,7 +488,7 @@ public class Object3DSlicer
 	 * Test whether creation of the slice object is enabled.
 	 *
 	 * @return {@code true} if a slice object may be created; {@code false} if a
-	 *         slice object is never created.
+	 * slice object is never created.
 	 */
 	public boolean isSliceEnabled()
 	{
@@ -493,8 +498,8 @@ public class Object3DSlicer
 	/**
 	 * Set whether creation of the slice object is enabled.
 	 *
-	 * @param enabled {@code true} if a slice object may be created; {@code false}
-	 *                if a slice object should not be created.
+	 * @param enabled {@code true} if a slice object may be created; {@code
+	 *                false} if a slice object should not be created.
 	 */
 	public void setSliceEnabled( final boolean enabled )
 	{
@@ -527,8 +532,8 @@ public class Object3DSlicer
 	 * 3D object for intersection slice.
 	 *
 	 * @return Intersection slice object; {@code null} if the sliced object
-	 *         contained no faces that intersected the cutting plane, or no object
-	 *         was sliced yet.
+	 * contained no faces that intersected the cutting plane, or no object was
+	 * sliced yet.
 	 */
 	public Object3D getSliceObject()
 	{
@@ -552,7 +557,7 @@ public class Object3DSlicer
 	 * Test whether the bottom object should be capped.
 	 *
 	 * @return {@code true} if the bottom object is capped; {@code false} if the
-	 *         bottom object is not capped.
+	 * bottom object is not capped.
 	 */
 	public boolean isBottomCapped()
 	{
@@ -573,8 +578,8 @@ public class Object3DSlicer
 	/**
 	 * Test whether creation of the bottom object is enabled.
 	 *
-	 * @return {@code true} if a bottom object may be created; {@code false} if a
-	 *         bottom object is never created.
+	 * @return {@code true} if a bottom object may be created; {@code false} if
+	 * a bottom object is never created.
 	 */
 	public boolean isBottomEnabled()
 	{
@@ -584,8 +589,8 @@ public class Object3DSlicer
 	/**
 	 * Set whether creation of the bottom object is enabled.
 	 *
-	 * @param enabled {@code true} if a bottom object may be created; {@code false}
-	 *                if a bottom object should not be created.
+	 * @param enabled {@code true} if a bottom object may be created; {@code
+	 *                false} if a bottom object should not be created.
 	 */
 	public void setBottomEnabled( final boolean enabled )
 	{
@@ -597,7 +602,7 @@ public class Object3DSlicer
 	 * original object.
 	 *
 	 * @return Appearance override for bottom object; {@code null} if original
-	 *         appearance is kept.
+	 * appearance is kept.
 	 */
 	public Appearance getBottomAppearance()
 	{
@@ -620,8 +625,7 @@ public class Object3DSlicer
 	 * Get 3D object with bottom part of last sliced object.
 	 *
 	 * @return Bottom part of last sliced object; {@code null} the sliced object
-	 *         was completely above the cutting plane, or no object was sliced
-	 *         yet.
+	 * was completely above the cutting plane, or no object was sliced yet.
 	 */
 	public Object3D getBottomObject()
 	{
@@ -1209,15 +1213,26 @@ public class Object3DSlicer
 		{
 			final int outlineLength = outline.length;
 
-			IntArray newOutline = _newOutline;
-			if ( newOutline == null )
+			IntArray newTopOutline = _newTopOutline;
+			if ( newTopOutline == null )
 			{
-				newOutline = new IntArray( outlineLength );
-				_newOutline = newOutline;
+				newTopOutline = new IntArray( outlineLength );
+				_newTopOutline = newTopOutline;
 			}
 			else
 			{
-				newOutline.clear();
+				newTopOutline.clear();
+			}
+
+			IntArray newBottomOutline = _newBottomOutline;
+			if ( newBottomOutline == null )
+			{
+				newBottomOutline = new IntArray( outlineLength );
+				_newBottomOutline = newBottomOutline;
+			}
+			else
+			{
+				newBottomOutline.clear();
 			}
 
 			final boolean closed = outline[ outlineLength - 1 ] == outline[ 0 ];
@@ -1416,17 +1431,17 @@ public class Object3DSlicer
 							{
 								if ( index < outlineLength ) // add copy of original vertex
 								{
-									newOutline.add( copyFaceVertex( object, face, outline[ index ], topObject, topFace, topObjectVertexMap, topFaceVertexMap ) );
+									newTopOutline.add( copyFaceVertex( object, face, outline[ index ], topObject, topFace, topObjectVertexMap, topFaceVertexMap ) );
 								}
 								else // add intersection vertex
 								{
 									final Vector3D point = intersectionPoints.get( index - outlineLength );
-									newOutline.add( topFace.getVertexIndex( point, getVertexIndex( topObject, point ), 0.0f, 0.0f ) );
+									newTopOutline.add( topFace.getVertexIndex( point, getVertexIndex( topObject, point ), 0.0f, 0.0f ) );
 								}
 							}
 
-							topFace.addOutline( newOutline.toArray() );
-							newOutline.clear();
+							topFace.addOutline( newTopOutline.toArray() );
+							newTopOutline.clear();
 						}
 					}
 				}
@@ -1441,19 +1456,110 @@ public class Object3DSlicer
 							{
 								if ( index < outlineLength ) // add copy of original vertex
 								{
-									newOutline.add( copyFaceVertex( object, face, outline[ index ], bottomObject, bottomFace, bottomObjectVertexMap, bottomFaceVertexMap ) );
+									newBottomOutline.add( copyFaceVertex( object, face, outline[ index ], bottomObject, bottomFace, bottomObjectVertexMap, bottomFaceVertexMap ) );
 								}
 								else // add intersection vertex
 								{
 									final Vector3D point = intersectionPoints.get( index - outlineLength );
-									newOutline.add( bottomFace.getVertexIndex( point, getVertexIndex( bottomObject, point ), 0.0f, 0.0f ) );
+									newBottomOutline.add( bottomFace.getVertexIndex( point, getVertexIndex( bottomObject, point ), 0.0f, 0.0f ) );
 								}
 							}
 
-							bottomFace.addOutline( newOutline.toArray() );
-							newOutline.clear();
+							bottomFace.addOutline( newBottomOutline.toArray() );
+							newBottomOutline.clear();
 						}
 					}
+				}
+			}
+			else
+			{
+				/*
+				 * Slicing algorithm for open outlines.
+				 *
+				 * Slicing an open outline is pretty straightforward. Simply
+				 * iterate over the outline points and add outline sections as
+				 * new outlines to either the top or bottom face.
+				 */
+				Vector3D prevPoint = null;
+				double prevDist = 0.0;
+				boolean prevTop = false;
+
+				for ( final int vertexIndex : outline )
+				{
+					final Vertex3D curVertex = face.getVertex( vertexIndex );
+					final Vector3D curPoint = curVertex.point;
+					final double curDist = objectVertexDistances.get( curVertex.vertexCoordinateIndex );
+					final boolean curTop = ( curDist >= 0.0 );
+
+					if ( ( prevPoint != null ) && ( curTop != prevTop ) ) // intersecting segment
+					{
+						final Vector3D intersectionPoint = calculateIntersectionPoint( prevPoint, prevDist, curPoint, curDist );
+
+						if ( curTop ) // going from bottom to top
+						{
+							if ( bottomFace != null ) // finish current bottom outline
+							{
+								newBottomOutline.add( bottomFace.getVertexIndex( intersectionPoint, getVertexIndex( bottomObject, intersectionPoint ), 0.0f, 0.0f ) );
+								bottomFace.addOutline( newBottomOutline.toArray() );
+								newBottomOutline.clear();
+							}
+
+							if ( topFace != null ) // start new top outline
+							{
+								newTopOutline.add( topFace.getVertexIndex( intersectionPoint, getVertexIndex( topObject, intersectionPoint ), 0.0f, 0.0f ) );
+							}
+						}
+						else // going from top to bottom
+						{
+							if ( topFace != null ) // finish current top outline
+							{
+								newTopOutline.add( topFace.getVertexIndex( intersectionPoint, getVertexIndex( topObject, intersectionPoint ), 0.0f, 0.0f ) );
+								topFace.addOutline( newTopOutline.toArray() );
+								newTopOutline.clear();
+							}
+
+							if ( bottomFace != null ) // start new bottom outline
+							{
+								newBottomOutline.add( bottomFace.getVertexIndex( intersectionPoint, getVertexIndex( bottomObject, intersectionPoint ), 0.0f, 0.0f ) );
+							}
+						}
+
+					}
+
+					// add current vertex to bottom or top outline
+
+					if ( curTop )
+					{
+						if ( topFace != null )
+						{
+							newTopOutline.add( copyFaceVertex( object, face, vertexIndex, topObject, topFace, topObjectVertexMap, topFaceVertexMap ) );
+						}
+					}
+					else
+					{
+						if ( bottomFace != null )
+						{
+							newBottomOutline.add( copyFaceVertex( object, face, vertexIndex, bottomObject, bottomFace, bottomObjectVertexMap, bottomFaceVertexMap ) );
+						}
+					}
+
+
+					prevPoint = curPoint;
+					prevDist = curDist;
+					prevTop = curTop;
+				}
+
+				// finish last outline
+				if ( ( topFace != null ) && ( newTopOutline.size() > 1 ) )
+				{
+					topFace.addOutline( newTopOutline.toArray() );
+					newTopOutline.clear();
+				}
+
+				if ( ( bottomFace != null ) && ( newBottomOutline.size() > 1 ) )
+				{
+					bottomFace.addOutline( newBottomOutline.toArray() );
+					newBottomOutline.clear();
 				}
 			}
 		}
@@ -1501,8 +1607,8 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Copy primitive from the currently processed face to the given (top/bottom)
-	 * face.
+	 * Copy primitive from the currently processed face to the given
+	 * (top/bottom) face.
 	 *
 	 * @param object          Object being sliced.
 	 * @param face            Face being sliced.
@@ -1545,12 +1651,12 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Copy vertices from one face to another. Vertices to be copied are specified
-	 * using face vertex indices.
+	 * Copy vertices from one face to another. Vertices to be copied are
+	 * specified using face vertex indices.
 	 *
-	 * The given {@code faceVertexMap} is used to reuse previously copied vertices.
-	 * Its size must be equal to the number of vertices in {@code srcFace} and its
-	 * elements be initialized to -1.
+	 * The given {@code faceVertexMap} is used to reuse previously copied
+	 * vertices. Its size must be equal to the number of vertices in {@code
+	 * srcFace} and its elements be initialized to -1.
 	 *
 	 * @param object          Object being sliced.
 	 * @param face            Face being sliced.
@@ -1577,12 +1683,12 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Copy vertex from one face to another. The vertex to copy is specified using
-	 * face vertex indices.
+	 * Copy vertex from one face to another. The vertex to copy is specified
+	 * using face vertex indices.
 	 *
-	 * The given {@code faceVertexMap} is used to reuse previously copied vertices.
-	 * Its size must be equal to the number of vertices in {@code srcFace} and its
-	 * elements be initialized to -1.
+	 * The given {@code faceVertexMap} is used to reuse previously copied
+	 * vertices. Its size must be equal to the number of vertices in {@code
+	 * srcFace} and its elements be initialized to -1.
 	 *
 	 * @param object          Object being sliced.
 	 * @param face            Face being sliced.
@@ -1591,8 +1697,8 @@ public class Object3DSlicer
 	 * @param targetFace      Face to copy vertices to.
 	 * @param objectVertexMap Maps source object vertex coordinate indices to
 	 *                        target object vertex indices.
-	 * @param faceVertexMap   Maps face vertex indices from {@code face} to {@code
-	 *                        targetFace}.
+	 * @param faceVertexMap   Maps face vertex indices from {@code face} to
+	 *                        {@code targetFace}.
 	 *
 	 * @return Index of copied face vertex in {@code targetFace}.
 	 */
@@ -1692,9 +1798,9 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Calculate intersection point with cutting plane for an edge between the two
-	 * given points. This only works if there is actually an intersection; if not,
-	 * the result is unpredictable.
+	 * Calculate intersection point with cutting plane for an edge between the
+	 * two given points. This only works if there is actually an intersection;
+	 * if not, the result is unpredictable.
 	 *
 	 * @param p1 First point of edge.
 	 * @param d1 Signed distance from the cutting plane to the first vertex.
@@ -1717,9 +1823,9 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * Calculate intersection point with cutting plane for an edge between the two
-	 * given vertices. This only works if there is actually an intersection; if
-	 * not, the result is unpredictable.
+	 * Calculate intersection point with cutting plane for an edge between the
+	 * two given vertices. This only works if there is actually an intersection;
+	 * if not, the result is unpredictable.
 	 *
 	 * @param v1 First vertex of edge.
 	 * @param d1 Signed distance from the cutting plane to the first vertex.
@@ -1937,9 +2043,9 @@ public class Object3DSlicer
 	}
 
 	/**
-	 * This recursive method performs a depth-first walk through the intersection
-	 * graph nodes, starting at an arbitrary point. Any loop it encounters, will be
-	 * added as a contour to the given {@code mesh}.
+	 * This recursive method performs a depth-first walk through the
+	 * intersection graph nodes, starting at an arbitrary point. Any loop it
+	 * encounters, will be added as a contour to the given {@code mesh}.
 	 *
 	 * @param mesh Intersection mesh.
 	 * @param path Walked path sofar.
@@ -1976,8 +2082,8 @@ public class Object3DSlicer
 
 	/**
 	 * Add contour (closed path) to mesh. The path is automatically closed by
-	 * linking the last point tot he first point. This method also makes sure that
-	 * the added path has counter-clockwise ordering.
+	 * linking the last point tot he first point. This method also makes sure
+	 * that the added path has counter-clockwise ordering.
 	 *
 	 * @param mesh  Mesh to add contour to.
 	 * @param path  List containing path points.
@@ -2015,8 +2121,8 @@ public class Object3DSlicer
 	 * @param start Index of first point in list (inclusive).
 	 * @param end   Index of last point in list (exclusive).
 	 *
-	 * @return {@code true} if path is counter-clockwise; {@code false} if path is
-	 *         clockwise.
+	 * @return {@code true} if path is counter-clockwise; {@code false} if path
+	 * is clockwise.
 	 */
 	protected boolean isCounterClockwisePath( final List<IntersectionNode> path, final int start, final int end )
 	{
@@ -2096,8 +2202,8 @@ public class Object3DSlicer
 	{
 		/**
 		 * This flag is used by {@link Object3DSlicer#buildCaps} and {@link
-		 * Object3DSlicer#buildCapFaces} to make sure we don't start at graph walk at
-		 * a node that was previously visited.
+		 * Object3DSlicer#buildCapFaces} to make sure we don't start at graph
+		 * walk at a node that was previously visited.
 		 */
 		private boolean _visited = false;
 
@@ -2120,8 +2226,8 @@ public class Object3DSlicer
 		/**
 		 * Construct node.
 		 *
-		 * @param planePoint       2D point on intersection plane (projected by {@link
-		 *                         Object3DSlicer#_object2plane}.
+		 * @param planePoint       2D point on intersection plane (projected by
+		 *                         {@link Object3DSlicer#_object2plane}.
 		 * @param sliceVertexIndex Index of {@code planePoint} in {@link
 		 *                         Object3DSlicer#_sliceVertices}.
 		 */
