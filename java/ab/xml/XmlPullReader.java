@@ -72,6 +72,7 @@ class XmlPullReader
 	 * Used to coalesce consecutive character data that is returned as separate
 	 * events by {@link XmlPullParser#nextToken()}.
 	 */
+	@SuppressWarnings ( "StringBufferField" )
 	@NotNull
 	private final StringBuilder _characterDataBuilder;
 
@@ -80,7 +81,7 @@ class XmlPullReader
 	 *
 	 * @param   parser  XML Pull parser to be used.
 	 */
-	public XmlPullReader( final XmlPullParser parser )
+	XmlPullReader( @NotNull final XmlPullParser parser )
 	{
 		_parser = parser;
 		_eventType = XMLEventType.START_DOCUMENT;
@@ -91,14 +92,13 @@ class XmlPullReader
 	}
 
 	@NotNull
-	@Override
 	public XMLEventType getEventType()
 	{
 		return _eventType;
 	}
 
+	@SuppressWarnings ( "FieldRepeatedlyAccessedInMethod" )
 	@NotNull
-	@Override
 	public XMLEventType next()
 		throws XMLException
 	{
@@ -119,7 +119,7 @@ class XmlPullReader
 					{
 						token = _parser.nextToken();
 					}
-					catch ( IOException e )
+					catch ( final IOException e )
 					{
 						throw new XMLException( e );
 					}
@@ -130,58 +130,56 @@ class XmlPullReader
 					_characterData = null;
 				}
 			}
-			catch ( XmlPullParserException e )
+			catch ( final XmlPullParserException e )
 			{
 				throw new XMLException( e );
 			}
 
-			if ( token == XmlPullParser.START_DOCUMENT )
+			switch ( token )
 			{
-				result = XMLEventType.START_DOCUMENT;
-			}
-			else if ( token == XmlPullParser.END_DOCUMENT )
-			{
-				result = XMLEventType.END_DOCUMENT;
-			}
-			else if ( token == XmlPullParser.START_TAG )
-			{
-				result = XMLEventType.START_ELEMENT;
-			}
-			else if ( token == XmlPullParser.END_TAG )
-			{
-				result = XMLEventType.END_ELEMENT;
-			}
-			else if ( token == XmlPullParser.TEXT )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( token == XmlPullParser.CDSECT )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( token == XmlPullParser.ENTITY_REF )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( token == XmlPullParser.IGNORABLE_WHITESPACE )
-			{
-				result = null;
-			}
-			else if ( token == XmlPullParser.PROCESSING_INSTRUCTION )
-			{
-				result = XMLEventType.PROCESSING_INSTRUCTION;
-			}
-			else if ( token == XmlPullParser.COMMENT )
-			{
-				result = null;
-			}
-			else if ( token == XmlPullParser.DOCDECL )
-			{
-				result = XMLEventType.DTD;
-			}
-			else
-			{
-				throw new XMLException( "Unknown token: " + token );
+				case XmlPullParser.START_DOCUMENT:
+					result = XMLEventType.START_DOCUMENT;
+					break;
+
+				case XmlPullParser.END_DOCUMENT:
+					result = XMLEventType.END_DOCUMENT;
+					break;
+
+				case XmlPullParser.START_TAG:
+					result = XMLEventType.START_ELEMENT;
+					break;
+
+				case XmlPullParser.END_TAG:
+					result = XMLEventType.END_ELEMENT;
+					break;
+
+				case XmlPullParser.TEXT:
+				case XmlPullParser.CDSECT:
+					result = XMLEventType.CHARACTERS;
+					break;
+
+				case XmlPullParser.ENTITY_REF:
+					result = XMLEventType.CHARACTERS;
+					break;
+
+				case XmlPullParser.IGNORABLE_WHITESPACE:
+					result = null;
+					break;
+
+				case XmlPullParser.PROCESSING_INSTRUCTION:
+					result = XMLEventType.PROCESSING_INSTRUCTION;
+					break;
+
+				case XmlPullParser.COMMENT:
+					result = null;
+					break;
+
+				case XmlPullParser.DOCDECL:
+					result = XMLEventType.DTD;
+					break;
+
+				default:
+					throw new XMLException( "Unknown token: " + token );
 			}
 		}
 		while ( result == null );
@@ -277,11 +275,11 @@ class XmlPullReader
 				}
 			}
 		}
-		catch ( XmlPullParserException e )
+		catch ( final XmlPullParserException e )
 		{
 			throw new XMLException( e );
 		}
-		catch ( IOException e )
+		catch ( final IOException e )
 		{
 			throw new XMLException( e );
 		}
@@ -290,7 +288,6 @@ class XmlPullReader
 		_characterDataBuilder.setLength( 0 );
 	}
 
-	@Override
 	public String getNamespaceURI()
 	{
 		final XMLEventType eventType = _eventType;
@@ -304,7 +301,6 @@ class XmlPullReader
 	}
 
 	@NotNull
-	@Override
 	public String getLocalName()
 	{
 		final XMLEventType eventType = _eventType;
@@ -317,7 +313,6 @@ class XmlPullReader
 		return _parser.getName();
 	}
 
-	@Override
 	public int getAttributeCount()
 	{
 		if ( _eventType != XMLEventType.START_ELEMENT )
@@ -328,7 +323,6 @@ class XmlPullReader
 		return _parser.getAttributeCount();
 	}
 
-	@Override
 	public String getAttributeNamespaceURI( final int index )
 	{
 		if ( _eventType != XMLEventType.START_ELEMENT )
@@ -338,14 +332,13 @@ class XmlPullReader
 
 		if ( ( index < 0 ) || ( index >= getAttributeCount() ) )
 		{
-			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ")" );
+			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ')' );
 		}
 
 		return ( _parser.getAttributePrefix( index ) == null ) ? null : _parser.getAttributeNamespace( index );
 	}
 
 	@NotNull
-	@Override
 	public String getAttributeLocalName( final int index )
 	{
 		if ( _eventType != XMLEventType.START_ELEMENT )
@@ -355,14 +348,13 @@ class XmlPullReader
 
 		if ( ( index < 0 ) || ( index >= getAttributeCount() ) )
 		{
-			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ")" );
+			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ')' );
 		}
 
 		return _parser.getAttributeName( index );
 	}
 
 	@NotNull
-	@Override
 	public String getAttributeValue( final int index )
 	{
 		if ( _eventType != XMLEventType.START_ELEMENT )
@@ -372,13 +364,35 @@ class XmlPullReader
 
 		if ( ( index < 0 ) || ( index >= getAttributeCount() ) )
 		{
-			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ")" );
+			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ')' );
 		}
 
 		return _parser.getAttributeValue( index );
 	}
 
-	@Override
+	public String getAttributeValue( @NotNull final String localName )
+	{
+		final XMLEventType eventType = _eventType;
+		if ( eventType != XMLEventType.START_ELEMENT )
+		{
+			throw new IllegalStateException( "Not allowed for " + eventType );
+		}
+
+		String result = null;
+
+		final int attributeCount = _parser.getAttributeCount();
+		for ( int i = 0; i < attributeCount; i++ )
+		{
+			if ( localName.equals( _parser.getAttributeName( i ) ) )
+			{
+				result = _parser.getAttributeValue( i );
+				break;
+			}
+		}
+
+		return result;
+	}
+
 	public String getAttributeValue( final String namespaceURI, @NotNull final String localName )
 	{
 		if ( _eventType != XMLEventType.START_ELEMENT )
@@ -390,7 +404,6 @@ class XmlPullReader
 	}
 
 	@NotNull
-	@Override
 	public String getText()
 	{
 		if ( _eventType != XMLEventType.CHARACTERS )
@@ -402,7 +415,6 @@ class XmlPullReader
 	}
 
 	@NotNull
-	@Override
 	public String getPITarget()
 	{
 		if ( _eventType != XMLEventType.PROCESSING_INSTRUCTION )
@@ -415,7 +427,6 @@ class XmlPullReader
 	}
 
 	@NotNull
-	@Override
 	public String getPIData()
 	{
 		if ( _eventType != XMLEventType.PROCESSING_INSTRUCTION )

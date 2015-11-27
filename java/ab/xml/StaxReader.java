@@ -37,7 +37,7 @@ class StaxReader
 	/**
 	 * StAX reader to be used.
 	 */
-	private XMLStreamReader _reader;
+	private final XMLStreamReader _reader;
 
 	/**
 	 * Event type returned by the last call to {@link #next()}.
@@ -50,21 +50,19 @@ class StaxReader
 	 *
 	 * @param   reader  StAX reader to be used.
 	 */
-	public StaxReader( final XMLStreamReader reader )
+	StaxReader( final XMLStreamReader reader )
 	{
 		_reader = reader;
 		_eventType = XMLEventType.START_DOCUMENT;
 	}
 
 	@NotNull
-	@Override
 	public XMLEventType getEventType()
 	{
 		return _eventType;
 	}
 
 	@NotNull
-	@Override
 	public XMLEventType next()
 		throws XMLException
 	{
@@ -80,7 +78,7 @@ class StaxReader
 				throw new XMLException( "Unexpected end of document." );
 			}
 		}
-		catch ( XMLStreamException e )
+		catch ( final XMLStreamException e )
 		{
 			throw new XMLException( e );
 		}
@@ -93,74 +91,75 @@ class StaxReader
 			{
 				eventType = _reader.next();
 			}
-			catch ( XMLStreamException e )
+			catch ( final XMLStreamException e )
 			{
 				throw new XMLException( e );
 			}
 
-			if ( eventType == XMLStreamConstants.START_ELEMENT )
+			switch ( eventType )
 			{
-				result = XMLEventType.START_ELEMENT;
-			}
-			else if ( eventType == XMLStreamConstants.END_ELEMENT )
-			{
-				result = XMLEventType.END_ELEMENT;
-			}
-			else if ( eventType == XMLStreamConstants.PROCESSING_INSTRUCTION )
-			{
-				result = XMLEventType.PROCESSING_INSTRUCTION;
-			}
-			else if ( eventType == XMLStreamConstants.CHARACTERS )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( eventType == XMLStreamConstants.COMMENT )
-			{
-				result = null;
-			}
-			else if ( eventType == XMLStreamConstants.SPACE )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( eventType == XMLStreamConstants.START_DOCUMENT )
-			{
-				result = XMLEventType.START_DOCUMENT;
-			}
-			else if ( eventType == XMLStreamConstants.END_DOCUMENT )
-			{
-				result = XMLEventType.END_DOCUMENT;
-			}
-			else if ( eventType == XMLStreamConstants.ENTITY_REFERENCE )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( eventType == XMLStreamConstants.ATTRIBUTE )
-			{
-				result = null;
-			}
-			else if ( eventType == XMLStreamConstants.DTD )
-			{
-				result = XMLEventType.DTD;
-			}
-			else if ( eventType == XMLStreamConstants.CDATA )
-			{
-				result = XMLEventType.CHARACTERS;
-			}
-			else if ( eventType == XMLStreamConstants.NAMESPACE )
-			{
-				result = null;
-			}
-			else if ( eventType == XMLStreamConstants.NOTATION_DECLARATION )
-			{
-				result = null;
-			}
-			else if ( eventType == XMLStreamConstants.ENTITY_DECLARATION )
-			{
-				result = null;
-			}
-			else
-			{
-				throw new XMLException( "Unknown event type: " + eventType );
+				case XMLStreamConstants.START_ELEMENT:
+					result = XMLEventType.START_ELEMENT;
+					break;
+
+				case XMLStreamConstants.END_ELEMENT:
+					result = XMLEventType.END_ELEMENT;
+					break;
+
+				case XMLStreamConstants.PROCESSING_INSTRUCTION:
+					result = XMLEventType.PROCESSING_INSTRUCTION;
+					break;
+
+				case XMLStreamConstants.CHARACTERS:
+					result = XMLEventType.CHARACTERS;
+					break;
+
+				case XMLStreamConstants.COMMENT:
+					result = null;
+					break;
+
+				case XMLStreamConstants.SPACE:
+					result = XMLEventType.CHARACTERS;
+					break;
+
+				case XMLStreamConstants.START_DOCUMENT:
+					result = XMLEventType.START_DOCUMENT;
+					break;
+
+				case XMLStreamConstants.END_DOCUMENT:
+					result = XMLEventType.END_DOCUMENT;
+					break;
+
+				case XMLStreamConstants.ENTITY_REFERENCE:
+					result = XMLEventType.CHARACTERS;
+					break;
+
+				case XMLStreamConstants.ATTRIBUTE:
+					result = null;
+					break;
+
+				case XMLStreamConstants.DTD:
+					result = XMLEventType.DTD;
+					break;
+
+				case XMLStreamConstants.CDATA:
+					result = XMLEventType.CHARACTERS;
+					break;
+
+				case XMLStreamConstants.NAMESPACE:
+					result = null;
+					break;
+
+				case XMLStreamConstants.NOTATION_DECLARATION:
+					result = null;
+					break;
+
+				case XMLStreamConstants.ENTITY_DECLARATION:
+					result = null;
+					break;
+
+				default:
+					throw new XMLException( "Unknown event type: " + eventType );
 			}
 		}
 		while ( result == null );
@@ -170,7 +169,6 @@ class StaxReader
 		return result;
 	}
 
-	@Override
 	public String getNamespaceURI()
 	{
 		final XMLEventType eventType = _eventType;
@@ -184,7 +182,6 @@ class StaxReader
 	}
 
 	@NotNull
-	@Override
 	public String getLocalName()
 	{
 		final XMLEventType eventType = _eventType;
@@ -197,7 +194,6 @@ class StaxReader
 		return _reader.getLocalName();
 	}
 
-	@Override
 	public int getAttributeCount()
 	{
 		final XMLEventType eventType = _eventType;
@@ -209,7 +205,6 @@ class StaxReader
 		return _reader.getAttributeCount();
 	}
 
-	@Override
 	public String getAttributeNamespaceURI( final int index )
 	{
 		final XMLEventType eventType = _eventType;
@@ -220,14 +215,13 @@ class StaxReader
 
 		if ( ( index < 0 ) || ( index >= getAttributeCount() ) )
 		{
-			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ")" );
+			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ')' );
 		}
 
 		return _reader.getAttributeNamespace( index );
 	}
 
 	@NotNull
-	@Override
 	public String getAttributeLocalName( final int index )
 	{
 		final XMLEventType eventType = _eventType;
@@ -238,14 +232,13 @@ class StaxReader
 
 		if ( ( index < 0 ) || ( index >= getAttributeCount() ) )
 		{
-			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ")" );
+			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ')' );
 		}
 
 		return _reader.getAttributeLocalName( index );
 	}
 
 	@NotNull
-	@Override
 	public String getAttributeValue( final int index )
 	{
 		final XMLEventType eventType = _eventType;
@@ -256,13 +249,35 @@ class StaxReader
 
 		if ( ( index < 0 ) || ( index >= getAttributeCount() ) )
 		{
-			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ")" );
+			throw new IndexOutOfBoundsException( index + " (attributeCount: " + getAttributeCount() + ')' );
 		}
 
 		return _reader.getAttributeValue( index );
 	}
 
-	@Override
+	public String getAttributeValue( @NotNull final String localName )
+	{
+		final XMLEventType eventType = _eventType;
+		if ( eventType != XMLEventType.START_ELEMENT )
+		{
+			throw new IllegalStateException( "Not allowed for " + eventType );
+		}
+
+		String result = null;
+
+		final int attributeCount = _reader.getAttributeCount();
+		for ( int i = 0; i < attributeCount; i++ )
+		{
+			if ( localName.equals( _reader.getAttributeLocalName( i ) ) )
+			{
+				result = _reader.getAttributeValue( i );
+				break;
+			}
+		}
+
+		return result;
+	}
+
 	public String getAttributeValue( final String namespaceURI, @NotNull final String localName )
 	{
 		final XMLEventType eventType = _eventType;
@@ -275,7 +290,6 @@ class StaxReader
 	}
 
 	@NotNull
-	@Override
 	public String getText()
 	{
 		if ( _eventType != XMLEventType.CHARACTERS )
@@ -287,7 +301,6 @@ class StaxReader
 	}
 
 	@NotNull
-	@Override
 	public String getPITarget()
 	{
 		if ( _eventType != XMLEventType.PROCESSING_INSTRUCTION )
@@ -299,7 +312,6 @@ class StaxReader
 	}
 
 	@NotNull
-	@Override
 	public String getPIData()
 	{
 		if ( _eventType != XMLEventType.PROCESSING_INSTRUCTION )

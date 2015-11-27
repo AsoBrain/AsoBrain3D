@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2015 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,6 @@ import org.jetbrains.annotations.*;
  * Provides common functions needed to parse XML using a {@link XMLReader}.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public abstract class AbstractXMLParser
 {
@@ -88,6 +87,37 @@ public abstract class AbstractXMLParser
 	}
 
 	/**
+	 * Skips over any whitespace at the current event.
+	 *
+	 * @throws XMLException if an XML-related exception occurs.
+	 */
+	protected void skipWhitespace()
+	throws XMLException
+	{
+		while ( _reader.getEventType() == XMLEventType.CHARACTERS )
+		{
+			final String text = _reader.getText();
+
+			boolean empty = true;
+			for ( int i = 0; i < text.length(); i++ )
+			{
+				if ( !Character.isWhitespace( text.charAt( i ) ) )
+				{
+					empty = false;
+					break;
+				}
+			}
+
+			if ( !empty )
+			{
+				break;
+			}
+
+			_reader.next();
+		}
+	}
+
+	/**
 	 * Throws an exception if the current event is of a different type than
 	 * specified.
 	 *
@@ -100,13 +130,14 @@ public abstract class AbstractXMLParser
 	{
 		if ( ( eventType != _reader.getEventType() ) )
 		{
-			throw new XMLException( "Expected " + eventType + ", but was " + _reader.getEventType() + ' ' + getQName() );
+			final String eventQName = getQName();
+			throw new XMLException( "Expected " + eventType + ", but was " + _reader.getEventType() + ( eventQName == null ? "" : ' ' + eventQName ) );
 		}
 	}
 
 	/**
-	 * Throws an exception if the current event does not match the specified event
-	 * type, namespace URI and local name.
+	 * Throws an exception if the current event does not match the specified
+	 * event type, namespace URI and local name.
 	 *
 	 * @param eventType    Event type.
 	 * @param namespaceURI Namespace URI.
@@ -126,13 +157,45 @@ public abstract class AbstractXMLParser
 	}
 
 	/**
+	 * Throws an exception if the current event does not match the specified
+	 * event type, namespace URI and local name.
+	 *
+	 * @param eventType Event type.
+	 * @param localName Local name.
+	 *
+	 * @throws XMLException if an XML-related exception occurs.
+	 */
+	protected void require( @NotNull final XMLEventType eventType, @NotNull final String localName )
+	throws XMLException
+	{
+		if ( ( eventType != _reader.getEventType() ) || !matches( localName ) )
+		{
+			final String eventQName = getQName();
+			throw new XMLException( "Expected " + eventType + ' ' + localName + ", but was " + _reader.getEventType() + ( eventQName == null ? "" : ' ' + eventQName ) );
+		}
+	}
+
+	/**
+	 * Returns whether the current event matches the specified namespace URI and
+	 * local name.
+	 *
+	 * @param localName Local name.
+	 *
+	 * @return {@code true} if the event matches.
+	 */
+	protected boolean matches( final String localName )
+	{
+		return MathTools.equals( localName, _reader.getLocalName() );
+	}
+
+	/**
 	 * Returns whether the current event matches the specified namespace URI and
 	 * local name.
 	 *
 	 * @param namespaceURI Namespace URI.
 	 * @param localName    Local name.
 	 *
-	 * @return <code>true</code> if the event matches.
+	 * @return {@code true} if the event matches.
 	 */
 	protected boolean matches( @Nullable final String namespaceURI, final String localName )
 	{
@@ -141,7 +204,8 @@ public abstract class AbstractXMLParser
 	}
 
 	/**
-	 * Returns the qualified name for the specified namespace URI and local name.
+	 * Returns the qualified name for the specified namespace URI and local
+	 * name.
 	 *
 	 * @param namespaceURI Namespace URI.
 	 * @param localName    Local name.
@@ -161,14 +225,20 @@ public abstract class AbstractXMLParser
 	@Nullable
 	protected String getQName()
 	{
-		String result = null;
+		final String result;
+
 		switch ( _reader.getEventType() )
 		{
 			case START_ELEMENT:
 			case END_ELEMENT:
 				result = getQName( _reader.getNamespaceURI(), _reader.getLocalName() );
 				break;
+
+			default:
+				result = null;
+				break;
 		}
+
 		return result;
 	}
 
@@ -196,8 +266,8 @@ public abstract class AbstractXMLParser
 	}
 
 	/**
-	 * Returns the double value of the specified attribute. If the attribute is not
-	 * present or not a valid double, an exception is thrown.
+	 * Returns the double value of the specified attribute. If the attribute is
+	 * not present or not a valid double, an exception is thrown.
 	 *
 	 * @param namespaceURI Namespace URI.
 	 * @param localName    Local name.
@@ -214,7 +284,7 @@ public abstract class AbstractXMLParser
 		{
 			return Double.parseDouble( value );
 		}
-		catch ( NumberFormatException e )
+		catch ( final NumberFormatException ignored )
 		{
 			throw new XMLException( "Invalid value for attribute '" + localName + "': " + value );
 		}
@@ -239,7 +309,7 @@ public abstract class AbstractXMLParser
 		{
 			return Integer.parseInt( value );
 		}
-		catch ( NumberFormatException e )
+		catch ( final NumberFormatException ignored )
 		{
 			throw new XMLException( "Invalid value for attribute '" + localName + "': " + value );
 		}
