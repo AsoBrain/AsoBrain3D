@@ -6,6 +6,9 @@
 	<property file="${build.properties}"/>
 	<property name="build.sysclasspath" value="ignore"/>
 
+	<property environment="env"/>
+	<property name="java6.home" value="${env.JAVA6_HOME}"/>
+
 	<include file="build-pack200.xml"/>
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpath="${maven.ant.tasks}"/>
 
@@ -443,6 +446,10 @@
 		<pathelement location="${asm-commons.jar}"/>
 	</path>
 
+	<path id="java6.bootclasspath">
+		<fileset dir="${java6.home}" includes="jre/lib/*.jar,lib/*.jar"/>
+	</path>
+
 	<path id="java.classpath">
 		<pathelement location="classes/java"/>
 		<pathelement location="${java.home}/lib/rt.jar"/>
@@ -465,7 +472,7 @@
 
 	<target name="compile-java" depends="api-check,java.uptodate.check" unless="java.uptodate" description="Compile Java source files">
 		<mkdir dir="classes/java"/>
-		<javac srcdir="java" destdir="classes/java" includeantruntime="false" classpathref="java.classpath" source="1.6" target="1.6" debug="true">
+		<javac srcdir="java" destdir="classes/java" includeantruntime="false" classpathref="java.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true">
 			<exclude name="**/java3d/**"/>
 		</javac>
 		<copy todir="classes/java" preservelastmodified="true">
@@ -473,13 +480,13 @@
 		</copy>
 
 		<mkdir dir="classes/jogl1/java"/>
-		<javac srcdir="jogl1/java" destdir="classes/jogl1/java" includeantruntime="false" classpathref="jogl1.classpath" source="1.6" target="1.6" debug="true"/>
+		<javac srcdir="jogl1/java" destdir="classes/jogl1/java" includeantruntime="false" classpathref="jogl1.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true"/>
 		<copy todir="classes/jogl1/java" preservelastmodified="true">
 			<fileset dir="jogl1/java" excludes="**/*.java"/>
 		</copy>
 
 		<mkdir dir="classes/jogl2/java"/>
-		<javac srcdir="jogl2/java" destdir="classes/jogl2/java" includeantruntime="false" classpathref="jogl2.classpath" source="1.6" target="1.6" debug="true"/>
+		<javac srcdir="jogl2/java" destdir="classes/jogl2/java" includeantruntime="false" classpathref="jogl2.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true"/>
 		<copy todir="classes/jogl2/java" preservelastmodified="true">
 			<fileset dir="jogl2/java" excludes="**/*.java"/>
 		</copy>
@@ -510,7 +517,7 @@
 
 	<target name="compile-examples" depends="compile-java,examples.uptodate.check" unless="examples.uptodate" description="Compile examples">
 		<mkdir dir="classes/examples"/>
-		<javac srcdir="examples" destdir="classes/examples" includeantruntime="false" classpathref="java.classpath" source="1.6" target="1.6" debug="true"/>
+		<javac srcdir="examples" destdir="classes/examples" includeantruntime="false" classpathref="java.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true"/>
 		<copy todir="classes/examples" preservelastmodified="true">
 			<fileset dir="examples" excludes="**/*.java"/>
 		</copy>
@@ -539,7 +546,7 @@
 
 	<target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
 		<mkdir dir="classes/test"/>
-		<javac srcdir="test" destdir="classes/test" includeantruntime="false" classpathref="test.classpath" source="1.6" target="1.6" debug="true">
+		<javac srcdir="test" destdir="classes/test" includeantruntime="false" classpathref="test.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true">
 			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
 		</javac>
