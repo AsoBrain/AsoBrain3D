@@ -589,11 +589,25 @@
 			</batchtest>
 			<formatter type="xml"/>
 		</junit>
+
 		<junitreport todir="test-report">
 			<fileset dir="test-report">
 				<include name="TEST-*.xml"/>
 			</fileset>
 			<report format="frames" todir="test-report"/>
 		</junitreport>
+
+		<!-- extract test totals from report and display to console -->
+		<concat>
+			<fileset file="test-report/overview-summary.html"/>
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern='title="Display all tests"'/>
+				</linecontainsregexp>
+				<tokenfilter>
+					<replaceregex pattern='[^\d]*(\d+)[^\d]*(\d+)[^\d]*(\d+)[^\d]*(\d[\.\d]*%)[^\d]*(\d[\d\.]*).*$' replace="Unit test summary: Tests: \1, Failures: \2, Errors: \3, Success rate: \4, Time: \5 seconds"/>
+				</tokenfilter>
+			</filterchain>
+		</concat>
 	</target>
 </project>
