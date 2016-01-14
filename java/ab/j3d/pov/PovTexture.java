@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -348,7 +348,7 @@ extends PovObject
 		final TextureMap colorMap = appearance.getColorMap();
 		if ( ( colorMap != null ) && !"file".equals( colorMap.getImageUrl().getProtocol() ) )
 		{
-			throw new IllegalArgumentException( "Color map image URL should use 'file' protocol for POV-Ray." );
+			throw new IllegalArgumentException( "Color map image must have 'file' URL for POV-Ray, but is '" + colorMap.getImageUrl() + "')." );
 		}
 
 		final int shininess = appearance.getShininess();
