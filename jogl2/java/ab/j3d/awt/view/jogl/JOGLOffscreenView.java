@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -125,22 +125,31 @@ extends OffscreenView3D
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
-		final GLProfile profile = GLProfile.get( GLProfile.GL2 );
+		final GLOffscreenAutoDrawable[] drawablePointer = new GLOffscreenAutoDrawable[ 1 ];
+		Threading.invokeOnOpenGLThread( true, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				final GLProfile profile = GLProfile.get( GLProfile.GL2 );
 
-		final GLCapabilities capabilities = new GLCapabilities( profile );
-		capabilities.setRedBits( 8 );
-		capabilities.setGreenBits( 8 );
-		capabilities.setBlueBits( 8 );
-		capabilities.setAlphaBits( alpha ? 8 : 0 );
-		capabilities.setDepthBits( 24 );
-		capabilities.setHardwareAccelerated( true );
-		capabilities.setOnscreen( false );
-		capabilities.setDoubleBuffered( false );
-		capabilities.setBackgroundOpaque( !alpha );
+				final GLCapabilities capabilities = new GLCapabilities( profile );
+				capabilities.setRedBits( 8 );
+				capabilities.setGreenBits( 8 );
+				capabilities.setBlueBits( 8 );
+				capabilities.setAlphaBits( alpha ? 8 : 0 );
+				capabilities.setDepthBits( 24 );
+				capabilities.setHardwareAccelerated( true );
+				capabilities.setOnscreen( false );
+				capabilities.setDoubleBuffered( false );
+				capabilities.setBackgroundOpaque( !alpha );
 
-		final GLDrawableFactory drawableFactory = GLDrawableFactory.getFactory( profile );
-		final GLOffscreenAutoDrawable drawable = drawableFactory.createOffscreenAutoDrawable( null, capabilities, null, 640, 480 );
-		drawable.setContext( drawable.createContext( null ), true );
+				final GLDrawableFactory drawableFactory = GLDrawableFactory.getFactory( profile );
+				final GLOffscreenAutoDrawable drawable = drawableFactory.createOffscreenAutoDrawable( null, capabilities, null, 640, 480 );
+				drawable.setContext( drawable.createContext( null ), true );
+			}
+		} );
+		_drawable = drawablePointer[ 0 ];
 
 		final JOGLConfiguration configuration = joglEngine.getConfiguration();
 		_configuration = configuration;
@@ -150,8 +159,6 @@ extends OffscreenView3D
 //			/* set multisampling to 4, most graphic cards support this, if they don't support multisampling it will silently fail */
 //			capabilities.setNumSamples( 4 );
 //		}
-
-		_drawable = drawable;
 
 		final ViewControlInput controlInput = new ViewControlInput( this );
 		_controlInput = controlInput;
