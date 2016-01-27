@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -35,7 +33,6 @@ import org.jetbrains.annotations.*;
  *
  * @author  Sjoerd Bouwman
  * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
  */
 public class Node3D
 {
@@ -85,7 +82,8 @@ public class Node3D
 	 */
 	public Object getTag()
 	{
-		return _tag;
+		final Map<String, Object> propertyMap = getPropertyMap();
+		return propertyMap == null ? _tag : propertyMap.get( "tag" );
 	}
 
 	/**
@@ -101,7 +99,187 @@ public class Node3D
 	 */
 	public void setTag( final Object tag )
 	{
-		_tag = tag;
+		final Map<String, Object> propertyMap = getPropertyMap();
+		if ( propertyMap == null )
+		{
+			_tag = tag;
+		}
+		else
+		{
+			propertyMap.put( "tag", tag );
+		}
+	}
+
+	/**
+	 * Returns the specified property.
+	 *
+	 * @param name Property to get.
+	 *
+	 * @return Property value.
+	 */
+	@Nullable
+	public Object getProperty( @NotNull final String name )
+	{
+		return getProperties().get( name );
+	}
+
+	/**
+	 * Returns the specified string property.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public String getProperty( @NotNull final String name, final String defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof String ? (String)value : defaultValue;
+	}
+
+	/**
+	 * Returns the node properties.
+	 *
+	 * @return Node properties.
+	 */
+	@NotNull
+	public Map<String, Object> getProperties()
+	{
+		final Map<String, Object> result;
+		final Map<String, Object> propertyMap = getPropertyMap();
+		if ( propertyMap != null )
+		{
+			result = propertyMap;
+		}
+		else
+		{
+			final Object tag = getTag();
+			result = tag == null ? Collections.<String, Object>emptyMap() : Collections.singletonMap( "tag", tag );
+		}
+		return result;
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final int value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, Integer.valueOf( value ) );
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final double value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, Double.valueOf( value ) );
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final String value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, value );
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final Vector3D value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, value );
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final Matrix3D value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, value );
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final boolean value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, Boolean.valueOf( value ) );
+	}
+
+	/**
+	 * Removes a node property.
+	 *
+	 * @param key Property to remove.
+	 */
+	public void removeProperty( @NotNull final String key )
+	{
+		final Map<String, Object> propertyMap = getPropertyMapNotNull();
+		propertyMap.remove( key );
+	}
+
+	/**
+	 * Returns the property map for this node. If no properties were set, the
+	 * result is {@code null}.
+	 *
+	 * @return Property map.
+	 */
+	@Nullable
+	private Map<String, Object> getPropertyMap()
+	{
+		final Object tag = _tag;
+		return tag instanceof Map ? (Map<String, Object>)tag : null;
+	}
+
+	/**
+	 * Returns the property map for this node. If no properties were set, a new
+	 * property map is created containing only the current tag object (if set).
+	 *
+	 * @return Property map.
+	 */
+	@NotNull
+	private Map<String, Object> getPropertyMapNotNull()
+	{
+		final Object tag = _tag;
+		final Map<String, Object> result;
+		if ( tag instanceof Map )
+		{
+			result = (Map<String, Object>)tag;
+		}
+		else
+		{
+			result = new HashMap<String, Object>();
+			if ( tag != null )
+			{
+				result.put( "tag", tag );
+			}
+			_tag = result;
+		}
+		return result;
 	}
 
 	/**
@@ -287,5 +465,4 @@ public class Node3D
 		final Class<?> clazz = getClass();
 		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + '}';
 	}
-
 }
