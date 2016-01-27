@@ -147,6 +147,8 @@ extends OffscreenView3D
 				final GLDrawableFactory drawableFactory = GLDrawableFactory.getFactory( profile );
 				final GLOffscreenAutoDrawable drawable = drawableFactory.createOffscreenAutoDrawable( null, capabilities, null, 640, 480 );
 				drawable.setContext( drawable.createContext( null ), true );
+
+				drawablePointer[ 0 ] = drawable;
 			}
 		} );
 		_drawable = drawablePointer[ 0 ];
@@ -286,8 +288,15 @@ extends OffscreenView3D
 
 			try
 			{
-				disposeContext();
-				_drawable.destroy();
+				Threading.invokeOnOpenGLThread(true, new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						disposeContext();
+						_drawable.destroy();
+					}
+				} );
 
 				super.dispose();
 			}
