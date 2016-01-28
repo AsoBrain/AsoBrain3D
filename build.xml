@@ -460,12 +460,14 @@
 
 	<path id="jogl1.classpath">
 		<path refid="java.classpath"/>
+		<pathelement location="classes/jogl1/java"/>
 		<pathelement location="${jogl1.jar}"/>
 		<pathelement location="${jogl1.gluegen-rt.jar}"/>
 	</path>
 
 	<path id="jogl2.classpath">
 		<path refid="java.classpath"/>
+		<pathelement location="classes/jogl2/java"/>
 		<pathelement location="${jogl2.jar}"/>
 		<pathelement location="${jogl2.gluegen-rt.jar}"/>
 	</path>
@@ -544,14 +546,25 @@
 		<path refid="java.classpath"/>
 	</path>
 
+	<path id="jogl2.test.classpath">
+		<pathelement location="classes/jogl2/test"/>
+		<pathelement location="images"/>
+		<path refid="jogl2.classpath"/>
+	</path>
+
 	<target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
 		<mkdir dir="classes/test"/>
 		<javac srcdir="test" destdir="classes/test" includeantruntime="false" classpathref="test.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true">
-			<exclude name="**/jogl?*/**"/>
 			<exclude name="**/java3d/**"/>
 		</javac>
 		<copy todir="classes/test" preservelastmodified="true">
 			<fileset dir="test" excludes="**/*.java"/>
+		</copy>
+
+		<mkdir dir="classes/jogl2/test"/>
+		<javac srcdir="jogl2/test" destdir="classes/jogl2/test" includeantruntime="false" classpathref="jogl2.test.classpath" bootclasspathref="java6.bootclasspath" source="1.6" target="1.6" debug="true"/>
+		<copy todir="classes/jogl2/test" preservelastmodified="true">
+			<fileset dir="jogl2/test" excludes="**/*.java"/>
 		</copy>
 	</target>
 
@@ -559,11 +572,17 @@
 		<condition property="tests.uptodate">
 			<and>
 				<uptodate>
-					<srcfiles dir="." includes="test/**/*.java" excludes="**/jogl?*/**,**/java3d/**"/>
+					<srcfiles dir="." excludes="**/java3d/**">
+						<include name="test/**/*.java"/>
+						<include name="jogl2/test/**/*.java"/>
+					</srcfiles>
 					<mapper type="glob" from="*.java" to="classes/*.class"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir="." includes="test/**" excludes="**/*.java"/>
+					<srcfiles dir="." excludes="**/*.java">
+						<include name="test/**"/>
+						<include name="jogl2/test/**"/>
+					</srcfiles>
 					<mapper type="glob" from="*" to="classes/*"/>
 				</uptodate>
 			</and>
@@ -578,11 +597,24 @@
 	<target name="run-tests" depends="compile-tests" description="Execute unit tests">
 		<delete dir="test-report"/>
 		<mkdir dir="test-report"/>
+
 		<junit fork="yes" forkmode="once" showoutput="true" errorproperty="test.failed" failureproperty="test.failed">
 			<classpath refid="test.classpath"/>
 			<test todir="test-report" name="${testcase}" if="testcase"/>
 			<batchtest todir="test-report" unless="testcase">
 				<fileset dir="classes/test">
+					<include name="**/Test*.class"/>
+					<exclude name="**/*$*"/>
+				</fileset>
+			</batchtest>
+			<formatter type="xml"/>
+		</junit>
+
+		<junit fork="yes" forkmode="once" showoutput="true" errorproperty="test.failed" failureproperty="test.failed">
+			<classpath refid="jogl2.test.classpath"/>
+			<test todir="test-report" name="${testcase}" if="testcase"/>
+			<batchtest todir="test-report" unless="testcase">
+				<fileset dir="classes/jogl2/test">
 					<include name="**/Test*.class"/>
 					<exclude name="**/*$*"/>
 				</fileset>
