@@ -116,6 +116,12 @@ extends OffscreenView3D
 	{
 		super( scene );
 
+		final GLProfile profile = GLProfile.get( GLProfile.GL2 );
+		if ( !Threading.isOpenGLThread() )
+		{
+			throw new IllegalStateException( "Must be called from OpenGL thread" );
+		}
+
 		_joglEngine = joglEngine;
 		_frontClipDistance = 0.1 / scene.getUnit();
 		_backClipDistance = 100.0 / scene.getUnit();
@@ -125,33 +131,21 @@ extends OffscreenView3D
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
-		final GLOffscreenAutoDrawable[] drawablePointer = new GLOffscreenAutoDrawable[ 1 ];
-		Threading.invokeOnOpenGLThread( true, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final GLProfile profile = GLProfile.get( GLProfile.GL2 );
+		final GLCapabilities capabilities = new GLCapabilities( profile );
+		capabilities.setRedBits( 8 );
+		capabilities.setGreenBits( 8 );
+		capabilities.setBlueBits( 8 );
+		capabilities.setAlphaBits( alpha ? 8 : 0 );
+		capabilities.setDepthBits( 24 );
+		capabilities.setHardwareAccelerated( true );
+		capabilities.setOnscreen( false );
+		capabilities.setDoubleBuffered( false );
+		capabilities.setBackgroundOpaque( !alpha );
 
-				final GLCapabilities capabilities = new GLCapabilities( profile );
-				capabilities.setRedBits( 8 );
-				capabilities.setGreenBits( 8 );
-				capabilities.setBlueBits( 8 );
-				capabilities.setAlphaBits( alpha ? 8 : 0 );
-				capabilities.setDepthBits( 24 );
-				capabilities.setHardwareAccelerated( true );
-				capabilities.setOnscreen( false );
-				capabilities.setDoubleBuffered( false );
-				capabilities.setBackgroundOpaque( !alpha );
-
-				final GLDrawableFactory drawableFactory = GLDrawableFactory.getFactory( profile );
-				final GLOffscreenAutoDrawable drawable = drawableFactory.createOffscreenAutoDrawable( null, capabilities, null, 640, 480 );
-				drawable.setContext( drawable.createContext( null ), true );
-
-				drawablePointer[ 0 ] = drawable;
-			}
-		} );
-		_drawable = drawablePointer[ 0 ];
+		final GLDrawableFactory drawableFactory = GLDrawableFactory.getFactory( profile );
+		final GLOffscreenAutoDrawable drawable = drawableFactory.createOffscreenAutoDrawable( null, capabilities, null, 640, 480 );
+		drawable.setContext( drawable.createContext( null ), true );
+		_drawable = drawable;
 
 		final JOGLConfiguration configuration = joglEngine.getConfiguration();
 		_configuration = configuration;
