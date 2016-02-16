@@ -21,6 +21,7 @@
 package ab.j3d.awt.view.jogl;
 
 import java.awt.image.*;
+import javax.media.opengl.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -46,30 +47,52 @@ extends TestCase
 	 * Tests if any offscreen rendering takes place.
 	 */
 	public void testRenderer()
+	throws ClassNotFoundException
 	{
 		final String where = CLASS_NAME + ".testRenderer()";
 		System.out.println( where );
 
 		final JOGLEngine joglEngine = new JOGLEngine( JOGLConfiguration.createLusciousInstance() );
+
+		final Scene scene = new Scene( Scene.METER );
+		scene.addContentNode( "box", Matrix3D.getTranslation( -0.5, -0.5, -0.5 ), new Box3D( 1.0, 1.0, 1.0, null, BasicAppearances.GREEN ) );
+
 		try
 		{
-			final Scene scene = new Scene( Scene.METER );
-			scene.addContentNode( "box", Matrix3D.getTranslation( -0.5, -0.5, -0.5 ), new Box3D( 1.0, 1.0, 1.0, null, BasicAppearances.GREEN ) );
-			final JOGLOffscreenView view = new JOGLOffscreenView( joglEngine, scene );
-			try
-			{
-				view.setCameraControl( new FromToCameraControl( view, 1.0 ) );
-				final BufferedImage image = view.renderImage( 1, 1 );
-				Assert.assertEquals( "Unexpected rendering: should be a green pixel.", Integer.toHexString( 0xff33ff33 ), Integer.toHexString( image.getRGB( 0, 0 ) ) );
-			}
-			finally
-			{
-				view.dispose();
-			}
+			System.out.println( " - When called from non-OpenGL thread (" + Thread.currentThread() + ")" );
+			new JOGLOffscreenView( joglEngine, scene );
+			fail( "Must throw an exception if not called from OpenGL thread." );
 		}
-		finally
+		catch ( IllegalStateException ignored )
 		{
-			joglEngine.dispose();
+			assertFalse( "Test must not be run on OpenGL thread.", Threading.isOpenGLThread() );
 		}
+
+		Threading.invokeOnOpenGLThread( true, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				System.out.println( " - When called from OpenGL thread (" + Thread.currentThread() + ")" );
+				try
+				{
+					final JOGLOffscreenView view = new JOGLOffscreenView( joglEngine, scene );
+					try
+					{
+						view.setCameraControl( new FromToCameraControl( view, 1.0 ) );
+						final BufferedImage image = view.renderImage( 1, 1 );
+						Assert.assertEquals( "Unexpected rendering: should be a green pixel.", Integer.toHexString( 0xff33ff33 ), Integer.toHexString( image.getRGB( 0, 0 ) ) );
+					}
+					finally
+					{
+						view.dispose();
+					}
+				}
+				finally
+				{
+					joglEngine.dispose();
+				}
+			}
+		} );
 	}
 }
