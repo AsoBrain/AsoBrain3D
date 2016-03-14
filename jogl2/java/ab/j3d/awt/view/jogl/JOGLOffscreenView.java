@@ -374,6 +374,12 @@ extends OffscreenView3D
 	}
 
 	@Override
+	public void setSize( final int width, final int height )
+	{
+		_drawable.setSurfaceSize( width, height );
+	}
+
+	@Override
 	protected int getWidth()
 	{
 		return _drawable.getSurfaceWidth();

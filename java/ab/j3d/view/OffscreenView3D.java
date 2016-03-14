@@ -42,6 +42,14 @@ extends View3D
 	}
 
 	/**
+	 * Sets the size of the view.
+	 *
+	 * @param width  Width in pixels.
+	 * @param height Height in pixels.
+	 */
+	public abstract void setSize( int width, int height );
+
+	/**
 	 * Renders the view to a buffered image with the specified size.
 	 *
 	 * @param width  Width of the image.
