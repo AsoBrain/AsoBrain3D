@@ -637,7 +637,7 @@
 					<regexp pattern='title="Display all tests"'/>
 				</linecontainsregexp>
 				<tokenfilter>
-					<replaceregex pattern='[^\d]*(\d+)[^\d]*(\d+)[^\d]*(\d+)[^\d]*(\d[\.\d]*%)[^\d]*(\d[\d\.]*).*$' replace="Unit test summary: Tests: \1, Failures: \2, Errors: \3, Success rate: \4, Time: \5 seconds"/>
+					<replaceregex pattern='^[^\d]*(\d+)[^\d]*(\d+)[^\d]*(\d+)[^\d]*\d+[^\d]*(\d[\.\d]*%)[^\d]*(\d[\d\.]*).*$' replace="Unit test summary: Tests: \1, Failures: \2, Errors: \3, Success rate: \4, Time: \5 seconds"/>
 				</tokenfilter>
 			</filterchain>
 		</concat>
