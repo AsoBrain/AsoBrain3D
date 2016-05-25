@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.geom;
 
@@ -29,8 +27,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class contains utility methods to solve common geometric problems.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class GeometryTools
 {
@@ -62,10 +59,10 @@ public class GeometryTools
 	 * Converts an oriented bounding box (OBB) to an (word) axis-aligned
 	 * bounding box (AABB).
 	 *
-	 * @param   box2world   Transforms box to world coordinates.
-	 * @param   box         Oriented bounding box.
+	 * @param box2world Transforms box to world coordinates.
+	 * @param box       Oriented bounding box.
 	 *
-	 * @return  Axis-aligned bounding box.
+	 * @return Axis-aligned bounding box.
 	 */
 	@NotNull
 	public static Bounds3D convertObbToAabb( @NotNull final Matrix3D box2world, @NotNull final Bounds3D box )
@@ -77,15 +74,15 @@ public class GeometryTools
 	 * Converts an oriented bounding box (OBB) to an (word) axis-aligned
 	 * bounding box (AABB).
 	 *
-	 * @param   box2world   Transforms box to world coordinates.
-	 * @param   x1          Minimum X coordinate of oriented bounding box.
-	 * @param   y1          Minimum Y coordinate of oriented bounding box.
-	 * @param   z1          Minimum Z coordinate of oriented bounding box.
-	 * @param   x2          Maximum X coordinate of oriented bounding box.
-	 * @param   y2          Maximum Y coordinate of oriented bounding box.
-	 * @param   z2          Maximum Z coordinate of oriented bounding box.
+	 * @param box2world Transforms box to world coordinates.
+	 * @param x1        Minimum X coordinate of oriented bounding box.
+	 * @param y1        Minimum Y coordinate of oriented bounding box.
+	 * @param z1        Minimum Z coordinate of oriented bounding box.
+	 * @param x2        Maximum X coordinate of oriented bounding box.
+	 * @param y2        Maximum Y coordinate of oriented bounding box.
+	 * @param z2        Maximum Z coordinate of oriented bounding box.
 	 *
-	 * @return  Axis-aligned bounding box.
+	 * @return Axis-aligned bounding box.
 	 */
 	@NotNull
 	public static Bounds3D convertObbToAabb( @NotNull final Matrix3D box2world, final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
@@ -176,14 +173,13 @@ public class GeometryTools
 	/**
 	 * Test sphere intersection.
 	 *
-	 * @param   center1     Center of sphere 1.
-	 * @param   radius1     Radius of sphere 1.
-	 * @param   from2to1    Transformation from sphere 2 to sphere 1.
-	 * @param   center2     Center of sphere 2.
-	 * @param   radius2     Radius of sphere 2.
+	 * @param center1  Center of sphere 1.
+	 * @param radius1  Radius of sphere 1.
+	 * @param from2to1 Transformation from sphere 2 to sphere 1.
+	 * @param center2  Center of sphere 2.
+	 * @param radius2  Radius of sphere 2.
 	 *
-	 * @return  <code>true</code> if the spheres intersect;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the spheres intersect; {@code false} otherwise.
 	 */
 	public static boolean testSphereIntersection( final Vector3D center1, final double radius1, final Matrix3D from2to1, final Vector3D center2, final double radius2 )
 	{
@@ -196,14 +192,13 @@ public class GeometryTools
 	/**
 	 * Test sphere intersection.
 	 *
-	 * @param   radius1     Radius of sphere 2.
-	 * @param   centerDx    Delta X between center of spheres.
-	 * @param   centerDy    Delta Y between center of spheres.
-	 * @param   centerDz    Delta Z between center of spheres.
-	 * @param   radius2     Radius of sphere 2.
+	 * @param radius1  Radius of sphere 2.
+	 * @param centerDx Delta X between center of spheres.
+	 * @param centerDy Delta Y between center of spheres.
+	 * @param centerDz Delta Z between center of spheres.
+	 * @param radius2  Radius of sphere 2.
 	 *
-	 * @return  <code>true</code> if the spheres intersect;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the spheres intersect; {@code false} otherwise.
 	 */
 	public static boolean testSphereIntersection( final double radius1, final double centerDx, final double centerDy, final double centerDz, final double radius2 )
 	{
@@ -214,15 +209,17 @@ public class GeometryTools
 	/**
 	 * Test oriented bounding box intersection.
 	 *
-	 * Borrowed code from <A href='http://channel9.msdn.com/ShowPost.aspx?PostID=276041'>XNA Oriented Bounding Box Intersection Test</A>,
-	 * which was based on <A href='http://www.cs.unc.edu/~geom/theses/gottschalk/main.pdf'>Collision Queries using Oriented Boxes</A> by Stefan Gottschalk.
+	 * Borrowed code from <A href='http://channel9.msdn.com/ShowPost.aspx?PostID=276041'>XNA
+	 * Oriented Bounding Box Intersection Test</A>, which was based on <A
+	 * href='http://www.cs.unc.edu/~geom/theses/gottschalk/main.pdf'>Collision
+	 * Queries using Oriented Boxes</A> by Stefan Gottschalk.
 	 *
-	 * @param   box1        Oriented bounding box #1.
-	 * @param   from2to1    Transformation from box #2 to box #1.
-	 * @param   box2        Oriented bounding box #2.
+	 * @param box1     Oriented bounding box #1.
+	 * @param from2to1 Transformation from box #2 to box #1.
+	 * @param box2     Oriented bounding box #2.
 	 *
-	 * @return  <code>true</code> if the bounding boxes intersect;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the bounding boxes intersect; {@code false}
+	 * otherwise.
 	 */
 	public static boolean testOrientedBoundingBoxIntersection( @NotNull final Bounds3D box1, @NotNull final Matrix3D from2to1, @NotNull final Bounds3D box2 )
 	{
@@ -232,35 +229,37 @@ public class GeometryTools
 	/**
 	 * Test oriented bounding box intersection.
 	 *
-	 * Borrowed code from <A href='http://channel9.msdn.com/ShowPost.aspx?PostID=276041'>XNA Oriented Bounding Box Intersection Test</A>,
-	 * which was based on <A href='http://www.cs.unc.edu/~geom/theses/gottschalk/main.pdf'>Collision Queries using Oriented Boxes</A> by Stefan Gottschalk.
+	 * Borrowed code from <A href='http://channel9.msdn.com/ShowPost.aspx?PostID=276041'>XNA
+	 * Oriented Bounding Box Intersection Test</A>, which was based on <A
+	 * href='http://www.cs.unc.edu/~geom/theses/gottschalk/main.pdf'>Collision
+	 * Queries using Oriented Boxes</A> by Stefan Gottschalk.
 	 *
-	 * @param   ox1         X coordinate of local axis-aligned origin of box 1.
-	 * @param   oy1         Y coordinate of local axis-aligned origin of box 1.
-	 * @param   oz1         Z coordinate of local axis-aligned origin of box 1.
-	 * @param   dx1         Local axis-aligned size along X-axis of box 1.
-	 * @param   dy1         Local axis-aligned size along Y-axis of box 1.
-	 * @param   dz1         Local axis-aligned size along Z-axis of box 1.
-	 * @param   from2to1    Transformation from box 2 to box 1.
-	 * @param   ox2         X coordinate of local axis-aligned origin of box 2.
-	 * @param   oy2         Y coordinate of local axis-aligned origin of box 2.
-	 * @param   oz2         Z coordinate of local axis-aligned origin of box 2.
-	 * @param   dx2         Local axis-aligned size along X-axis of box 2.
-	 * @param   dy2         Local axis-aligned size along Y-axis of box 2.
-	 * @param   dz2         Local axis-aligned size along Z-axis of box 2.
+	 * @param ox1      X coordinate of local axis-aligned origin of box 1.
+	 * @param oy1      Y coordinate of local axis-aligned origin of box 1.
+	 * @param oz1      Z coordinate of local axis-aligned origin of box 1.
+	 * @param dx1      Local axis-aligned size along X-axis of box 1.
+	 * @param dy1      Local axis-aligned size along Y-axis of box 1.
+	 * @param dz1      Local axis-aligned size along Z-axis of box 1.
+	 * @param from2to1 Transformation from box 2 to box 1.
+	 * @param ox2      X coordinate of local axis-aligned origin of box 2.
+	 * @param oy2      Y coordinate of local axis-aligned origin of box 2.
+	 * @param oz2      Z coordinate of local axis-aligned origin of box 2.
+	 * @param dx2      Local axis-aligned size along X-axis of box 2.
+	 * @param dy2      Local axis-aligned size along Y-axis of box 2.
+	 * @param dz2      Local axis-aligned size along Z-axis of box 2.
 	 *
-	 * @return  <code>true</code> if the bounding boxes intersect;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the bounding boxes intersect; {@code false}
+	 * otherwise.
 	 */
 	public static boolean testOrientedBoundingBoxIntersection( final double ox1, final double oy1, final double oz1, final double dx1, final double dy1, final double dz1, @NotNull final Matrix3D from2to1, final double ox2, final double oy2, final double oz2, final double dx2, final double dy2, final double dz2 )
 	{
-		final double extents1X   = 0.5 * dx1;
-		final double extents1Y   = 0.5 * dy1;
-		final double extents1Z   = 0.5 * dz1;
+		final double extents1X = 0.5 * dx1;
+		final double extents1Y = 0.5 * dy1;
+		final double extents1Z = 0.5 * dz1;
 
-		final double extents2X   = 0.5 * dx2;
-		final double extents2Y   = 0.5 * dy2;
-		final double extents2Z   = 0.5 * dz2;
+		final double extents2X = 0.5 * dx2;
+		final double extents2Y = 0.5 * dy2;
+		final double extents2Z = 0.5 * dz2;
 
 		final double centerOtherX = ox2 + 0.5 * dx2;
 		final double centerOtherY = oy2 + 0.5 * dy2;
@@ -302,15 +301,14 @@ public class GeometryTools
 	/**
 	 * Test intersection between to triangles in 3D.
 	 *
-	 * @param   v0  First vertex of first triangle.
-	 * @param   v1  Second vertex of first triangle.
-	 * @param   v2  Third vertex of first triangle.
-	 * @param   u0  First vertex of second triangle.
-	 * @param   u1  Second vertex of second triangle.
-	 * @param   u2  Third vertex of second triangle.
+	 * @param v0 First vertex of first triangle.
+	 * @param v1 Second vertex of first triangle.
+	 * @param v2 Third vertex of first triangle.
+	 * @param u0 First vertex of second triangle.
+	 * @param u1 Second vertex of second triangle.
+	 * @param u2 Third vertex of second triangle.
 	 *
-	 * @return  <code>true</code> if the triangles intersect;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the triangles intersect; {@code false} otherwise.
 	 */
 	public static boolean testTriangleTriangleIntersection( final Vector3D v0, final Vector3D v1, final Vector3D v2, final Vector3D u0, final Vector3D u1, final Vector3D u2 )
 	{
@@ -320,38 +318,38 @@ public class GeometryTools
 	/**
 	 * Test intersection between axis-aligned box and sphere.
 	 *
-	 * @param   sphereCenter    Center of sphere.
-	 * @param   sphereRadius    Radius of sphere.
-	 * @param   box             Axis-aligned box.
+	 * @param sphereCenter Center of sphere.
+	 * @param sphereRadius Radius of sphere.
+	 * @param box          Axis-aligned box.
 	 *
-	 * @return  <code>true</code> if sphere intersects with box;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if sphere intersects with box; {@code false}
+	 * otherwise.
 	 */
-	public static boolean testSphereBoxIntersection( final Vector3D sphereCenter, final double sphereRadius , final Bounds3D box )
+	public static boolean testSphereBoxIntersection( final Vector3D sphereCenter, final double sphereRadius, final Bounds3D box )
 	{
-		return testSphereBoxIntersection( sphereCenter.x,  sphereCenter.y,  sphereCenter.z,  sphereRadius, box.v1.x, box.v1.y, box.v1.z, box.v2.x, box.v2.y, box.v2.z );
+		return testSphereBoxIntersection( sphereCenter.x, sphereCenter.y, sphereCenter.z, sphereRadius, box.v1.x, box.v1.y, box.v1.z, box.v2.x, box.v2.y, box.v2.z );
 	}
 
 	/**
 	 * Test intersection between axis-aligned box and sphere.
 	 *
-	 * @param   sphereCenterX   X coordinate of sphere center.
-	 * @param   sphereCenterY   Y coordinate of sphere center.
-	 * @param   sphereCenterZ   Z coordinate of sphere center.
-	 * @param   sphereRadius    Radius of sphere.
-	 * @param   boxMinX         Minimum X coordinate of axis-aligned box.
-	 * @param   boxMinY         Minimum Y coordinate of axis-aligned box.
-	 * @param   boxMinZ         Minimum Z coordinate of axis-aligned box.
-	 * @param   boxMaxX         Maximum X coordinate of axis-aligned box.
-	 * @param   boxMaxY         Maximum Y coordinate of axis-aligned box.
-	 * @param   boxMaxZ         Maximum Z coordinate of axis-aligned box.
+	 * @param sphereCenterX X coordinate of sphere center.
+	 * @param sphereCenterY Y coordinate of sphere center.
+	 * @param sphereCenterZ Z coordinate of sphere center.
+	 * @param sphereRadius  Radius of sphere.
+	 * @param boxMinX       Minimum X coordinate of axis-aligned box.
+	 * @param boxMinY       Minimum Y coordinate of axis-aligned box.
+	 * @param boxMinZ       Minimum Z coordinate of axis-aligned box.
+	 * @param boxMaxX       Maximum X coordinate of axis-aligned box.
+	 * @param boxMaxY       Maximum Y coordinate of axis-aligned box.
+	 * @param boxMaxZ       Maximum Z coordinate of axis-aligned box.
 	 *
-	 * @return  <code>true</code> if sphere intersects with box;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if sphere intersects with box; {@code false}
+	 * otherwise.
 	 *
 	 * @noinspection MethodWithMultipleReturnPoints
 	 */
-	public static boolean testSphereBoxIntersection( final double sphereCenterX, final double sphereCenterY, final double sphereCenterZ, final double sphereRadius , final double boxMinX, final double boxMinY, final double boxMinZ, final double boxMaxX, final double boxMaxY, final double boxMaxZ )
+	public static boolean testSphereBoxIntersection( final double sphereCenterX, final double sphereCenterY, final double sphereCenterZ, final double sphereRadius, final double boxMinX, final double boxMinY, final double boxMinZ, final double boxMaxX, final double boxMaxY, final double boxMaxZ )
 	{
 		double maxDistance = 0.0;
 
@@ -425,16 +423,16 @@ public class GeometryTools
 	 * Tests whether a sphere and a cylinder intersect, including containment
 	 * and border cases.
 	 *
-	 * @param   sphereCenterX   X coordinate of sphere center.
-	 * @param   sphereCenterY   Y coordinate of sphere center.
-	 * @param   sphereCenterZ   Z coordinate of sphere center.
-	 * @param   sphereRadius    Radius of sphere.
-	 * @param   toSphere        Transformation from cylinder to sphere.
-	 * @param   cylinderHeight  Height of the cylinder.
-	 * @param   cylinderRadius  Radius of cylinder.
+	 * @param sphereCenterX  X coordinate of sphere center.
+	 * @param sphereCenterY  Y coordinate of sphere center.
+	 * @param sphereCenterZ  Z coordinate of sphere center.
+	 * @param sphereRadius   Radius of sphere.
+	 * @param toSphere       Transformation from cylinder to sphere.
+	 * @param cylinderHeight Height of the cylinder.
+	 * @param cylinderRadius Radius of cylinder.
 	 *
-	 * @return  <code>true</code> if sphere intersects with cylinder;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if sphere intersects with cylinder; {@code false}
+	 * otherwise.
 	 */
 	public static boolean testSphereCylinderIntersection( final double sphereCenterX, final double sphereCenterY, final double sphereCenterZ, final double sphereRadius, final Matrix3D toSphere, final double cylinderHeight, final double cylinderRadius )
 	{
@@ -448,15 +446,15 @@ public class GeometryTools
 	 * Tests whether a sphere and a cylinder intersect, including containment
 	 * and border cases. Coordinates are relative to the base of the cylinder.
 	 *
-	 * @param   sphereCenterX   X coordinate of sphere center.
-	 * @param   sphereCenterY   Y coordinate of sphere center.
-	 * @param   sphereCenterZ   Z coordinate of sphere center.
-	 * @param   sphereRadius    Radius of sphere.
-	 * @param   cylinderHeight  Height of the cylinder.
-	 * @param   cylinderRadius  Radius of cylinder.
+	 * @param sphereCenterX  X coordinate of sphere center.
+	 * @param sphereCenterY  Y coordinate of sphere center.
+	 * @param sphereCenterZ  Z coordinate of sphere center.
+	 * @param sphereRadius   Radius of sphere.
+	 * @param cylinderHeight Height of the cylinder.
+	 * @param cylinderRadius Radius of cylinder.
 	 *
-	 * @return  <code>true</code> if sphere intersects with cylinder;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if sphere intersects with cylinder; {@code false}
+	 * otherwise.
 	 *
 	 * @noinspection MethodWithMultipleReturnPoints
 	 */
@@ -492,15 +490,69 @@ public class GeometryTools
 	}
 
 	/**
+	 * Tests whether a cylinder contains a point. Coordinates are relative to
+	 * the base of the cylinder.
+	 *
+	 * @param pointX         X coordinate of point.
+	 * @param pointY         Y coordinate of point.
+	 * @param pointZ         Z coordinate of point.
+	 * @param cylinderHeight Height of the cylinder.
+	 * @param cylinderRadius Radius of cylinder.
+	 *
+	 * @return {@code true} if cylinder contains point; {@code false} otherwise.
+	 */
+	public static boolean testCylinderContainsPoint( final double pointX, final double pointY, final double pointZ, final double cylinderHeight, final double cylinderRadius )
+	{
+		return greaterOrAlmostEqual( pointZ, 0.0 ) &&
+		       lessOrAlmostEqual( pointZ, cylinderHeight ) &&
+		       lessOrAlmostEqual( pointX * pointX + pointY * pointY, cylinderRadius * cylinderRadius );
+	}
+
+	/**
+	 * Tests whether a cylinder contains a point. Coordinates are relative to
+	 * the base of the cylinder.
+	 *
+	 * @param pointX         X coordinate of point.
+	 * @param pointY         Y coordinate of point.
+	 * @param pointZ         Z coordinate of point.
+	 * @param cylinderAxisX  Cylinder axis direction.
+	 * @param cylinderAxisY  Cylinder axis direction.
+	 * @param cylinderAxisZ  Cylinder axis direction.
+	 * @param cylinderHeight Height of the cylinder.
+	 * @param cylinderRadius Radius of cylinder.
+	 *
+	 * @return {@code true} if cylinder contains point; {@code false} otherwise.
+	 */
+	public static boolean testCylinderContainsPoint( final double pointX, final double pointY, final double pointZ, final double cylinderAxisX, final double cylinderAxisY, final double cylinderAxisZ, final double cylinderHeight, final double cylinderRadius )
+	{
+		final boolean result;
+
+		final double distance = Vector3D.dot( pointX, pointY, pointZ, cylinderAxisX, cylinderAxisY, cylinderAxisZ );
+		if ( greaterOrAlmostEqual( distance, 0.0 ) &&
+		     lessOrAlmostEqual( distance, cylinderHeight ) )
+		{
+			final double x = pointX - distance * cylinderAxisX;
+			final double y = pointY - distance * cylinderAxisY;
+			final double z = pointZ - distance * cylinderAxisZ;
+			result = lessOrAlmostEqual( x * x + y * y + z * z, cylinderRadius * cylinderRadius );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	/**
 	 * Tests whether two circles intersect.
 	 *
-	 * @param   radius1     Radius of the first circle.
-	 * @param   centerDx    Distance along x-axis between circle center points.
-	 * @param   centerDy    Distance along y-axis between circle center points.
-	 * @param   radius2     Radius of the second circle.
+	 * @param radius1  Radius of the first circle.
+	 * @param centerDx Distance along x-axis between circle center points.
+	 * @param centerDy Distance along y-axis between circle center points.
+	 * @param radius2  Radius of the second circle.
 	 *
-	 * @return  <code>true</code> if the circles intersect;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the circles intersect; {@code false} otherwise.
 	 */
 	private static boolean testCircleIntersection( final double radius1, final double centerDx, final double centerDy, final double radius2 )
 	{
@@ -511,13 +563,13 @@ public class GeometryTools
 	/**
 	 * Get intersection of two line segments.
 	 *
-	 * @param   p1      Start point of line segment 1.
-	 * @param   p2      End point of line segment 1
-	 * @param   p3      Start point of line segment 2.
-	 * @param   p4      End point of line segment 2
+	 * @param p1 Start point of line segment 1.
+	 * @param p2 End point of line segment 1
+	 * @param p3 Start point of line segment 2.
+	 * @param p4 End point of line segment 2
 	 *
-	 * @return  Points describing the intersection (1 or 2 points);
-	 *          <code>null</code> if no intersection was found.
+	 * @return Points describing the intersection (1 or 2 points); {@code null}
+	 * if no intersection was found.
 	 */
 	public static Vector2D[] getIntersectionBetweenLineSegments( final Vector2D p1, final Vector2D p2, final Vector2D p3, final Vector2D p4 )
 	{
@@ -529,28 +581,27 @@ public class GeometryTools
 	 *
 	 * This uses the following algorithm:
 	 *
-	 *    "Intersection point of two lines (2 dimension)"
-	 *    Author: Paul Bourke (april 1989)
-	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
+	 * "Intersection point of two lines (2 dimension)" Author: Paul Bourke
+	 * (april 1989) http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
 	 *
-	 * @param   x1      Start point of line segment 1.
-	 * @param   y1      Start point of line segment 1
-	 * @param   x2      End point of line segment 1
-	 * @param   y2      End point of line segment 1
-	 * @param   x3      Start point of line segment 2.
-	 * @param   y3      Start point of line segment 2
-	 * @param   x4      End point of line segment 2
-	 * @param   y4      End point of line segment 2
+	 * @param x1 Start point of line segment 1.
+	 * @param y1 Start point of line segment 1
+	 * @param x2 End point of line segment 1
+	 * @param y2 End point of line segment 1
+	 * @param x3 Start point of line segment 2.
+	 * @param y3 Start point of line segment 2
+	 * @param x4 End point of line segment 2
+	 * @param y4 End point of line segment 2
 	 *
-	 * @return  Points describing the intersection (1 or 2 points);
-	 *          <code>null</code> if no intersection was found.
+	 * @return Points describing the intersection (1 or 2 points); {@code null}
+	 * if no intersection was found.
 	 */
 	public static Vector2D[] getIntersectionBetweenLineSegments( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
 	{
 		Vector2D[] result = null;
 
 		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
-		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
+		final double d = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
 
 		if ( almostEqual( d, 0.0 ) ) /* lines are parallel */
 		{
@@ -560,8 +611,18 @@ public class GeometryTools
 				double sx2;
 				boolean isPositive;
 
-				if ( x1 <= x2 ) { sx1 = x1; sx2 = x2; isPositive = true; }
-				           else { sx1 = x2; sx2 = x1; isPositive = false; }
+				if ( x1 <= x2 )
+				{
+					sx1 = x1;
+					sx2 = x2;
+					isPositive = true;
+				}
+				else
+				{
+					sx1 = x2;
+					sx2 = x1;
+					isPositive = false;
+				}
 
 				if ( x3 <= x4 )
 				{
@@ -593,8 +654,17 @@ public class GeometryTools
 					double sy1;
 					double sy2;
 
-					if ( y1 <= y2 ) { sy1 = y1; sy2 = y2; }
-					           else { sy1 = y2; sy2 = y1; isPositive = !isPositive; }
+					if ( y1 <= y2 )
+					{
+						sy1 = y1;
+						sy2 = y2;
+					}
+					else
+					{
+						sy1 = y2;
+						sy2 = y1;
+						isPositive = !isPositive;
+					}
 
 					if ( y3 <= y4 )
 					{
@@ -670,13 +740,13 @@ public class GeometryTools
 	/**
 	 * Get intersection of two lines.
 	 *
-	 * @param   p1      First point on line 1.
-	 * @param   p2      Second point on line 1
-	 * @param   p3      First point on line 2.
-	 * @param   p4      Second point on line 2
+	 * @param p1 First point on line 1.
+	 * @param p2 Second point on line 1
+	 * @param p3 First point on line 2.
+	 * @param p4 Second point on line 2
 	 *
-	 * @return  Point of intersection;
-	 *          <code>null</code> if no intersection exists (parallel lines).
+	 * @return Point of intersection; {@code null} if no intersection exists
+	 * (parallel lines).
 	 */
 	@Nullable
 	public static Vector2D getIntersectionBetweenLines( final Vector2D p1, final Vector2D p2, final Vector2D p3, final Vector2D p4 )
@@ -687,17 +757,17 @@ public class GeometryTools
 	/**
 	 * Get intersection of two lines.
 	 *
-	 * @param   x1      First point on line 1.
-	 * @param   y1      First point on line 1
-	 * @param   x2      Second point on line 1
-	 * @param   y2      Second point on line 1
-	 * @param   x3      First point on line 2.
-	 * @param   y3      First point on line 2
-	 * @param   x4      Second point on line 2
-	 * @param   y4      Second point on line 2
+	 * @param x1 First point on line 1.
+	 * @param y1 First point on line 1
+	 * @param x2 Second point on line 1
+	 * @param y2 Second point on line 1
+	 * @param x3 First point on line 2.
+	 * @param y3 First point on line 2
+	 * @param x4 Second point on line 2
+	 * @param y4 Second point on line 2
 	 *
-	 * @return  Point of intersection;
-	 *          <code>null</code> if no intersection exists (parallel lines).
+	 * @return Point of intersection; {@code null} if no intersection exists
+	 * (parallel lines).
 	 */
 	@Nullable
 	public static Vector2D getIntersectionBetweenLines( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
@@ -720,26 +790,23 @@ public class GeometryTools
 	}
 
 	/**
-	 * Returns the intersection point between a ray and a {@link Polygon3D}.
-	 * The intersection point is returned as a {@link Vector3D}; however, if
-	 * any of the following conditions is met, no intersection exists, and
-	 * <code>null</code> will be returned:
-	 * <ol>
-	 *  <li>The ray is parallel to the polygon's plane;</li>
-	 *  <li>The ray does not point towards the polygon;</li>
-	 *  <li>The ray intersects the polygon's plane outside the polygon.</li>
-	 * </ol>
+	 * Returns the intersection point between a ray and a {@link Polygon3D}. The
+	 * intersection point is returned as a {@link Vector3D}; however, if any of
+	 * the following conditions is met, no intersection exists, and {@code null}
+	 * will be returned: <ol> <li>The ray is parallel to the polygon's
+	 * plane;</li> <li>The ray does not point towards the polygon;</li> <li>The
+	 * ray intersects the polygon's plane outside the polygon.</li> </ol>
 	 *
-	 * @param   polygon     Polygon to get intersection from.
-	 * @param   ray         Ray to get intersection from.
+	 * @param polygon Polygon to get intersection from.
+	 * @param ray     Ray to get intersection from.
 	 *
-	 * @return  A {@link Vector3D} with the location where the line shot from
-	 *          the mouse pointer intersects with a given plane;
-	 *          <code>null</code> if no intersection exists (ray parallel to
-	 *          polygon, from negative side of one-sided polygon, outside range
-	 *          of half-ray, or outside polygon).
+	 * @return A {@link Vector3D} with the location where the line shot from the
+	 * mouse pointer intersects with a given plane; {@code null} if no
+	 * intersection exists (ray parallel to polygon, from negative side of
+	 * one-sided polygon, outside range of half-ray, or outside polygon).
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws NullPointerException if a required input argument is {@code
+	 * null}.
 	 */
 	@Nullable
 	public static Vector3D getIntersectionBetweenRayAndPolygon( final Polygon3D polygon, final Ray3D ray )
@@ -762,26 +829,22 @@ public class GeometryTools
 	/**
 	 * Returns the intersection point between a ray and a plane. The point is
 	 * returned as a {@link Vector3D}; however, if any of the following
-	 * conditions is met, no intersection exists, and <code>null</code> will be
-	 * returned:
-	 * <ol>
-	 *  <li>The ray is parallel to the plane;</li>
-	 *  <li>The ray does not point in the plane's direction.</li>
-	 * </ol>
-	 * For an explanation of the math used here, see this sites:
-	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a> and
-	 * <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
+	 * conditions is met, no intersection exists, and {@code null} will be
+	 * returned: <ol> <li>The ray is parallel to the plane;</li> <li>The ray
+	 * does not point in the plane's direction.</li> </ol> For an explanation of
+	 * the math used here, see this sites: <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a>
+	 * and <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
 	 *
-	 * @param   planeTransform  Matrix to defined the plane from.
-	 * @param   twoSidedPlane   Consider both sides of plane in intersection test.
-	 * @param   ray             Ray to get intersection from.
+	 * @param planeTransform Matrix to defined the plane from.
+	 * @param twoSidedPlane  Consider both sides of plane in intersection test.
+	 * @param ray            Ray to get intersection from.
 	 *
-	 * @return  Intersection-point between ray and plane;
-	 *          <code>null</code> if no intersection exists (ray parallel to
-	 *          plane, from negative side of one-sided plane, or outside range
-	 *          of half-ray).
+	 * @return Intersection-point between ray and plane; {@code null} if no
+	 * intersection exists (ray parallel to plane, from negative side of
+	 * one-sided plane, or outside range of half-ray).
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws NullPointerException if a required input argument is {@code
+	 * null}.
 	 */
 	@Nullable
 	public static Vector3D getIntersectionBetweenRayAndPlane( final Matrix3D planeTransform, final boolean twoSidedPlane, final Ray3D ray )
@@ -792,25 +855,21 @@ public class GeometryTools
 	/**
 	 * Returns the intersection point between a ray and a plane. The point is
 	 * returned as a {@link Vector3D}; however, if any of the following
-	 * conditions is met, no intersection exists, and <code>null</code> will be
-	 * returned:
-	 * <ol>
-	 *  <li>The ray is parallel to the plane;</li>
-	 *  <li>The ray does not point in the plane's direction.</li>
-	 * </ol>
-	 * For an explanation of the math used here, see this sites:
-	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a> and
-	 * <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
+	 * conditions is met, no intersection exists, and {@code null} will be
+	 * returned: <ol> <li>The ray is parallel to the plane;</li> <li>The ray
+	 * does not point in the plane's direction.</li> </ol> For an explanation of
+	 * the math used here, see this sites: <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a>
+	 * and <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
 	 *
-	 * @param   plane   Plane to get intersection from.
-	 * @param   ray     Ray to get intersection from.
+	 * @param plane Plane to get intersection from.
+	 * @param ray   Ray to get intersection from.
 	 *
-	 * @return  Intersection-point between ray and plane;
-	 *          <code>null</code> if no intersection exists (ray parallel to
-	 *          plane, from negative side of one-sided plane, or outside range
-	 *          of half-ray).
+	 * @return Intersection-point between ray and plane; {@code null} if no
+	 * intersection exists (ray parallel to plane, from negative side of
+	 * one-sided plane, or outside range of half-ray).
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws NullPointerException if a required input argument is {@code
+	 * null}.
 	 */
 	@Nullable
 	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane, final Ray3D ray )
@@ -822,31 +881,27 @@ public class GeometryTools
 	/**
 	 * Returns the intersection point between a ray and a plane. The point is
 	 * returned as a {@link Vector3D}; however, if any of the following
-	 * conditions is met, no intersection exists, and <code>null</code> will be
-	 * returned:
-	 * <ol>
-	 *  <li>The ray is parallel to the plane;</li>
-	 *  <li>The ray does not point in the plane's direction.</li>
-	 * </ol>
-	 * For an explanation of the math used here, see this sites:
-	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a> and
-	 * <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
+	 * conditions is met, no intersection exists, and {@code null} will be
+	 * returned: <ol> <li>The ray is parallel to the plane;</li> <li>The ray
+	 * does not point in the plane's direction.</li> </ol> For an explanation of
+	 * the math used here, see this sites: <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a>
+	 * and <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
 	 *
-	 * @param   planeNormalX    X component of plane normal.
-	 * @param   planeNormalY    Y component of plane normal.
-	 * @param   planeNormalZ    Z component of plane normal.
-	 * @param   planeDistance   Distance of plane to origin.
-	 * @param   twoSidedPlane   Consider both sides of plane in intersection test.
-	 * @param   rayOrigin       Origin of ray.
-	 * @param   rayDirection    Direction of ray.
-	 * @param   halfRay         Wether the ray is infinite or not.
+	 * @param planeNormalX  X component of plane normal.
+	 * @param planeNormalY  Y component of plane normal.
+	 * @param planeNormalZ  Z component of plane normal.
+	 * @param planeDistance Distance of plane to origin.
+	 * @param twoSidedPlane Consider both sides of plane in intersection test.
+	 * @param rayOrigin     Origin of ray.
+	 * @param rayDirection  Direction of ray.
+	 * @param halfRay       Wether the ray is infinite or not.
 	 *
-	 * @return  Intersection-point between ray and plane;
-	 *          <code>null</code> if no intersection exists (ray parallel to
-	 *          plane, from negative side of one-sided plane, or outside range
-	 *          of half-ray).
+	 * @return Intersection-point between ray and plane; {@code null} if no
+	 * intersection exists (ray parallel to plane, from negative side of
+	 * one-sided plane, or outside range of half-ray).
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws NullPointerException if a required input argument is {@code
+	 * null}.
 	 */
 	@Nullable
 	public static Vector3D getIntersectionBetweenRayAndPlane( final double planeNormalX, final double planeNormalY, final double planeNormalZ, final double planeDistance, final boolean twoSidedPlane, final Vector3D rayOrigin, final Vector3D rayDirection, final boolean halfRay )
@@ -854,14 +909,14 @@ public class GeometryTools
 		Vector3D result = null;
 
 		final double denominator = planeNormalX * rayDirection.x
-		                         + planeNormalY * rayDirection.y
-		                         + planeNormalZ * rayDirection.z;
+		                           + planeNormalY * rayDirection.y
+		                           + planeNormalZ * rayDirection.z;
 
 		if ( twoSidedPlane ? !almostEqual( denominator, 0.0 ) : significantlyLessThan( denominator, 0.0 ) ) /* line parallel to plane */
 		{
 			final double numerator = planeDistance - planeNormalX * rayOrigin.x
-			                                       - planeNormalY * rayOrigin.y
-			                                       - planeNormalZ * rayOrigin.z;
+			                         - planeNormalY * rayOrigin.y
+			                         - planeNormalZ * rayOrigin.z;
 
 			final double intersectionDistance = numerator / denominator;
 
@@ -887,10 +942,10 @@ public class GeometryTools
 	 * normal will point 'outwards' if the points are specified in clockwise
 	 * ordering.
 	 *
-	 * @param   points  List of points to get normal from.
+	 * @param points List of points to get normal from.
 	 *
-	 * @return  Plane normal vector;
-	 *          <code>null</code> if no plane normal could be determined.
+	 * @return Plane normal vector; {@code null} if no plane normal could be
+	 * determined.
 	 */
 	@Nullable
 	public static Vector3D getPlaneNormal( final Vector3D... points )
@@ -903,15 +958,15 @@ public class GeometryTools
 	 * points is defined. The normal will point 'outwards' if the points are
 	 * specified in clockwise ordering.
 	 *
-	 * @param   p1  First point of triangle.
-	 * @param   p2  Second point of triangle.
-	 * @param   p3  Third point of triangle.
+	 * @param p1 First point of triangle.
+	 * @param p2 Second point of triangle.
+	 * @param p3 Third point of triangle.
 	 *
-	 * @return  Plane normal vector;
-	 *          <code>null</code> if no plane normal could be determined.
+	 * @return Plane normal vector; {@code null} if no plane normal could be
+	 * determined.
 	 *
-	 * @see     Plane3D#getNormal
-	 * @see     Plane3D#isTwoSided
+	 * @see Plane3D#getNormal
+	 * @see Plane3D#isTwoSided
 	 */
 	@Nullable
 	public static Vector3D getPlaneNormal( final Vector3D p1, final Vector3D p2, final Vector3D p3 )
@@ -934,21 +989,18 @@ public class GeometryTools
 
 	/**
 	 * Test if the specified point is 'inside' the specified 3D polygon. Points
-	 * on the edges and vertices are also considered 'inside'.
-	 * <dl>
-	 *  <dt>IMPORTANT:</dt>
-	 *  <dd>The point must be specified in the object's own coordinate system.</dd>
-	 * </dl>
-	 * For an explanation of the math used here, see this site under 'Solution 4 (3D)':
-	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
+	 * on the edges and vertices are also considered 'inside'. <dl>
+	 * <dt>IMPORTANT:</dt> <dd>The point must be specified in the object's own
+	 * coordinate system.</dd> </dl> For an explanation of the math used here,
+	 * see this site under 'Solution 4 (3D)': <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
 	 *
-	 * @param   polygon     Polygon to test point against.
-	 * @param   point       Point to test.
+	 * @param polygon Polygon to test point against.
+	 * @param point   Point to test.
 	 *
-	 * @return  <code>true</code> if the point is inside the polygon;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the point is inside the polygon; {@code false}
+	 * otherwise.
 	 *
-	 * @throws  NullPointerException if an input argument is <code>null</code>.
+	 * @throws NullPointerException if an input argument is {@code null}.
 	 */
 	public static boolean isPointInsidePolygon( final Polygon3D polygon, final Vector3D point )
 	{
@@ -957,23 +1009,20 @@ public class GeometryTools
 
 	/**
 	 * Test if the specified point is 'inside' the specified 3D polygon. Points
-	 * on the edges and vertices are also considered 'inside'.
-	 * <dl>
-	 *  <dt>IMPORTANT:</dt>
-	 *  <dd>The point must be specified in the object's own coordinate system.</dd>
-	 * </dl>
-	 * For an explanation of the math used here, see this site under 'Solution 4 (3D)':
-	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
+	 * on the edges and vertices are also considered 'inside'. <dl>
+	 * <dt>IMPORTANT:</dt> <dd>The point must be specified in the object's own
+	 * coordinate system.</dd> </dl> For an explanation of the math used here,
+	 * see this site under 'Solution 4 (3D)': <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
 	 *
-	 * @param   polygon     Polygon to test point against.
-	 * @param   x           X coordinate of point to test.
-	 * @param   y           Y coordinate of point to test.
-	 * @param   z           Z coordinate of point to test.
+	 * @param polygon Polygon to test point against.
+	 * @param x       X coordinate of point to test.
+	 * @param y       Y coordinate of point to test.
+	 * @param z       Z coordinate of point to test.
 	 *
-	 * @return  <code>true</code> if the point is inside the polygon;
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if the point is inside the polygon; {@code false}
+	 * otherwise.
 	 *
-	 * @throws  NullPointerException if <code>polygon</code> is <code>null</code>.
+	 * @throws NullPointerException if <code>polygon</code> is {@code null}.
 	 */
 	public static boolean isPointInsidePolygon( final Polygon3D polygon, final double x, final double y, final double z )
 	{
@@ -987,7 +1036,7 @@ public class GeometryTools
 			 * on the web page with only performance enhancements and data
 			 * structure integration.
 			 */
-			int    i;
+			int i;
 			double d;
 			double angleSum = 0.0;
 
@@ -1000,19 +1049,19 @@ public class GeometryTools
 			double p2x = polygon.getX( i ) - x;
 			double p2y = polygon.getY( i ) - y;
 			double p2z = polygon.getZ( i ) - z;
-			double m2  = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
+			double m2 = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
 
-			for ( i = 0 ; i < vertexCount ; i++ )
+			for ( i = 0; i < vertexCount; i++ )
 			{
 				p1x = p2x;
 				p1y = p2y;
 				p1z = p2z;
-				m1  = m2;
+				m1 = m2;
 
 				p2x = polygon.getX( i ) - x;
 				p2y = polygon.getY( i ) - y;
 				p2z = polygon.getZ( i ) - z;
-				m2  = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
+				m2 = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
 
 				d = m1 * m2;
 				if ( almostEqual( d, 0.0 ) ) /* We are on a node, consider this inside */
@@ -1043,19 +1092,18 @@ public class GeometryTools
 	 * point must be on the same plane as the triangle. Otherwise the results
 	 * are undefined.
 	 *
-	 * <p>
-	 * This implementation first calculates the barycentric coordinates of the
-	 * point and then performs a simple comparison in that coordinate space.
-	 * Explanations of this and other methods can be found here:
-	 * <a href="http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm">http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm</a> and
-	 * <a href="http://www.blackpawn.com/texts/pointinpoly/default.html">http://www.blackpawn.com/texts/pointinpoly/default.html</a>
+	 * <p> This implementation first calculates the barycentric coordinates of
+	 * the point and then performs a simple comparison in that coordinate space.
+	 * Explanations of this and other methods can be found here: <a
+	 * href="http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm">http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm</a>
+	 * and <a href="http://www.blackpawn.com/texts/pointinpoly/default.html">http://www.blackpawn.com/texts/pointinpoly/default.html</a>
 	 *
-	 * @param   v1  First vertex of the triangle.
-	 * @param   v2  Second vertex of the triangle.
-	 * @param   v3  Third vertex of the triangle.
-	 * @param   p   Point on the same plane as the triangle.
+	 * @param v1 First vertex of the triangle.
+	 * @param v2 Second vertex of the triangle.
+	 * @param v3 Third vertex of the triangle.
+	 * @param p  Point on the same plane as the triangle.
 	 *
-	 * @return  <code>true</code> if the point is inside the triangle.
+	 * @return {@code true} if the point is inside the triangle.
 	 */
 	public static boolean isPointInsideTriangle( final Vector3D v1, final Vector3D v2, final Vector3D v3, final Vector3D p )
 	{
@@ -1065,9 +1113,9 @@ public class GeometryTools
 		final double vx = v3.x - v1.x;
 		final double vy = v3.y - v1.y;
 		final double vz = v3.z - v1.z;
-		final double wx = p.x  - v1.x;
-		final double wy = p.y  - v1.y;
-		final double wz = p.z  - v1.z;
+		final double wx = p.x - v1.x;
+		final double wy = p.y - v1.y;
+		final double wz = p.z - v1.z;
 
 		// Various dot products
 		final double uu = ux * ux + uy * uy + uz * uz;
@@ -1103,14 +1151,11 @@ public class GeometryTools
 	 *   Author: Paul Bourke (october 1988)
 	 *   http://local.wasp.uwa.edu.au/~pbourke/geometry/pointline/
 	 * </pre>
-	 * The equation of a line defined through two points P1 (x1,y1) and
-	 * P2 (x2,y2) is: P = P1 + u (P2 - P1).
-	 * <p>
-	 * The point P3 (x3,y3) is closest to the line at the tangent to the line
-	 * which passes through P3, that is, the dot product of the tangent and
-	 * line is 0, thus (P3 - P) dot (P2 - P1) = 0
-	 * <p>
-	 * Substituting the equation of the line gives
+	 * The equation of a line defined through two points P1 (x1,y1) and P2
+	 * (x2,y2) is: P = P1 + u (P2 - P1). <p> The point P3 (x3,y3) is closest to
+	 * the line at the tangent to the line which passes through P3, that is, the
+	 * dot product of the tangent and line is 0, thus (P3 - P) dot (P2 - P1) = 0
+	 * <p> Substituting the equation of the line gives
 	 * <pre>
 	 *   [ P3 - P1 - u(P2 - P1) ] dot ( P2 - P1 ) = 0
 	 * </pre>
@@ -1121,14 +1166,14 @@ public class GeometryTools
 	 *                        || P2 - P1 || ^ 2
 	 * </pre>
 	 *
-	 * @param   p               Point to find closest point to.
-	 * @param   p1              First point of line to find point on.
-	 * @param   p2              Second point of line to find point on.
-	 * @param   segmentOnly     If set, only return result if the point is on
-	 *                          the line segment.
+	 * @param p           Point to find closest point to.
+	 * @param p1          First point of line to find point on.
+	 * @param p2          Second point of line to find point on.
+	 * @param segmentOnly If set, only return result if the point is on the line
+	 *                    segment.
 	 *
-	 * @return  Point on line closest to the given point;
-	 *          <code>null</code> if point lies outside the line segment.
+	 * @return Point on line closest to the given point; {@code null} if point
+	 * lies outside the line segment.
 	 */
 	@Nullable
 	public static Vector3D getClosestPointOnLine( final Vector3D p, final Vector3D p1, final Vector3D p2, final boolean segmentOnly )
@@ -1136,21 +1181,20 @@ public class GeometryTools
 		final double dx = p2.x - p1.x;
 		final double dy = p2.y - p1.y;
 		final double dz = p2.z - p1.z;
-		final double u  = ( ( p.x - p1.x ) * dx + ( p.y - p1.y ) * dy + ( p.z - p1.z ) * dz ) / ( dx * dx + dy * dy + dz * dz );
+		final double u = ( ( p.x - p1.x ) * dx + ( p.y - p1.y ) * dy + ( p.z - p1.z ) * dz ) / ( dx * dx + dy * dy + dz * dz );
 
 		return ( !segmentOnly || ( ( u >= -EPSILON ) && u <= ( 1.0 + EPSILON ) ) ) ? p1.plus( u * dx, u * dy, p.z ) : null;
 	}
 
 	/**
-	 * Calculate area of specified triangle.
-	 * <p />
-	 * The area is calculated by using "Heron's formula".
+	 * Calculate area of specified triangle. <p /> The area is calculated by
+	 * using "Heron's formula".
 	 *
-	 * @param   p1  First point of the triangle.
-	 * @param   p2  Second point of the triangle.
-	 * @param   p3  Third point of the triangle.
+	 * @param p1 First point of the triangle.
+	 * @param p2 Second point of the triangle.
+	 * @param p3 Third point of the triangle.
 	 *
-	 * @return  Area of specified triangle.
+	 * @return Area of specified triangle.
 	 */
 	public static double getTriangleArea( final Vector2D p1, final Vector2D p2, final Vector2D p3 )
 	{
@@ -1166,11 +1210,11 @@ public class GeometryTools
 	 * Test if the specified values are 'almost' equal (the difference between
 	 * them approaches the value 0).
 	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
 	 *
-	 * @return  <code>true</code> is the values are within a tolerance of
-	 *          {@link #EPSILON} of each other; <code>false</code> otherwise.
+	 * @return {@code true} is the values are within a tolerance of {@link
+	 * #EPSILON} of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final double value1, final double value2 )
 	{
@@ -1182,28 +1226,28 @@ public class GeometryTools
 	 * Test if the first operand is greater than the second operand or almost
 	 * equal (the difference between them approaches the value 0).
 	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is greater than or within
-	 *          a tolerance of {@link #EPSILON} of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return <code>true</code> is {@code value1} is greater than or within a
+	 * tolerance of {@link #EPSILON} of {@code value2}; {@code false}
+	 * otherwise.
 	 */
-	public static boolean greaterOrAlmostEqual( final double value1 , final double value2 )
+	public static boolean greaterOrAlmostEqual( final double value1, final double value2 )
 	{
 		return ( ( value2 - value1 ) <= EPSILON );
 	}
 
 	/**
-	 * Test if the first operand is less than the second operand or almost
-	 * equal (the difference between them approaches the value 0).
+	 * Test if the first operand is less than the second operand or almost equal
+	 * (the difference between them approaches the value 0).
 	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is less than or within
-	 *          a tolerance of {@link #EPSILON} of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return <code>true</code> is {@code value1} is less than or within a
+	 * tolerance of {@link #EPSILON} of {@code value2}; {@code false}
+	 * otherwise.
 	 */
 	public static boolean lessOrAlmostEqual( final double value1, final double value2 )
 	{
@@ -1211,17 +1255,17 @@ public class GeometryTools
 	}
 
 	/**
-	 * Test if the first operand is significantly greater than the second operand
-	 * (the difference between them exceeds a tolerance of {@link #EPSILON}).
+	 * Test if the first operand is significantly greater than the second
+	 * operand (the difference between them exceeds a tolerance of {@link
+	 * #EPSILON}).
 	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least
-	 *          {@link #EPSILON} greater than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return <code>true</code> is {@code value1} is at least {@link #EPSILON}
+	 * greater than {@code value2}; {@code false} otherwise.
 	 */
-	public static boolean significantlyGreaterThan( final double value1 , final double value2 )
+	public static boolean significantlyGreaterThan( final double value1, final double value2 )
 	{
 		return ( ( value1 - value2 ) > EPSILON );
 	}
@@ -1230,12 +1274,11 @@ public class GeometryTools
 	 * Test if the first operand is significantly less than the second operand
 	 * (the difference between them exceeds a tolerance of {@link #EPSILON}).
 	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least
-	 *          {@link #EPSILON} less than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return <code>true</code> is {@code value1} is at least {@link #EPSILON}
+	 * less than {@code value2}; {@code false} otherwise.
 	 */
 	public static boolean significantlyLessThan( final double value1, final double value2 )
 	{
@@ -1245,10 +1288,10 @@ public class GeometryTools
 	/**
 	 * Returns the radius of an arc with the given chord length and height.
 	 *
-	 * @param   chordLength     Distance between the arc's end points.
-	 * @param   height          Height of the arc.
+	 * @param chordLength Distance between the arc's end points.
+	 * @param height      Height of the arc.
 	 *
-	 * @return  Radius of the arc.
+	 * @return Radius of the arc.
 	 */
 	public static double arcHeightToRadius( final double chordLength, final double height )
 	{
@@ -1257,29 +1300,29 @@ public class GeometryTools
 	}
 
 	/**
-	 * Returns the height of an arc with the given chord length and radius.
-	 * For <code>radius > chordLength / 2</code>, there are two
-	 * possible solutions. This method returns the solution closest to zero,
-	 * which results in an included angle of at most 180 degrees.
+	 * Returns the height of an arc with the given chord length and radius. For
+	 * {@code radius > chordLength / 2}, there are two possible solutions. This
+	 * method returns the solution closest to zero, which results in an included
+	 * angle of at most 180 degrees.
 	 *
-	 * @param   chordLength     Distance between the arc's end points.
-	 * @param   radius          Radius of the arc.
+	 * @param chordLength Distance between the arc's end points.
+	 * @param radius      Radius of the arc.
 	 *
-	 * @return  Height of the arc; <code>NaN</code> if there is no solution.
+	 * @return Height of the arc; {@code NaN} if there is no solution.
 	 */
 	public static double arcRadiusToHeight( final double chordLength, final double radius )
 	{
 		final double halfChordLength = chordLength / 2.0;
-		return Math.signum( radius) * ( Math.abs( radius ) - Math.sqrt( radius * radius - halfChordLength * halfChordLength ) );
+		return Math.signum( radius ) * ( Math.abs( radius ) - Math.sqrt( radius * radius - halfChordLength * halfChordLength ) );
 	}
 
 	/**
 	 * Returns the included angle of an arc with the given height.
 	 *
-	 * @param   chordLength     Distance between the arc's end points.
-	 * @param   height          Height of the arc.
+	 * @param chordLength Distance between the arc's end points.
+	 * @param height      Height of the arc.
 	 *
-	 * @return  Included angle.
+	 * @return Included angle.
 	 */
 	public static double arcHeightToAngle( final double chordLength, final double height )
 	{
@@ -1290,10 +1333,10 @@ public class GeometryTools
 	/**
 	 * Returns the height of an arc with the given included angle.
 	 *
-	 * @param   chordLength     Distance between the arc's end points.
-	 * @param   angle           Included angle of the arc.
+	 * @param chordLength Distance between the arc's end points.
+	 * @param angle       Included angle of the arc.
 	 *
-	 * @return  Height of the arc.
+	 * @return Height of the arc.
 	 */
 	public static double arcAngleToHeight( final double chordLength, final double angle )
 	{
@@ -1305,12 +1348,12 @@ public class GeometryTools
 	 * Returns the height of an arc between the given start and end points
 	 * through the other point.
 	 *
-	 * @param   start   Start point of the arc.
-	 * @param   end     End point of the arc.
-	 * @param   point   Point on the arc.
-	 * @param   normal  Normal of the plane containing the arc.
+	 * @param start  Start point of the arc.
+	 * @param end    End point of the arc.
+	 * @param point  Point on the arc.
+	 * @param normal Normal of the plane containing the arc.
 	 *
-	 * @return  Arc height.
+	 * @return Arc height.
 	 */
 	public static double arcThroughPoint( final Vector3D start, final Vector3D end, final Vector3D point, final Vector3D normal )
 	{
@@ -1365,20 +1408,21 @@ public class GeometryTools
 	}
 
 	/**
-	 * Intersects two lines, which are specified as a point and a direction.
-	 * The directions don't have to be normalized.
+	 * Intersects two lines, which are specified as a point and a direction. The
+	 * directions don't have to be normalized.
 	 *
-	 * <p>This implementation is limited to 2D intersections.
-	 * The z-coordinate of all input points is ignored (assumed zero).
+	 * <p>This implementation is limited to 2D intersections. The z-coordinate
+	 * of all input points is ignored (assumed zero).
 	 *
-	 * @see     <a href="http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/">Intersection point of two lines (2 dimensions)</a>
+	 * @param p1 Point on the first line.
+	 * @param d1 Direction of the first line.
+	 * @param p2 Point on the second line.
+	 * @param d2 Direction of the second line.
 	 *
-	 * @param   p1  Point on the first line.
-	 * @param   d1  Direction of the first line.
-	 * @param   p2  Point on the second line.
-	 * @param   d2  Direction of the second line.
+	 * @return Intersection point.
 	 *
-	 * @return  Intersection point.
+	 * @see <a href="http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/">Intersection
+	 * point of two lines (2 dimensions)</a>
 	 */
 	@Nullable
 	private static Vector3D intersectLinesPointDirection( final Vector3D p1, final Vector3D d1, final Vector3D p2, final Vector3D d2 )
@@ -1406,10 +1450,10 @@ public class GeometryTools
 	 * Creates a cross-section of the given object by intersecting it with the
 	 * given plane.
 	 *
-	 * @param   object  Object to intersect.
-	 * @param   plane   Plane to intersect the object with.
+	 * @param object Object to intersect.
+	 * @param plane  Plane to intersect the object with.
 	 *
-	 * @return  2D paths representing the cross-section.
+	 * @return 2D paths representing the cross-section.
 	 */
 	public static List<List<Vector2D>> createCrossSectionPath( final Object3D object, final Plane3D plane )
 	{
@@ -1420,10 +1464,10 @@ public class GeometryTools
 	/**
 	 * Creates a 2D paths from the given graph.
 	 *
-	 * @param   segmentGraph    Graph with line segments.
-	 * @param   plane           Plane that contains the segments.
+	 * @param segmentGraph Graph with line segments.
+	 * @param plane        Plane that contains the segments.
 	 *
-	 * @return  2D path.
+	 * @return 2D path.
 	 */
 	static List<List<Vector2D>> createPathFromGraph( final Iterable<Graph.Node<Vector3D>> segmentGraph, final Plane3D plane )
 	{
@@ -1525,14 +1569,12 @@ public class GeometryTools
 	 * Creates a cross-section of the given object by intersecting it with the
 	 * given plane.
 	 *
-	 * <p>
-	 * For mathematical details, see:
-	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a>.
+	 * <p> For mathematical details, see: <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a>.
 	 *
-	 * @param   object  Object to intersect.
-	 * @param   plane   Plane to intersect the object with.
+	 * @param object Object to intersect.
+	 * @param plane  Plane to intersect the object with.
 	 *
-	 * @return  Graph representing the cross-section.
+	 * @return Graph representing the cross-section.
 	 */
 	static Vector3DGraph createCrossSectionGraph( @NotNull final Object3D object, @NotNull final Plane3D plane )
 	{
@@ -1643,10 +1685,10 @@ public class GeometryTools
 	 *
 	 * TODO: Clip intersecting faces and add the part(s) in front of the plane.
 	 *
-	 * @param   object  Object to be sliced.
-	 * @param   plane   Intersection plane.
+	 * @param object Object to be sliced.
+	 * @param plane  Intersection plane.
 	 *
-	 * @return  Sliced hardware shape.
+	 * @return Sliced hardware shape.
 	 */
 	public static Object3D slice( final Object3D object, final Plane3D plane )
 	{
