@@ -168,7 +168,7 @@ public class AsoBrainAnimation
 	{
 		final FileTextureMap result;
 
-		final URL url = AsoBrainAnimation.class.getResource( imageResourcePath );
+		final URL url = AsoBrainAnimation.class.getClassLoader().getResource( imageResourcePath );
 		if ( url == null )
 		{
 			result = null;

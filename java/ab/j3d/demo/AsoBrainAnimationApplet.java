@@ -21,7 +21,6 @@
 package ab.j3d.demo;
 
 import java.awt.*;
-import java.net.*;
 import javax.swing.*;
 
 /**
@@ -38,29 +37,9 @@ public class AsoBrainAnimationApplet
 	 */
 	private AsoBrainAnimation _example = null;
 
-	/**
-	 * Location of images.
-	 */
-	private URL _imagesUrl = null;
-
 	@Override
 	public void init()
 	{
-		final String images = getParameter( "images" );
-		if ( images != null )
-		{
-			try
-			{
-				_imagesUrl = new URL( images );
-			}
-			catch ( MalformedURLException e )
-			{
-				System.err.println( "Malformed images URL: " + images );
-				System.err.println();
-				System.err.println( "(" + e + ')' );
-			}
-		}
-
 		final AsoBrainAnimation example = new AsoBrainAnimation();
 		final Component content = example.init( getParameter( "engine" ) );
 		_example = example;
