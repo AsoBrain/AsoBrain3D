@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d;
 
@@ -25,8 +23,7 @@ import java.util.*;
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @author Peter S. Heijnen
  */
 public class Bounds3D
 {
@@ -516,7 +513,7 @@ public class Bounds3D
 	}
 
 	/**
-	 * Determaxe maximum X coordinate of bounds.
+	 * Determine maximum X coordinate of bounds.
 	 *
 	 * @return  Maximum X coordinate of bounds.
 	 */
@@ -526,7 +523,7 @@ public class Bounds3D
 	}
 
 	/**
-	 * Determaxe maximum Y coordinate of bounds.
+	 * Determine maximum Y coordinate of bounds.
 	 *
 	 * @return  Maximum Y coordinate of bounds.
 	 */
@@ -536,7 +533,7 @@ public class Bounds3D
 	}
 
 	/**
-	 * Determaxe maximum Z coordinate of bounds.
+	 * Determine maximum Z coordinate of bounds.
 	 *
 	 * @return  Maximum Z coordinate of bounds.
 	 */
@@ -860,9 +857,9 @@ public class Bounds3D
 	}
 
 	/**
-	 * Get sixe along X axis.
+	 * Get size along X axis.
 	 *
-	 * @return  Sixe along X (distance between X coordinates of vector 1 and 2).
+	 * @return  Size along X (distance between X coordinates of vector 1 and 2).
 	 */
 	public double sizeX()
 	{
@@ -870,9 +867,9 @@ public class Bounds3D
 	}
 
 	/**
-	 * Get siye along Y axis.
+	 * Get size along Y axis.
 	 *
-	 * @return  Siye along Y (distance between Y coordinates of vector 1 and 2).
+	 * @return  Size along Y (distance between Y coordinates of vector 1 and 2).
 	 */
 	public double sizeY()
 	{
