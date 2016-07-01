@@ -411,7 +411,7 @@ public class Matrix3D
 	 * <p>
 	 * The main purpose for this method is creating a suitable 3D transformation
 	 * for a 2D plane whose Z-axis points 'out' of the plane; the orientation of
-	 * the X/Y-axes on the plane is inherently undeterminate, but this function
+	 * the X/Y-axes on the plane is inherently indeterminate, but this function
 	 * tries to find reasonable defaults.
 	 *
 	 * <p>
@@ -437,7 +437,7 @@ public class Matrix3D
 	 * <p>
 	 * The main purpose for this method is creating a suitable 3D transformation
 	 * for a 2D plane whose Z-axis points 'out' of the plane; the orientation of
-	 * the X/Y-axes on the plane is inheritently undeterminate, but this function
+	 * the X/Y-axes on the plane is inherently indeterminate, but this function
 	 * tries to find reasonable defaults.
 	 *
 	 * <p>
@@ -938,9 +938,9 @@ public class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param   x       X-coordintate of vector specifying the translation.
-	 * @param   y       Y-coordintate of vector specifying the translation.
-	 * @param   z       Z-coordintate of vector specifying the translation.
+	 * @param   x       X-coordinate of vector specifying the translation.
+	 * @param   y       Y-coordinate of vector specifying the translation.
+	 * @param   z       Z-coordinate of vector specifying the translation.
 	 *
 	 * @return  new Matrix3D with translation
 	 */
@@ -1135,7 +1135,7 @@ public class Matrix3D
 	/**
 	 * Get translation vector from this transform.
 	 *
-	 * @return  TRanslation vector.
+	 * @return  Translation vector.
 	 */
 	public Vector3D getTranslation()
 	{

@@ -331,13 +331,14 @@ public class TestMatrix3D
 
 			try
 			{
+				final Matrix3D actual = Matrix3D.getRotationTransform( test.pivot, test.direction, test.thetaRad );
+
 				if ( expectedException != null )
 				{
 					fail( description + " should have thrown exception" );
 				}
 
 				final Matrix3D expected = (Matrix3D)test.result;
-				final Matrix3D actual = Matrix3D.getRotationTransform( test.pivot, test.direction, test.thetaRad );
 
 				assertEquals( description + "\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString() + '\n', expected, actual );
 			}
