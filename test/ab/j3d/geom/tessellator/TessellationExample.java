@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -261,7 +261,7 @@ public class TessellationExample
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
-			ShapeTools.addFilledShape2D( builder, flipY, area, 0.1, BasicAppearances.GREEN, UV_MAP, false, true, false );
+			builder.addFilledShape2D( flipY, ShapeTools.createTessellator( area, 0.1 ), BasicAppearances.GREEN, UV_MAP, false, true, false );
 			scene.addContentNode( name + "-1" , Matrix3D.getTranslation( x, y, 0.0), builder.getObject3D() );
 		}
 

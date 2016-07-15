@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1014,24 +1014,6 @@ public class ShapeTools
 	{
 		final List<Contour> contours = createContours( shape, flatness, true, true );
 		objectBuilder.addExtrudedShape( contours, extrusion, transform, appearance, uvMap, flipTexture, twoSided, flipNormals, smooth );
-	}
-
-	/**
-	 * Add filled tessellated shape.
-	 *
-	 * @param objectBuilder 3D object builder.
-	 * @param transform     Transforms 2D to 3D coordinates.
-	 * @param shape         Shape to add.
-	 * @param flatness      Flatness used to approximate curves.
-	 * @param appearance    Appearance specification to use for shading.
-	 * @param uvMap         UV-map used to generate texture coordinates.
-	 * @param flipTexture   Whether the bottom texture direction is flipped.
-	 * @param flipNormals   Flip normals using CW instead of CCW triangles.
-	 * @param twoSided      Resulting face will be two-sided (has backface).
-	 */
-	public static void addFilledShape2D( final Object3DBuilder objectBuilder, @NotNull final Matrix3D transform, @NotNull final Shape shape, final double flatness, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
-	{
-		objectBuilder.addFilledShape2D( transform, createTessellator( shape, flatness ), appearance, uvMap, flipTexture, flipNormals, twoSided );
 	}
 
 	/**
