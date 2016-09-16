@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view;
 
@@ -28,81 +26,87 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.control.*;
+import ab.j3d.geom.*;
 import ab.j3d.view.*;
 import org.jetbrains.annotations.*;
 
 /**
  * This action switches the projection policy of a {@link View3D}.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class ViewPointComboBox
-	extends JComboBox
+extends JComboBox
 {
 	/**
 	 * View transform for front view.
 	 */
 	public static final ViewPoint FRONT_VIEW = new ViewPoint( "front", new Matrix3D(
-		 1.0,  0.0,  0.0, 0.0,
-		 0.0,  0.0,  1.0, 0.0,
-		 0.0, -1.0,  0.0, 0.0 ), false );
+	1.0, 0.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.0, -1.0, 0.0, 0.0 ), false );
 
 	/**
 	 * View transform for rear view.
 	 */
 	public static final ViewPoint REAR_VIEW = new ViewPoint( "rear", new Matrix3D(
-		-1.0,  0.0,  0.0, 0.0,
-		 0.0,  0.0,  1.0, 0.0,
-		 0.0,  1.0,  0.0, 0.0 ), false );
+	-1.0, 0.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.0, 1.0, 0.0, 0.0 ), false );
 
 	/**
 	 * View transform for top view.
 	 */
 	public static final ViewPoint TOP_VIEW = new ViewPoint( "top", new Matrix3D(
-		 1.0,  0.0,  0.0, 0.0,
-		 0.0,  1.0,  0.0, 0.0,
-		 0.0,  0.0,  1.0, 0.0 ), false );
+	1.0, 0.0, 0.0, 0.0,
+	0.0, 1.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0 ), false );
 
 	/**
 	 * View transform for bottom view.
 	 */
 	public static final ViewPoint BOTTOM_VIEW = new ViewPoint( "bottom", new Matrix3D(
-		 1.0,  0.0,  0.0, 0.0,
-		 0.0, -1.0,  0.0, 0.0,
-		 0.0,  0.0, -1.0, 0.0 ), false );
+	1.0, 0.0, 0.0, 0.0,
+	0.0, -1.0, 0.0, 0.0,
+	0.0, 0.0, -1.0, 0.0 ), false );
 
 	/**
 	 * View transform for right view.
 	 */
 	public static final ViewPoint RIGHT_VIEW = new ViewPoint( "right", new Matrix3D(
-		 0.0,  1.0,  0.0, 0.0,
-		 0.0,  0.0,  1.0, 0.0,
-		 1.0,  0.0,  0.0, 0.0 ), false );
+	0.0, 1.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	1.0, 0.0, 0.0, 0.0 ), false );
 
 	/**
 	 * View transform for left view.
 	 */
 	public static final ViewPoint LEFT_VIEW = new ViewPoint( "left", new Matrix3D(
-		 0.0, -1.0,  0.0, 0.0,
-		 0.0,  0.0,  1.0, 0.0,
-		-1.0,  0.0,  0.0, 0.0 ), false );
+	0.0, -1.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	-1.0, 0.0, 0.0, 0.0 ), false );
+
+	/**
+	 * Square root of 0.5.
+	 */
+	@SuppressWarnings( "ConstantMathCall" )
+	private static final double SQRT05 = Math.sqrt( 0.5 );
 
 	/**
 	 * View transform for isometric view from right side.
 	 */
 	public static final ViewPoint ISOMETRIC_RIGHT_VIEW = new ViewPoint( "isometricRight", new Matrix3D(
-		Math.sqrt( 0.5 ), Math.sqrt( 0.5 ),              0.0, 0.0,
-		            -0.5,              0.5, Math.sqrt( 0.5 ), 0.0,
-		             0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ), false );
+	SQRT05, SQRT05, 0.0, 0.0,
+	-0.5, 0.5, SQRT05, 0.0,
+	0.5, -0.5, SQRT05, 0.0 ), false );
 
 	/**
 	 * View transform for isometric view from left side.
 	 */
 	public static final ViewPoint ISOMETRIC_LEFT_VIEW = new ViewPoint( "isometricLeft", new Matrix3D(
-	Math.sqrt( 0.5 ), -Math.sqrt( 0.5 ),              0.0, 0.0,
-	             0.5,             0.5, Math.sqrt( 0.5 ), 0.0,
-	            -0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ), false );
+	SQRT05, -SQRT05, 0.0, 0.0,
+	0.5, 0.5, SQRT05, 0.0,
+	-0.5, -0.5, SQRT05, 0.0 ), false );
 
 	/**
 	 * View transform for isometric view from right side.
@@ -142,9 +146,9 @@ public class ViewPointComboBox
 	/**
 	 * Construct combo box.
 	 *
-	 * @param   locale              Locale to use.
-	 * @param   view                The view this action belongs to.
-	 * @param   defaultViewPoint    Default view point.
+	 * @param locale           Locale to use.
+	 * @param view             The view this action belongs to.
+	 * @param defaultViewPoint Default view point.
 	 */
 	public ViewPointComboBox( final Locale locale, final View3D view, final ViewPoint defaultViewPoint )
 	{
@@ -154,10 +158,10 @@ public class ViewPointComboBox
 	/**
 	 * Construct combo box.
 	 *
-	 * @param   locale              Locale to use.
-	 * @param   view                The view this action belongs to.
-	 * @param   viewPoints          View points to choose from.
-	 * @param   defaultViewPoint    Default view point.
+	 * @param locale           Locale to use.
+	 * @param view             The view this action belongs to.
+	 * @param viewPoints       View points to choose from.
+	 * @param defaultViewPoint Default view point.
 	 */
 	public ViewPointComboBox( final Locale locale, final View3D view, final List<ViewPoint> viewPoints, final ViewPoint defaultViewPoint )
 	{
@@ -174,7 +178,7 @@ public class ViewPointComboBox
 
 		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
-		final Map<ViewPoint,String> labels = new HashMap<ViewPoint, String>();
+		final Map<ViewPoint, String> labels = new HashMap<ViewPoint, String>();
 		for ( final ViewPoint viewPoint : viewPoints )
 		{
 			String label = viewPoint.getName();
@@ -198,19 +202,21 @@ public class ViewPointComboBox
 		final ListCellRenderer originalRenderer = getRenderer();
 		setRenderer( new ListCellRenderer()
 		{
-			public Component getListCellRendererComponent( final JList list , final Object value , final int index , final boolean isSelected , final boolean cellHasFocus )
+			@Override
+			public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus )
 			{
-				return originalRenderer.getListCellRendererComponent( list , labels.get( value ) , index , isSelected , cellHasFocus );
+				return originalRenderer.getListCellRendererComponent( list, labels.get( value ), index, isSelected, cellHasFocus );
 			}
 		} );
 
 		addItemListener( new ItemListener()
 		{
+			@Override
 			public void itemStateChanged( final ItemEvent e )
 			{
 				if ( e.getStateChange() == ItemEvent.SELECTED )
 				{
-					final ViewPoint viewPoint = (ViewPoint) e.getItem();
+					final ViewPoint viewPoint = (ViewPoint)e.getItem();
 					setViewPoint( viewPoint );
 				}
 			}
@@ -220,7 +226,7 @@ public class ViewPointComboBox
 	/**
 	 * Get current view point.
 	 *
-	 * @return  Current view point.
+	 * @return Current view point.
 	 */
 	public ViewPoint getViewPoint()
 	{
@@ -230,11 +236,11 @@ public class ViewPointComboBox
 	/**
 	 * Set view point.
 	 *
-	 * @param   viewPoint   View point to set.
+	 * @param viewPoint View point to set.
 	 */
 	public void setViewPoint( final ViewPoint viewPoint )
 	{
-		final ViewPoint oldViewPoint = _selectedViewPoint;
+		final ViewPoint oldViewPoint = getViewPoint();
 		if ( viewPoint != oldViewPoint )
 		{
 			_selectedViewPoint = viewPoint;
@@ -243,17 +249,32 @@ public class ViewPointComboBox
 			final View3D view = _view;
 			final Matrix3D oldScene2View = view.getScene2View();
 			final Matrix3D newOrientation = viewPoint.getScene2view();
-			view.setProjectionPolicy( viewPoint.isPerspective() ? ProjectionPolicy.PERSPECTIVE : ProjectionPolicy.PARALLEL );
-			view.setScene2View( newOrientation.setTranslation( oldScene2View.getTranslation() ) );
 
-			final CameraControl cameraControl = view.getCameraControl();
-			if ( cameraControl != null )
+			if ( !GeometryTools.almostEqual( oldScene2View.xz, newOrientation.xz ) ||
+			     !GeometryTools.almostEqual( oldScene2View.yz, newOrientation.yz ) ||
+			     !GeometryTools.almostEqual( oldScene2View.zz, newOrientation.zz ) ||
+			     !GeometryTools.almostEqual( oldScene2View.xx, newOrientation.xx ) ||
+			     !GeometryTools.almostEqual( oldScene2View.yx, newOrientation.yx ) ||
+			     !GeometryTools.almostEqual( oldScene2View.zx, newOrientation.zx ) ||
+			     !GeometryTools.almostEqual( oldScene2View.xy, newOrientation.xy ) ||
+			     !GeometryTools.almostEqual( oldScene2View.yy, newOrientation.yy ) ||
+			     !GeometryTools.almostEqual( oldScene2View.zy, newOrientation.zy ) )
 			{
-				cameraControl.zoomToFit();
-			}
-			else
-			{
-				view.zoomToFitScene();
+				view.setProjectionPolicy( viewPoint.isPerspective() ? ProjectionPolicy.PERSPECTIVE : ProjectionPolicy.PARALLEL );
+				view.setScene2View( newOrientation.setTranslation( oldScene2View.getTranslation() ) );
+
+				if ( view.getComponent().isVisible() )
+				{
+					final CameraControl cameraControl = view.getCameraControl();
+					if ( cameraControl != null )
+					{
+						cameraControl.zoomToFit();
+					}
+					else
+					{
+						view.zoomToFitScene();
+					}
+				}
 			}
 		}
 	}
@@ -283,9 +304,9 @@ public class ViewPointComboBox
 		/**
 		 * Create view point.
 		 *
-		 * @param   name            Name of view point.
-		 * @param   scene2view      Transform for view point.
-		 * @param   perspective     View point is for perspective projection.
+		 * @param name        Name of view point.
+		 * @param scene2view  Transform for view point.
+		 * @param perspective View point is for perspective projection.
 		 */
 		public ViewPoint( @NotNull final String name, @NotNull final Matrix3D scene2view, final boolean perspective )
 		{
@@ -302,7 +323,7 @@ public class ViewPointComboBox
 		/**
 		 * Get name of view point.
 		 *
-		 * @return  Name of view point.
+		 * @return Name of view point.
 		 */
 		@NotNull
 		public String getName()
@@ -313,7 +334,7 @@ public class ViewPointComboBox
 		/**
 		 * Get transform for view point.
 		 *
-		 * @return  Transform for view point.
+		 * @return Transform for view point.
 		 */
 		@NotNull
 		public Matrix3D getScene2view()
@@ -324,8 +345,8 @@ public class ViewPointComboBox
 		/**
 		 * Get whether the view point is for perspective projection.
 		 *
-		 * @return  {@code false} if view point is for perspective projection;
-		 *          {@code false} if view point is for parallel projection.
+		 * @return {@code false} if view point is for perspective projection;
+		 * {@code false} if view point is for parallel projection.
 		 */
 		public boolean isPerspective()
 		{
