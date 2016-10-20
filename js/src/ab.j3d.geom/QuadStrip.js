@@ -1,0 +1,110 @@
+/*
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2016 Peter S. Heijnen
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+import TessellationPrimitive from './TessellationPrimitive';
+
+/**
+ * A quad strip is a series of connected quads. Vertices 0, 1, 2, 3 define
+ * the first quad; vertices 2, 3, 4, 5 define the second quad; then 4, 5,
+ * 6, 7, and so on.
+ *
+ * @author  Peter S. Heijnen
+ */
+export default class QuadStrip extends TessellationPrimitive {
+
+	/**
+	 * Empty triangle array.
+	 * @type number[]
+	 */
+	static NO_TRIANGLES = [];
+
+	/**
+	 * Vertices that define the quad strip.
+	 * @type number[]
+	 */
+	_vertices;
+
+	/**
+	 * Cached triangles.
+	 * @type number[]
+	 */
+	_triangles;
+
+	/**
+	 * Construct quad strip.
+	 *
+	 * @param   vertices    Vertices that define the strip.
+	 */
+	constructor( vertices )
+	{
+		super();
+		this._vertices = vertices;
+		this._triangles = null;
+	}
+
+	getVertices()
+	{
+		//noinspection ReturnOfCollectionOrArrayField
+		return this._vertices;
+	}
+
+	getTriangles()
+	{
+		let result = this._triangles;
+		if ( result == null )
+		{
+			const vertices = this._vertices;
+			const vertexCount = vertices.length;
+			if ( vertexCount < 4 )
+			{
+				result = QuadStrip.NO_TRIANGLES;
+			}
+			else
+			{
+				/*
+				 * result[ 0 ] = { vertices[0], vertices[1], vertices[3] }
+				 * result[ 1 ] = { vertices[0], vertices[3], vertices[2] }
+				 * result[ 2 ] = { vertices[2], vertices[3], vertices[5] }
+				 * result[ 3 ] = { vertices[2], vertices[5], vertices[4] }
+				 * result[ 4 ] = { vertices[4], vertices[5], vertices[7] }
+				 */
+				const resultLength = ( ( vertexCount - 2 ) / 2 ) * 6;
+				result = new Array( resultLength );
+				let resultIndex = 0;
+				let v0 = vertices[ 0 ];
+				let v1 = vertices[ 1 ];
+				let vertexIndex = 2;
+				while ( resultIndex < result.length )
+				{
+					const v2 = vertices[ vertexIndex++ ];
+					const v3 = vertices[ vertexIndex++ ];
+					result[ resultIndex++ ] = v0;
+					result[ resultIndex++ ] = v1;
+					result[ resultIndex++ ] = v3;
+					result[ resultIndex++ ] = v0;
+					result[ resultIndex++ ] = v3;
+					result[ resultIndex++ ] = v2;
+					v0 = v2;
+					v1 = v3;
+				}
+			}
+			this._triangles = result;
+		}
+		return result;
+	}
+}

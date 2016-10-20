@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 1999-2016 Peter S. Heijnen
  * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,25 +16,42 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+import TessellationPrimitive from './TessellationPrimitive';
 
 /**
- * Defines a mapping from spatial coordinates to texture coordinates.
+ * List of independent triangles. Vertices 0, 1, 2 define the first triangle;
+ * vertices 3, 4, 5 define the second triangle; then 6, 7, 8, and so on.
  *
- * @author Gerrit Meinders
- * @interface
+ * @author  Peter S. Heijnen
  */
-export default class UVMap
-{
+export default class TriangleList extends TessellationPrimitive {
+
 	/**
-	 * Get generator for 2D points on texture for the given 3D plane.
-	 *
-	 * @param {?TextureMap} textureMap Specifies texture scale.
-	 * @param {!Vector3D} normal Normal of face to map texture on.
-	 * @param {boolean} flipTexture Flip texture direction.
-	 *
-	 * @return {UVGenerator} Generator for U/V-coordinates.
+	 * Vertices that define the triangles.
+	 * @type number[]
 	 */
-	getGenerator( textureMap, normal, flipTexture ) // eslint-disable-line no-unused-vars
+	_vertices;
+
+	/**
+	 * Construct triangle list.
+	 *
+	 * @param   vertices    Vertices that define the triangles.
+	 */
+	constructor( vertices )
 	{
+		super();
+		this._vertices = vertices;
+	}
+
+	getVertices()
+	{
+		//noinspection ReturnOfCollectionOrArrayField
+		return this._vertices;
+	}
+
+	getTriangles()
+	{
+		//noinspection ReturnOfCollectionOrArrayField
+		return this._vertices;
 	}
 }

@@ -160,7 +160,7 @@ export default class Vector3D
 	static cosAngle( v1, v2 )
 	{
 		let l = v1.length() * v2.length();
-		return ( l == 0 ) ? 0 : dot( v1, v2 ) / l;
+		return ( l == 0 ) ? 0 : Vector3D.dot( v1, v2 ) / l;
 	}
 
 	/**
@@ -477,7 +477,7 @@ export default class Vector3D
 
 		if ( ( xSquared == 0 ) && ( ySquared == 0 ) && ( zSquared == 0 ) )
 		{
-			result = ZERO;
+			result = Vector3D.ZERO;
 		}
 		else
 		{
@@ -536,7 +536,7 @@ export default class Vector3D
 
 		if ( radius == 0 )
 		{
-			result = ZERO;
+			result = Vector3D.ZERO;
 		}
 		else
 		{

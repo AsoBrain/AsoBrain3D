@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 1999-2016 Peter S. Heijnen
  * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,23 +18,28 @@
  */
 
 /**
- * Defines a mapping from spatial coordinates to texture coordinates.
+ * Primitive that can be used in a {@link Tessellation}.
  *
- * @author Gerrit Meinders
+ * @author  Peter S. Heijnen
  * @interface
  */
-export default class UVMap
-{
+export default class TessellationPrimitive {
+
 	/**
-	 * Get generator for 2D points on texture for the given 3D plane.
+	 * Get vertices that define the primitive.
 	 *
-	 * @param {?TextureMap} textureMap Specifies texture scale.
-	 * @param {!Vector3D} normal Normal of face to map texture on.
-	 * @param {boolean} flipTexture Flip texture direction.
-	 *
-	 * @return {UVGenerator} Generator for U/V-coordinates.
+	 * @return {number[]} Vertices that define the primitive.
 	 */
-	getGenerator( textureMap, normal, flipTexture ) // eslint-disable-line no-unused-vars
+	getVertices()
+	{
+	}
+
+	/**
+	 * Get triangles defined by this primitive.
+	 *
+	 * @return {number[]} Triangles defined by this primitive.
+	 */
+	getTriangles()
 	{
 	}
 }

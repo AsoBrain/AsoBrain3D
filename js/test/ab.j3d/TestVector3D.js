@@ -19,11 +19,7 @@
 "use strict";
 var chai = require( 'chai' );
 const assert = chai.assert;
-const AssertionError = chai.AssertionError;
 
-const toRadians = require( '@numdata/oss/lib/com.numdata.oss/toRadians' ).default;
-
-const Matrix3D = require( '../../lib/ab.j3d/Matrix3D' ).default;
 const Vector3D = require( '../../lib/ab.j3d/Vector3D' ).default;
 
 /**
