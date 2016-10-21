@@ -31,16 +31,12 @@ export default class MathTools
 	 *
 	 * @param {number} value1 First value to compare.
 	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number); defaults to 0.001.
+	 * @param {number} [epsilon] Tolerance (always a positive number).
 	 *
 	 * @return {boolean} {@code true} if the values are within a +/- 0.001 tolerance of each other; {@code false} otherwise.
 	 */
-	static almostEqual( value1, value2, epsilon )
+	static almostEqual( value1, value2, epsilon = 0.001 )
 	{
-		if ( epsilon === undefined )
-		{
-			epsilon = 0.001;
-		}
 		const delta = value1 - value2;
 		return ( delta <= epsilon ) && ( delta >= -epsilon );
 	}
@@ -51,16 +47,12 @@ export default class MathTools
 	 *
 	 * @param {number} value1 First value to compare.
 	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number); defaults to 0.001.
+	 * @param {number} [epsilon] Tolerance (always a positive number).
 	 *
 	 * @return {boolean} <code>true</code> is {@code value1} is less than or within a +/- 0.001 tolerance of {@code value2}; {@code false} otherwise.
 	 */
-	static lessOrAlmostEqual( value1, value2, epsilon )
+	static lessOrAlmostEqual( value1, value2, epsilon = 0.001 )
 	{
-		if ( epsilon === undefined )
-		{
-			epsilon = 0.001;
-		}
 		return ( ( value1 - value2 ) <= epsilon );
 	}
 
@@ -70,16 +62,12 @@ export default class MathTools
 	 *
 	 * @param {number} value1 First value to compare.
 	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number); defaults to 0.001.
+	 * @param {number} [epsilon] Tolerance (always a positive number).
 	 *
 	 * @return {boolean} <code>true</code> is {@code value1} is greater than or within the specified tolerance of {@code value2}; {@code false} otherwise.
 	 */
-	static greaterOrAlmostEqual( value1, value2, epsilon )
+	static greaterOrAlmostEqual( value1, value2, epsilon = 0.001 )
 	{
-		if ( epsilon === undefined )
-		{
-			epsilon = 0.001;
-		}
 		return ( ( value2 - value1 ) <= epsilon );
 	}
 
@@ -89,16 +77,12 @@ export default class MathTools
 	 *
 	 * @param {number} value1 First value to compare.
 	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number); defaults to 0.001.
+	 * @param {number} [epsilon] Tolerance (always a positive number).
 	 *
 	 * @return {boolean} <code>true</code> is {@code value1} is at least the specified tolerance less than {@code value2}; {@code false} otherwise.
 	 */
-	static significantlyLessThan( value1, value2, epsilon )
+	static significantlyLessThan( value1, value2, epsilon = 0.001 )
 	{
-		if ( epsilon === undefined )
-		{
-			epsilon = 0.001;
-		}
 		return ( ( value2 - value1 ) > epsilon );
 	}
 
@@ -108,16 +92,12 @@ export default class MathTools
 	 *
 	 * @param {number} value1 First value to compare.
 	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number); defaults to 0.001.
+	 * @param {number} [epsilon] Tolerance (always a positive number).
 	 *
 	 * @return {boolean} <code>true</code> is {@code value1} is at least the specified tolerance greater than {@code value2}; {@code false} otherwise.
 	 */
-	static significantlyGreaterThan( value1, value2, epsilon )
+	static significantlyGreaterThan( value1, value2, epsilon = 0.001 )
 	{
-		if ( epsilon === undefined )
-		{
-			epsilon = 0.001;
-		}
 		return ( ( value1 - value2 ) > epsilon );
 	}
 }
