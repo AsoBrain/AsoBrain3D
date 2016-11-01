@@ -48,7 +48,7 @@ export default class UVGenerator
 
 		if ( appearance && uvMap )
 		{
-			const colorMap = appearance.getColorMap();
+			const colorMap = appearance.colorMap;
 			if ( colorMap )
 			{
 				result = uvMap.getGenerator( colorMap, normal, flipTexture );
