@@ -214,18 +214,18 @@ extends Node3D
 						 * Find face on the opposite side of this edge.
 						 */
 						Face3D symmetric = null;
-						for ( final Face3D startFace : startFaces )
+						for ( final Face3D candidate : startFaces )
 						{
-							if ( endFaces.contains( startFace ) )
+							if ( ( candidate != face ) && endFaces.contains( candidate ) )
 							{
-								symmetric = startFace;
+								symmetric = candidate;
 								break;
 							}
 						}
 
 						/*
-						 * If requested, apply only to faces with the same
-						 * material.
+						 * If a second face is found, check if the edge should
+						 * be removed.
 						 */
 						if ( symmetric != null )
 						{
