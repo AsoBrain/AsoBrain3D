@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
@@ -38,7 +36,6 @@ import org.jetbrains.annotations.*;
  * @see     <a href="http://collada.org/">COLLADA - Digital Asset and FX Exchange Schema</a>
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class ColladaWriter
 {
@@ -78,7 +75,7 @@ public class ColladaWriter
 	 * ID (value) of each image (key) to be written in the
 	 * <code>&lt;library_images&gt;</code> section.
 	 */
-	private final Map<String, String> _libraryImages;
+	private final Map<TextureMap, String> _libraryImages;
 
 	/**
 	 * Internet Media Type for COLLADA.
@@ -98,7 +95,7 @@ public class ColladaWriter
 		_idMap = new HashMap<String, Integer>();
 		_libraryGeometry = new LinkedHashMap<Node3D, String>();
 		_libraryMaterials = new LinkedHashMap<Appearance, String>();
-		_libraryImages = new LinkedHashMap<String, String>();
+		_libraryImages = new LinkedHashMap<TextureMap, String>();
 	}
 
 	/**
@@ -650,9 +647,12 @@ public class ColladaWriter
 
 					final int[] vertices;
 
-					if ( primitive instanceof TriangleFan )
+					final boolean trianglesOnly = true;
+					if ( trianglesOnly )
 					{
 						/*
+						 * TLDR; anything but triangles is a disaster for interoperability.
+						 *
 						 * There appears to be a bug in Blender's COLLADA
 						 * importer. Tested against version 2.72.
 						 *
@@ -664,21 +664,17 @@ public class ColladaWriter
 						 * incremented in the inner loop. So only the first
 						 * triangle is created (possibly multiple times).
 						 */
-						final boolean blenderBug = true;
-						if ( blenderBug )
-						{
-							tagName = "triangles";
-							vertices = primitive.getTriangles();
-							count = vertices.length / 3;
-						}
-						else
-						{
-							tagName = "trifans";
+						tagName = "triangles";
+						vertices = primitive.getTriangles();
+						count = vertices.length / 3;
+					}
+					else if ( primitive instanceof TriangleFan )
+					{
+						tagName = "trifans";
 
-							// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
-							vertices = primitive.getVertices();
-							count = vertices.length - 2;
-						}
+						// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
+						vertices = primitive.getVertices();
+						count = vertices.length - 2;
 					}
 					else if ( primitive instanceof TriangleStrip )
 					{
@@ -840,11 +836,7 @@ public class ColladaWriter
 			String diffuseSamplerID = null;
 			if ( colorMap != null )
 			{
-				final URL colorMapUrl = colorMap.getImageUrl();
-				if ( colorMapUrl != null )
-				{
-					diffuseSamplerID = writeTextureSampler( writer, colorMapUrl.toExternalForm() );
-				}
+				diffuseSamplerID = writeTextureSampler( writer, colorMap );
 			}
 
 			writer.startTag( NS_COLLADA_1_4, "technique" );
@@ -912,20 +904,20 @@ public class ColladaWriter
 	}
 
 	/**
-	 * Writes <code>newparam</code> elements needed to use the given image
-	 * and returns the SID used to reference the texture.
+	 * Writes <code>newparam</code> elements needed to use the given image and
+	 * returns the SID used to reference the texture.
 	 *
-	 * @param   writer      Writer to write to.
-	 * @param   imageUrl    Texture image URL.
+	 * @param writer Writer to write to.
+	 * @param image  Texture image.
 	 *
-	 * @return  Texture image SID.
+	 * @return Texture image SID.
 	 *
-	 * @throws  XMLException if there's a problem writing the XML document.
+	 * @throws XMLException if there's a problem writing the XML document.
 	 */
-	protected String writeTextureSampler( final XMLWriter writer, final String imageUrl )
+	protected String writeTextureSampler( final XMLWriter writer, final TextureMap image )
 		throws XMLException
 	{
-		final String imageID = getImageID( imageUrl );
+		final String imageID = getImageID( image );
 
 		final String surfaceID = allocateID();
 		writer.startTag( NS_COLLADA_1_4, "newparam" );
@@ -1027,12 +1019,12 @@ public class ColladaWriter
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_images" );
 
-		for ( final Map.Entry<String, String> entry : _libraryImages.entrySet() )
+		for ( final Map.Entry<TextureMap, String> entry : _libraryImages.entrySet() )
 		{
-			final String imageUrl = entry.getKey();
+			final TextureMap image = entry.getKey();
 			final String imageId = entry.getValue();
 
-			writeImage( writer, imageId, imageUrl );
+			writeImage( writer, imageId, image );
 		}
 
 		writer.endTag( NS_COLLADA_1_4, "library_images" );
@@ -1041,20 +1033,20 @@ public class ColladaWriter
 	/**
 	 * Writes an <code>image</code> element for an external image file.
 	 *
-	 * @param   writer      Writer to write to.
-	 * @param   imageId     Unique identifier of <code>image</code> element.
-	 * @param   imageUri    URI of image file.
+	 * @param writer  Writer to write to.
+	 * @param imageId Unique identifier of <code>image</code> element.
+	 * @param image   Texture image.
 	 *
-	 * @throws  XMLException if there's a problem writing the XML document.
+	 * @throws XMLException if there's a problem writing the XML document.
 	 */
-	protected void writeImage( final XMLWriter writer, final String imageId, final String imageUri )
-		throws XMLException
+	protected void writeImage( final XMLWriter writer, final String imageId, final TextureMap image )
+	throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "image" );
 		writer.attribute( null, "id", imageId );
 
 		writer.startTag( NS_COLLADA_1_4, "init_from" );
-		writer.text( imageUri );
+		writer.text( image.getName() );
 		writer.endTag( NS_COLLADA_1_4, "init_from" );
 
 		writer.endTag( NS_COLLADA_1_4, "image" );
@@ -1064,17 +1056,17 @@ public class ColladaWriter
 	 * Returns the ID of the image with the given URL, if an ID is known;
 	 * otherwise a new image ID is allocated.
 	 *
-	 * @param   source  URL of the image.
+	 * @param image Texture image.
 	 *
-	 * @return  Image ID for the specified image.
+	 * @return Image ID for the specified image.
 	 */
-	protected String getImageID( final String source )
+	protected String getImageID( final TextureMap image )
 	{
-		String imageID = _libraryImages.get( source );
+		String imageID = _libraryImages.get( image );
 		if ( imageID == null )
 		{
 			imageID = allocateID( "i" );
-			_libraryImages.put( source, imageID );
+			_libraryImages.put( image, imageID );
 		}
 		return imageID;
 	}
@@ -1085,7 +1077,7 @@ public class ColladaWriter
 	 *
 	 * @return  Image URLs.
 	 */
-	public Collection<String> getImages()
+	public Collection<TextureMap> getImages()
 	{
 		return _libraryImages.keySet();
 	}

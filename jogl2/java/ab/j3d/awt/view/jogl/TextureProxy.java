@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -166,6 +166,7 @@ public class TextureProxy
 	 *
 	 * @return  Texture data.
 	 */
+	@Nullable
 	public TextureData getTextureData()
 	{
 		TextureData result = null;
@@ -206,10 +207,12 @@ public class TextureProxy
 	 *
 	 * @return  Texture data.
 	 */
+	@Override
+	@Nullable
 	public TextureData call()
 		throws IOException
 	{
-		return createTextureData( _textureMap.loadImage() );
+		return createTextureData( _textureCache.loadImage( _textureMap ) );
 	}
 
 	/**

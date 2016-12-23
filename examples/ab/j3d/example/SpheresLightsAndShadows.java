@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@ package ab.j3d.example;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 
@@ -39,7 +40,7 @@ public class SpheresLightsAndShadows
 		configuration.setPerPixelLightingEnabled( true );
 		configuration.setShadowEnabled( true );
 		configuration.setShadowMultisampleEnabled( true );
-		return RenderEngineFactory.createJOGLEngine( configuration );
+		return RenderEngineFactory.createJOGLEngine( new NullTextureLibrary(), configuration );
 	}
 
 	@Override

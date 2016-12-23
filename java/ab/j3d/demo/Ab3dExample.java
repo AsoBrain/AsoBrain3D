@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@ package ab.j3d.demo;
 
 import java.awt.*;
 
+import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.java2d.*;
 import ab.j3d.view.*;
 
@@ -56,17 +57,21 @@ public class Ab3dExample
 		{
 			engine = new Java2dEngine( Color.BLACK );
 		}
-		else if ( "safe".equals( engineName ) )
+		else
 		{
-			engine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createSafeInstance() );
-		}
-		else if ( "luscious".equals( engineName ) )
-		{
-			engine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createLusciousInstance() );
-		}
-		else /* default */
-		{
-			engine = RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createDefaultInstance() );
+			final TextureLibrary textureLibrary = new ClassLoaderTextureLibrary( Ab3dExample.class.getClassLoader() );
+			if ( "safe".equals( engineName ) )
+			{
+				engine = RenderEngineFactory.createJOGLEngine( textureLibrary, JOGLConfiguration.createSafeInstance() );
+			}
+			else if ( "luscious".equals( engineName ) )
+			{
+				engine = RenderEngineFactory.createJOGLEngine( textureLibrary, JOGLConfiguration.createLusciousInstance() );
+			}
+			else /* default */
+			{
+				engine = RenderEngineFactory.createJOGLEngine( textureLibrary, JOGLConfiguration.createDefaultInstance() );
+			}
 		}
 
 		return engine;

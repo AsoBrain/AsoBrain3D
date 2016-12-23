@@ -1,14 +1,13 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful );
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -16,11 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.appearance;
-
-import java.net.*;
 
 import ab.j3d.*;
 
@@ -28,7 +24,6 @@ import ab.j3d.*;
  * This class provides some basic materials. Use them as you like or not.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class BasicAppearances
 {
@@ -188,8 +183,7 @@ public class BasicAppearances
 		transparent.setShininess( 64 );
 		TRANSPARENT = transparent; // "transparent"
 
-		final TextureMap reflectionMapTexture = getTexture( "maps/reflect-sky-bw.jpg", 0.0f, 0.0f );
-		final SingleImageCubeMap reflectionMap = ( reflectionMapTexture != null ) ? new SingleImageCubeMap( reflectionMapTexture ) : null;
+		final CubeMap reflectionMap = new CubeMap( "maps/reflect-sky-bw" );
 
 		final BasicAppearance glass = new BasicAppearance();
 		glass.setAmbientColor( new Color4f( 0.05f, 0.1f, 0.07f ) );
@@ -315,7 +309,7 @@ public class BasicAppearances
 		aluPlate.setDiffuseColor( new Color4f( 0.61f, 0.61f, 0.61f ) );
 		aluPlate.setSpecularColor( new Color4f( 0.31f, 0.31f, 0.31f ) );
 		aluPlate.setShininess( 32 );
-		aluPlate.setColorMap( getTexture( "maps/alu-plate.jpg", 0.1f, 0.1f ) );
+		aluPlate.setColorMap( new BasicTextureMap( "maps/alu-plate.jpg", 0.1f, 0.1f ) );
 		aluPlate.setReflectionMap( reflectionMap );
 		aluPlate.setReflectionMin( 0.0f );
 		aluPlate.setReflectionMax( 0.1f );
@@ -375,37 +369,5 @@ public class BasicAppearances
 		zamac.setReflectionMax( 1.0f );
 		zamac.setReflectionColor( new Color4f( 0.4f, 0.44f, 0.51f ) );
 		ZAMAC = zamac; // "zamac"
-	}
-
-	/**
-	 * Get {@link TextureMap} with resource with the given path.
-	 *
-	 * @param   imageResourcePath   Resource path for image file.
-	 * @param   physicalWidth       Physical width of image in meters.
-	 * @param   physicalHeight      Physical height of image in meters.
-	 *
-	 * @return  {@link TextureMap} for image;
-	 *          <code>null</code> if resource was not found.
-	 */
-	private static TextureMap getTexture( final String imageResourcePath, final float physicalWidth, final float physicalHeight )
-	{
-		final FileTextureMap result;
-
-		URL url = BasicAppearances.class.getResource( imageResourcePath );
-		if ( ( url == null ) && !( imageResourcePath.charAt( 0 ) == '/' ) )
-		{
-			url = BasicAppearances.class.getResource( '/' + imageResourcePath );
-		}
-
-		if ( url == null )
-		{
-			result = null;
-			System.err.println( "[Missing '" + imageResourcePath + "' resource]" );
-		}
-		else
-		{
-			result = new FileTextureMap( url, physicalWidth, physicalHeight );
-		}
-		return result;
 	}
 }

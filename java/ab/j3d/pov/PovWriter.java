@@ -1,13 +1,33 @@
+/*
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2016 Peter S. Heijnen
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package ab.j3d.pov;
 
 import java.io.*;
+
+import ab.j3d.awt.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This writer is used for POV-Ray files. It provides simple indentation and
  * line termination support.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
  */
 public class PovWriter
 	extends FilterWriter
@@ -23,6 +43,12 @@ public class PovWriter
 	private int _currentIndent = 0;
 
 	/**
+	 * Texture library used to resolve textures to files.
+	 */
+	@Nullable
+	private final TextureLibrary _textureLibrary;
+
+	/**
 	 * Indenting string.
 	 */
 	private final String _indentString;
@@ -30,28 +56,33 @@ public class PovWriter
 	/**
 	 * Constructor Writer that is able to indent.
 	 *
-	 * @param   out     Writer object to provide the underlying stream.
+	 * @param out            Writer object to provide the underlying stream.
+	 * @param textureLibrary Texture library used to resolve textures to files.
 	 */
-	public PovWriter( final Writer out )
+	public PovWriter( @NotNull final Writer out, @NotNull final TextureLibrary textureLibrary )
 	{
-		this( out, "    " );
+		this( out, textureLibrary, "    " );
 	}
 
 	/**
 	 * Constructor Writer that is able to indent.
 	 *
-	 * @param   out     Writer object to provide the underlying stream.
+	 * @param out            Writer object to provide the underlying stream.
+	 * @param textureLibrary Texture library used to resolve textures to files;
+	 *                       if {@code null} texture names are used.
+	 * @param indentString   String used for indentation.
 	 */
-	public PovWriter( final Writer out, final String indentString )
+	public PovWriter( @NotNull final Writer out, @Nullable final TextureLibrary textureLibrary, @NotNull final String indentString )
 	{
 		super( out );
-
-		if ( indentString == null )
-		{
-			throw new NullPointerException( "indentString" );
-		}
-
+		_textureLibrary = textureLibrary;
 		_indentString = indentString;
+	}
+
+	@Nullable
+	public TextureLibrary getTextureLibrary()
+	{
+		return _textureLibrary;
 	}
 
 	/**

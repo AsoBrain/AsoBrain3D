@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,15 +15,14 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
 import java.io.*;
-import java.net.*;
-import java.util.*;
 import java.util.zip.*;
 
+import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.xml.*;
 
@@ -35,7 +32,6 @@ import ab.xml.*;
  * @see     <a href="http://www.opengeospatial.org/standards/kml/">Open Geospatial Consortium KML standard</a>
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class KmzWriter
 {
@@ -50,13 +46,19 @@ public class KmzWriter
 	private final Scene _scene;
 
 	/**
+	 * Texture library.
+	 */
+	private final TextureLibrary _textureLibrary;
+
+	/**
 	 * Constructs a new instance.
 	 *
 	 * @param   scene   Scene to be written.
 	 */
-	public KmzWriter( final Scene scene )
+	public KmzWriter( final Scene scene, final TextureLibrary textureLibrary )
 	{
 		_scene = scene;
+		_textureLibrary = textureLibrary;
 	}
 
 	/**
@@ -87,34 +89,7 @@ public class KmzWriter
 
 		zipOut.putNextEntry( new ZipEntry( colladaFileName ) );
 
-		final Map<String,URL> imageFiles = new HashMap<String, URL>();
-
-		final ColladaWriter colladaWriter = new ColladaWriter( _scene )
-		{
-			@Override
-			protected void writeImage( final XMLWriter writer, final String imageId, final String imageUri )
-				throws XMLException
-			{
-				try
-				{
-					final URL imageUrl = new URL( imageUri );
-
-					final String path = imageUrl.getPath();
-					final String fileName = imageUri.substring( path.lastIndexOf( '/' ) + 1 );
-					final int dot = fileName.lastIndexOf( '.' );
-					final String extension = ( dot < 0 ) ? "" : fileName.substring( dot );
-					final String localFileName = "image-" + imageId + extension;
-
-					imageFiles.put( localFileName, imageUrl );
-
-					super.writeImage( writer, imageId, localFileName );
-				}
-				catch ( MalformedURLException e )
-				{
-					super.writeImage( writer, imageId, imageUri );
-				}
-			}
-		};
+		final ColladaWriter colladaWriter = new ColladaWriter( _scene );
 
 		try
 		{
@@ -127,30 +102,30 @@ public class KmzWriter
 
 		zipOut.closeEntry();
 
-		for ( final Map.Entry<String, URL> entry : imageFiles.entrySet() )
+		for ( final TextureMap textureMap : colladaWriter.getImages() )
 		{
-			final String localFileName = entry.getKey();
-			final URL imageURL = entry.getValue();
-
-			zipOut.putNextEntry( new ZipEntry( localFileName ) );
-
-			final byte[] buffer = new byte[ 65536 ];
-
-			final InputStream imageIn = imageURL.openStream();
-			try
+			final InputStream imageIn = _textureLibrary.openImageStream( textureMap );
+			if ( imageIn != null )
 			{
-				int read;
-				while ( ( read = imageIn.read( buffer ) ) >= 0 )
+				try
 				{
-					zipOut.write( buffer, 0, read );
+					zipOut.putNextEntry( new ZipEntry( textureMap.getName() ) );
+
+					final byte[] buffer = new byte[ 65536 ];
+
+					int read;
+					while ( ( read = imageIn.read( buffer ) ) >= 0 )
+					{
+						zipOut.write( buffer, 0, read );
+					}
+
+					zipOut.closeEntry();
+				}
+				finally
+				{
+					imageIn.close();
 				}
 			}
-			finally
-			{
-				imageIn.close();
-			}
-
-			zipOut.closeEntry();
 		}
 
 		zipOut.finish();

@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,17 +15,16 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 
 package ab.j3d.yafaray;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.xml.*;
@@ -46,7 +43,6 @@ import org.jetbrains.annotations.*;
  * </p>
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class YafaRayWriter
 {
@@ -59,6 +55,11 @@ public class YafaRayWriter
 	 * Maps appearances to YafaRay material identifiers.
 	 */
 	private final Map<Appearance, String> _appearanceMap = new HashMap<Appearance, String>();
+
+	/**
+	 * Texture library.
+	 */
+	private TextureLibrary _textureLibrary;
 
 	/**
 	 * Index used to generate unique material names.
@@ -97,12 +98,13 @@ public class YafaRayWriter
 	 *
 	 * @throws  XMLException if no {@link XMLWriter} can be created.
 	 */
-	public YafaRayWriter( final OutputStream out )
+	public YafaRayWriter( final OutputStream out, final TextureLibrary textureLibrary )
 	throws XMLException
 	{
 		final XMLWriterFactory writerFactory = XMLWriterFactory.newInstance();
 		writerFactory.setIndenting( true );
 		_writer = writerFactory.createXMLWriter( out, "UTF-8" );
+		_textureLibrary = textureLibrary;
 	}
 
 	/**
@@ -374,23 +376,9 @@ public class YafaRayWriter
 		final TextureMap colorMap = appearance.getColorMap();
 		if ( colorMap != null )
 		{
-			final URL imageUrl = colorMap.getImageUrl();
-			if ( imageUrl != null )
+			final File textureFile = _textureLibrary.getFile( colorMap );
+			if ( textureFile != null )
 			{
-				final URI imageUri;
-				try
-				{
-					imageUri = imageUrl.toURI();
-				}
-				catch ( URISyntaxException e )
-				{
-					throw new RuntimeException( e );
-				}
-
-				// FIXME: Hard-coded image URI (web server)
-				final URI imageRoot = URI.create( "http://localhost/ivenza/images/decors/" );
-				final URI relativeImage = imageRoot.relativize( imageUri );
-
 				textureName = "texture" + materialIndex;
 	/*
 	<texture name="t1">
@@ -411,8 +399,7 @@ public class YafaRayWriter
 				writer.startTag( null, "texture" );
 				writer.attribute( null, "name", textureName );
 				writeValue( "type", "image" );
-				// FIXME: Hard-coded image URI (local storage)
-				writeValue( "filename", new File( "D:/numdata/soda/Ivenza_EnterpriseWeb/webapp/images/decors", relativeImage.toString() ).toString() );
+				writeValue( "filename", textureFile.toString() );
 				writer.endTag( null, "texture" );
 			}
 		}

@@ -1,8 +1,6 @@
-/* ====================================================================
- * $Id
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -31,7 +28,6 @@ import com.sun.opengl.util.texture.*;
  * Texture proxy for a bump map.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class BumpTextureProxy
 	extends TextureProxy
@@ -53,7 +49,7 @@ public class BumpTextureProxy
 	{
 		TextureData result = null;
 
-		final BufferedImage image = _textureMap.loadImage();
+		final BufferedImage image = _textureCache.loadImage( _textureMap );
 		if ( image != null )
 		{
 			final BufferedImage normalMap = JOGLTools.createNormalMapFromBumpMap( image );

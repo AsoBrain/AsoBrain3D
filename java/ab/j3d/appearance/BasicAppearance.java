@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.appearance;
 
@@ -29,11 +27,15 @@ import org.jetbrains.annotations.*;
  * interface.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
  */
 public class BasicAppearance
 	implements Appearance
 {
+	/**
+	 * Name of the appearance.
+	 */
+	private String _name = null;
+
 	/**
 	 * Red component of ambient reflection color.
 	 */
@@ -95,13 +97,26 @@ public class BasicAppearance
 	/**
 	 * Create {@link BasicAppearance} for a solid color.
 	 *
-	 * @param   color   Color to create appearance for.
+	 * @param color Color to create appearance for.
 	 *
-	 * @return  {@link BasicAppearance}.
+	 * @return {@link BasicAppearance}.
 	 */
-	public static BasicAppearance createForColor( final Color4 color )
+	public static BasicAppearance createForColor( @NotNull final Color4 color )
 	{
-		final BasicAppearance result = new BasicAppearance();
+		return createForColor( null, color );
+	}
+
+	/**
+	 * Create {@link BasicAppearance} for a solid color.
+	 *
+	 * @param name  Name of the appearance.
+	 * @param color Color to create appearance for.
+	 *
+	 * @return {@link BasicAppearance}.
+	 */
+	public static BasicAppearance createForColor( @Nullable final String name, @NotNull final Color4 color )
+	{
+		final BasicAppearance result = new BasicAppearance( name );
 		result.setAmbientColor( color );
 		result.setDiffuseColor( color );
 		result.setSpecularColor( Color4.WHITE );
@@ -110,17 +125,33 @@ public class BasicAppearance
 	}
 
 	/**
-	 * Create {@link BasicAppearance} for a color map.
-	 *
-	 * @param   colorMap    Color map to create appearance for.
-	 *
-	 * @return  {@link BasicAppearance}.
+	 * Constructs a new appearance.
 	 */
-	public static BasicAppearance createForColorMap( final TextureMap colorMap )
+	public BasicAppearance()
 	{
-		final BasicAppearance result = createForColor( Color4.WHITE );
-		result.setColorMap( colorMap );
-		return result;
+		this( null );
+	}
+
+	/**
+	 * Constructs a new appearance.
+	 *
+	 * @param name Name of the appearance.
+	 */
+	public BasicAppearance( @Nullable final String name )
+	{
+		_name = name;
+	}
+
+	@Override
+	@Nullable
+	public String getName()
+	{
+		return _name;
+	}
+
+	public void setName( @Nullable final String name )
+	{
+		_name = name;
 	}
 
 	public Color4 getAmbientColor()

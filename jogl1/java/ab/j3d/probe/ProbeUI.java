@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,45 +15,36 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.probe;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.*;
-import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * A user interface for testing 3D capabilities.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class ProbeUI
 	extends JPanel
 {
-
-	/**
-	 * URL to directory containing this class.
-	 */
-	private static final URL PROBE_UI_URL = ProbeUI.class.getResource( "/ab/j3d/probe/" );
-
 	/**
 	 * Log used for messages related to this class.
 	 */
@@ -64,6 +54,11 @@ public class ProbeUI
 	 * View with rendered image.
 	 */
 	private final JOGLView _actual;
+
+	/**
+	 * Texture loader.
+	 */
+	private final TextureLibrary _textureLibrary = new ClassLoaderTextureLibrary( getClass().getClassLoader(), "ab/j3d/probe/" );
 
 	/**
 	 * Construct new probe UI.
@@ -96,34 +91,43 @@ public class ProbeUI
 		{
 			final JButton button = new JButton( new AbstractAction( probe.getName() )
 			{
+				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
-					final Image expectedImage = probe.getExpectedImage();
-					if ( expectedImage == null )
+					try
 					{
-						expected.setIcon( null );
-					}
-					else
-					{
-						expected.setIcon( new ImageIcon( expectedImage ) );
-					}
+						final Image expectedImage = probe.getExpectedImage();
+						if ( expectedImage == null )
+						{
+							expected.setIcon( null );
+						}
+						else
+						{
+							expected.setIcon( new ImageIcon( expectedImage ) );
+						}
 
-					if ( probe.isSupported() )
-					{
-						probe.run();
-					}
-					else
-					{
-						final int choice = JOptionPane.showConfirmDialog( ProbeUI.this, "It appears that your computer isn't capable of running this probe.\nAre you sure you want to try it anyway?", "Probe not supported", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
-						if ( choice == JOptionPane.YES_OPTION )
+						if ( probe.isSupported() )
 						{
 							probe.run();
 						}
+						else
+						{
+							final int choice = JOptionPane.showConfirmDialog( ProbeUI.this, "It appears that your computer isn't capable of running this probe.\nAre you sure you want to try it anyway?", "Probe not supported", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
+							if ( choice == JOptionPane.YES_OPTION )
+							{
+								probe.run();
+							}
+						}
+					}
+					catch ( IOException ioe )
+					{
+						JOptionPane.showMessageDialog( ProbeUI.this, "The image showing the expected result could not be loaded.", "Failed to load image of expected result", JOptionPane.ERROR_MESSAGE );
 					}
 				}
 			} );
 			SwingUtilities.invokeLater( new Runnable()
 			{
+				@Override
 				public void run()
 				{
 					button.setBackground( probe.isSupported() ? Color.GREEN : Color.YELLOW );
@@ -138,7 +142,7 @@ public class ProbeUI
 		actualContainer.setPreferredSize( new Dimension( 300, 300 ) );
 		actualContainer.setLayout( new BorderLayout() );
 
-		final RenderEngine engine = new JOGLEngine();
+		final RenderEngine engine = new JOGLEngine( _textureLibrary );
 		final Scene scene = new Scene( Scene.MM );
 		final JOGLView view = (JOGLView)engine.createView( scene );
 		actualContainer.add( view.getComponent(), BorderLayout.CENTER );
@@ -173,7 +177,7 @@ public class ProbeUI
 		_actual.dispose();
 	}
 
-	private abstract static class Probe
+	private abstract class Probe
 	{
 		private final String _name;
 
@@ -187,22 +191,8 @@ public class ProbeUI
 			return _name;
 		}
 
-		public abstract Image getExpectedImage();
-
-		protected Image getImage( final String path )
-		{
-			BufferedImage result = null;
-			try
-			{
-				result = ImageIO.read( new URL( PROBE_UI_URL, path ) );
-			}
-			catch ( IOException e )
-			{
-				System.err.println( "ImageIO.read( " + path + " ) => " + e );
-				e.printStackTrace();
-			}
-			return result;
-		}
+		public abstract Image getExpectedImage()
+		throws IOException;
 
 		public abstract boolean isSupported();
 
@@ -270,21 +260,12 @@ public class ProbeUI
 		@Override
 		protected void createScene( final Scene scene )
 		{
-			final URL textureUrl;
-			try
-			{
-				textureUrl = new URL( PROBE_UI_URL, "texture1.png" );
-			}
-			catch ( MalformedURLException e )
-			{
-				throw new AssertionError( e );
-			}
 			final BasicAppearance texture1 = new BasicAppearance();
 			texture1.setAmbientColor( Color4.WHITE );
-			texture1.setDiffuseColor( Color4.WHITE );
-			texture1.setSpecularColor( Color4.WHITE );
+			texture1.setDiffuseColor( 1, 1, 1, 0.98f );
+			texture1.setSpecularColor( Color4.BLACK );
 			texture1.setShininess( 16 );
-			texture1.setColorMap( new FileTextureMap( textureUrl, 0.001f, 0.001f ) );
+			texture1.setColorMap( new BasicTextureMap( "texture1.png", 0.001f, 0.001f ) );
 
 			final BasicAppearance green = new BasicAppearance();
 			green.setAmbientColor( Color4.GREEN );
@@ -294,6 +275,7 @@ public class ProbeUI
 
 			final Light3D light1 = new Light3D();
 			light1.setFallOff( 0.0 );
+			light1.setSpecular( 0 );
 
 			scene.addContentNode( "light", Matrix3D.getTranslation(  0.0, -4.0,  0.0 ), light1 );
 
@@ -301,7 +283,7 @@ public class ProbeUI
 			plane1.addQuad( new Vector3D( -0.5, 0.0, -0.5 ),
 			                new Vector3D( -0.5, 0.0,  0.5 ),
 			                new Vector3D(  0.5, 0.0,  0.5 ),
-			                new Vector3D(  0.5, 0.0, -0.5 ), texture1, new PlanarUVMap( scene.getUnit(), new Vector3D( -0.5, 0.0, -0.5 ), Vector3D.NEGATIVE_Y_AXIS ), false );
+			                new Vector3D(  0.5, 0.0, -0.5 ), texture1, new PlanarUVMap( scene.getUnit(), Matrix3D.IDENTITY.rotateX( Math.PI / -2 ).plus( -0.5, 0.0, -0.5 ) ), false );
 			scene.addContentNode( "plane1", Matrix3D.IDENTITY, plane1.getObject3D() );
 
 			final Object3DBuilder plane2 = new Object3DBuilder();
@@ -322,10 +304,12 @@ public class ProbeUI
 			view.setCameraControl( new MyFromToCameraControl( view, new Vector3D( 0.0, -1.5, 0.0 ), Vector3D.ZERO ) );
 		}
 
+		@Nullable
 		@Override
 		public Image getExpectedImage()
+		throws IOException
 		{
-			return getImage( "expected-texture.png" );
+			return _textureLibrary.loadImage( new BasicTextureMap( "expected-texture.png" ) );
 		}
 	}
 
@@ -387,11 +371,12 @@ public class ProbeUI
 			super.createScene( scene );
 
 			final Color4 color = new Color4f( 0xffe0c060 );
-			final BasicAppearance result = new BasicAppearance();
-			result.setAmbientColor( color );
-			result.setDiffuseColor( color );
-			result.setShininess( 16 );
-			final Appearance sphereAppearance = result;
+			final BasicAppearance sphereAppearance = new BasicAppearance();
+			sphereAppearance.setAmbientColor( color );
+			sphereAppearance.setDiffuseColor( color );
+			sphereAppearance.setSpecularColor( Color4.WHITE );
+			sphereAppearance.setShininess( 16 );
+
 			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereAppearance ) );
 			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereAppearance, true ) );
 
@@ -420,10 +405,12 @@ public class ProbeUI
 			configuration.setPerPixelLightingEnabled( false );
 		}
 
+		@Nullable
 		@Override
 		public Image getExpectedImage()
+		throws IOException
 		{
-			return getImage( "expected-lighting.png" );
+			return _textureLibrary.loadImage( new BasicTextureMap( "expected-lighting.png" ) );
 		}
 	}
 
@@ -450,27 +437,28 @@ public class ProbeUI
 			super.createScene( scene );
 
 			final Color4 color = new Color4f( 0xffe0c060 );
-			final BasicAppearance result = new BasicAppearance();
-			result.setAmbientColor( color );
-			result.setDiffuseColor( color );
-			result.setShininess( 16 );
-			final Appearance sphereAppearance = result;
+			final BasicAppearance sphereAppearance = new BasicAppearance();
+			sphereAppearance.setAmbientColor( color );
+			sphereAppearance.setDiffuseColor( color );
+			sphereAppearance.setSpecularColor( Color4.WHITE );
+			sphereAppearance.setShininess( 16 );
+
 			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereAppearance ) );
 			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereAppearance, true ) );
 
 			final Object3DBuilder twoSide1 = new Object3DBuilder();
 			twoSide1.addQuad( new Vector3D( -1.0, 0.0, -1.0 ),
 			                  new Vector3D( -1.0, 0.0,  1.0 ),
-			                  Vector3D.POSITIVE_Z_AXIS,
-			                  Vector3D.NEGATIVE_Z_AXIS, sphereAppearance, true );
-			scene.addContentNode( "two-side1", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide1.getObject3D() );
+			                  new Vector3D( 0.0, 0.0, 1.0 ),
+			                  new Vector3D( 0.0, 0.0, -1.0 ), sphereAppearance, true );
+			scene.addContentNode( "two-side1", Matrix3D.IDENTITY, twoSide1.getObject3D() );
 
 			final Object3DBuilder twoSide2 = new Object3DBuilder();
-			twoSide2.addQuad( Vector3D.NEGATIVE_Z_AXIS,
+			twoSide2.addQuad( new Vector3D( 0.0, 0.0, -1.0 ),
 			                  new Vector3D(  1.0, 0.0, -1.0 ),
 			                  new Vector3D(  1.0, 0.0,  1.0 ),
-			                  Vector3D.POSITIVE_Z_AXIS, sphereAppearance, true );
-			scene.addContentNode( "two-side2", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide2.getObject3D() );
+			                  new Vector3D( 0.0, 0.0, 1.0 ), sphereAppearance, true );
+			scene.addContentNode( "two-side2", Matrix3D.IDENTITY, twoSide2.getObject3D() );
 		}
 
 		@Override
@@ -483,10 +471,12 @@ public class ProbeUI
 			configuration.setPerPixelLightingEnabled( true );
 		}
 
+		@Nullable
 		@Override
 		public Image getExpectedImage()
+		throws IOException
 		{
-			return getImage( "expected-perPixelLighting.png" );
+			return _textureLibrary.loadImage( new BasicTextureMap( "expected-perPixelLighting.png" ) );
 		}
 	}
 
@@ -510,36 +500,39 @@ public class ProbeUI
 			scene.addContentNode( "light-1", Matrix3D.getTranslation(  4.0, -4.0,  4.0 ), light1 );
 			scene.addContentNode( "light-2", Matrix3D.getTranslation( -4.0, -4.0,  4.0 ), light2 );
 
-			final Color4 color4 = new Color4f( 0xffffffff );
-			final BasicAppearance result113 = new BasicAppearance();
-			result113.setAmbientColor( color4 );
-			result113.setDiffuseColor( color4 );
-			result113.setShininess( 16 );
-			final Appearance opaque1      = result113;
-			final Color4 color3 = new Color4f( 0xffffff00 );
-			final BasicAppearance result112 = new BasicAppearance();
-			result112.setAmbientColor( color3 );
-			result112.setDiffuseColor( color3 );
-			result112.setShininess( 16 );
-			final Appearance opaque2      = result112;
-			final Color4 color2 = new Color4f( 0x80ff0000 );
-			final BasicAppearance result111 = new BasicAppearance();
-			result111.setAmbientColor( color2 );
-			result111.setDiffuseColor( color2 );
-			result111.setShininess( 16 );
-			final Appearance transparent1 = result111;
-			final Color4 color1 = new Color4f( 0x8000ff00 );
-			final BasicAppearance result11 = new BasicAppearance();
-			result11.setAmbientColor( color1 );
-			result11.setDiffuseColor( color1 );
-			result11.setShininess( 16 );
-			final Appearance transparent2 = result11;
-			final Color4 color = new Color4f( 0x800000ff );
-			final BasicAppearance result = new BasicAppearance();
-			result.setAmbientColor( color );
-			result.setDiffuseColor( color );
-			result.setShininess( 16 );
-			final Appearance transparent3 = result;
+			final BasicAppearance opaque1 = new BasicAppearance();
+			opaque1.setAmbientColor( Color4.WHITE );
+			opaque1.setDiffuseColor( Color4.WHITE );
+			opaque1.setSpecularColor( Color4.WHITE );
+			opaque1.setShininess( 16 );
+
+			final Color4 color3 = Color4.YELLOW;
+			final BasicAppearance opaque2 = new BasicAppearance();
+			opaque2.setAmbientColor( color3 );
+			opaque2.setDiffuseColor( color3 );
+			opaque2.setSpecularColor( Color4.WHITE );
+			opaque2.setShininess( 16 );
+
+			final Color4 color2 = new Color4f( 1.0f, 0.0f, 0.0f, 0.5f );
+			final BasicAppearance transparent1 = new BasicAppearance();
+			transparent1.setAmbientColor( color2 );
+			transparent1.setDiffuseColor( color2 );
+			transparent1.setSpecularColor( Color4.WHITE );
+			transparent1.setShininess( 16 );
+
+			final Color4 color1 = new Color4f( 0.0f, 1.0f, 0.0f, 0.5f );
+			final BasicAppearance transparent2 = new BasicAppearance();
+			transparent2.setAmbientColor( color1 );
+			transparent2.setDiffuseColor( color1 );
+			transparent2.setSpecularColor( Color4.WHITE );
+			transparent2.setShininess( 16 );
+
+			final Color4 color = new Color4f( 0.0f, 0.0f, 1.0f, 0.5f );
+			final BasicAppearance transparent3 = new BasicAppearance();
+			transparent3.setAmbientColor( color );
+			transparent3.setDiffuseColor( color );
+			transparent3.setSpecularColor( Color4.WHITE );
+			transparent3.setShininess( 16 );
 
 			scene.addContentNode( "sphere-2", Matrix3D.getTranslation(  0.0, 0.0,  0.0 ), new Sphere3D( 0.5, 16, 16, transparent2 ) );
 			scene.addContentNode( "sphere-3", Matrix3D.getTranslation( -0.5, 0.0,  0.5 ), new Sphere3D( 0.5, 16, 16, opaque1 ) );
@@ -561,10 +554,12 @@ public class ProbeUI
 			configuration.setSafeOptions();
 		}
 
+		@Nullable
 		@Override
 		public Image getExpectedImage()
+		throws IOException
 		{
-			return getImage( "expected-blending.png" );
+			return _textureLibrary.loadImage( new BasicTextureMap( "expected-blending.png" ) );
 		}
 	}
 

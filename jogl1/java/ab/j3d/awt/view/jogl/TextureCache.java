@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,10 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
+import java.awt.image.*;
+import java.io.*;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -29,6 +29,7 @@ import javax.media.opengl.glu.*;
 import javax.swing.*;
 
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import com.sun.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 
@@ -36,7 +37,6 @@ import org.jetbrains.annotations.*;
  * Provides loading and caching of textures for JOGL-based rendering.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class TextureCache
 {
@@ -50,6 +50,11 @@ public class TextureCache
 	 * mapping.
 	 */
 	public static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
+
+	/**
+	 * Library providing texture images.
+	 */
+	private final TextureLibrary _textureLibrary;
 
 	/**
 	 * Cached textures, mapped by arbitrary key objects.
@@ -88,9 +93,13 @@ public class TextureCache
 
 	/**
 	 * Construct new texture cache.
+	 *
+	 * @param textureLibrary Texture library.
 	 */
-	public TextureCache()
+	public TextureCache( final TextureLibrary textureLibrary )
 	{
+		_textureLibrary = textureLibrary;
+
 		_textures = new HashMap<Object, TextureProxy>();
 		_alpha = new HashSet<Object>();
 		_executorService = Executors.newSingleThreadExecutor( new DaemonThreadFactory() );
@@ -155,11 +164,11 @@ public class TextureCache
 
 			executorService.awaitTermination( 10L, TimeUnit.SECONDS );
 		}
-		catch ( InterruptedException e )
+		catch ( final InterruptedException e )
 		{
 			e.printStackTrace();
 		}
-		catch ( SecurityException e )
+		catch ( final SecurityException e )
 		{
 			/*
 			 * Thrown when modifying threads (to shutdown the executor service)
@@ -401,6 +410,22 @@ public class TextureCache
 				}
 			}
 		} );
+	}
+
+	/**
+	 * Loads the image for the given texture map.
+	 *
+	 * @param textureMap Texture map to load.
+	 *
+	 * @return Texture map image.
+	 *
+	 * @throws IOException if an I/O error occurs while reading the image.
+	 */
+	@Nullable
+	public BufferedImage loadImage( final TextureMap textureMap )
+	throws IOException
+	{
+		return _textureLibrary.loadImage( textureMap );
 	}
 
 	/**

@@ -19,10 +19,10 @@
 package ab.j3d.pov;
 
 import java.io.*;
-import java.net.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -75,7 +75,6 @@ import org.jetbrains.annotations.*;
  * </pre>
  *
  * @author Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
  */
 public class PovTexture
 extends PovObject
@@ -102,9 +101,9 @@ extends PovObject
 	private PovVector _rgb;
 
 	/**
-	 * In case of image map, URL to the image file.
+	 * In case of image map, name of the image file.
 	 */
-	private URL _image;
+	private TextureMap _image;
 
 	/**
 	 * Ambient reflectivity factor.
@@ -306,29 +305,13 @@ extends PovObject
 	 * Creates a texture map using the specified map.
 	 *
 	 * @param name  Name of the texture.
-	 * @param image URL to image map to use.
+	 * @param image Image map to use.
 	 */
-	public PovTexture( final String name, final URL image )
+	public PovTexture( final String name, final TextureMap image )
 	{
 		this();
 		_name = name;
 		_image = image;
-	}
-
-	/**
-	 * Creates a texture that can be specified as you would specify a texture in
-	 * pov-ray yourself. Nothing will be generated, only the string specified as
-	 * free will be printed. Use this constructor with care, since you can
-	 * introduce errors in the scene.
-	 *
-	 * @param name Name of the texture.
-	 * @param free Definition of the texture.
-	 */
-	public PovTexture( final String name, final String free )
-	{
-		this();
-		_name = name;
-		_free = free;
 	}
 
 	/**
@@ -345,12 +328,6 @@ extends PovObject
 		final Color4 diffuseColor = appearance.getDiffuseColor();
 		final Color4 specularColor = appearance.getSpecularColor();
 
-		final TextureMap colorMap = appearance.getColorMap();
-		if ( ( colorMap != null ) && !"file".equals( colorMap.getImageUrl().getProtocol() ) )
-		{
-			throw new IllegalArgumentException( "Color map image must have 'file' URL for POV-Ray, but is '" + colorMap.getImageUrl() + "')." );
-		}
-
 		final int shininess = appearance.getShininess();
 		final CubeMap reflectionMap = appearance.getReflectionMap();
 
@@ -362,7 +339,7 @@ extends PovObject
 		final double ambientBlue = (double)ambientColor.getBlueFloat() / diffuseBlue;
 
 		_rgb = new PovVector( diffuseRed, diffuseGreen, diffuseBlue );
-		_image = ( colorMap != null ) ? colorMap.getImageUrl() : null;
+		_image = appearance.getColorMap();
 		setAmbient( new PovVector( ambientRed, ambientGreen, ambientBlue ) );
 		setDiffuse( 1.0 );
 		setTransmit( (double)( 1.0f - diffuseColor.getAlphaFloat() ) );
@@ -757,27 +734,24 @@ extends PovObject
 	/**
 	 * Get file extension of image.
 	 *
+	 * @param file Image file.
+	 *
 	 * @return File extension of image; <code>null</code> if image is undefined or
 	 *         has no extension.
 	 */
-	private String getImageType()
+	@Nullable
+	private String getImageType( @NotNull final File file )
 	{
 		String result = null;
 
-		final URL image = _image;
-		if ( image != null )
+		final String filename = file.getName();
+		final int dot = filename.lastIndexOf( '.' );
+		if ( dot >= 0 )
 		{
-			final String path = image.getPath();
-			final String filename = path.substring( path.lastIndexOf( '/' ) + 1 );
-
-			final int dot = filename.lastIndexOf( '.' );
-			if ( dot >= 0 )
+			result = filename.substring( dot + 1 );
+			if ( "jpg".equals( result ) )
 			{
-				result = filename.substring( dot + 1 );
-				if ( "jpg".equals( result ) )
-				{
-					result = "jpeg";
-				}
+				result = "jpeg";
 			}
 		}
 
@@ -817,8 +791,8 @@ extends PovObject
 	/**
 	 * When the scene is writing to a scene, it can call this method to have the
 	 * texture be declared, so it only has to be specified once. When actually
-	 * using this texture, only the reference code has to be printed. This not only
-	 * saves filesize, it also improves readability.
+	 * using this texture, only the reference code has to be printed. This not
+	 * only saves file size, it also improves readability.
 	 *
 	 * @param out IndentingWriter to use for writing.
 	 *
@@ -913,8 +887,8 @@ extends PovObject
 	}
 
 	/**
-	 * This helper method writes the actual texture including all its properties to
-	 * the specified destination.
+	 * This helper method writes the actual texture including all its properties
+	 * to the specified destination.
 	 *
 	 * @param out IndentingWriter to use for writing.
 	 *
@@ -933,27 +907,17 @@ extends PovObject
 
 		final PovVector rgb = _rgb;
 
-		final URL image = _image;
+		final TextureMap image = _image;
 		if ( image != null )
 		{
-			if ( !"file".equals( image.getProtocol() ) )
+			final TextureLibrary textureLibrary = out.getTextureLibrary();
+			final File imageFile = textureLibrary == null ? new File( image.getName() ) : textureLibrary.getFile( image );
+			if ( imageFile == null )
 			{
-				throw new IOException( "POV-Ray can only access files, not URLs with protocol " + image.getProtocol() );
+				throw new IOException( "Failed to resolve texture '" + image.getName() + "' to a local file." );
 			}
 
-			final String imageType = getImageType();
-
-			final URI imageURI;
-			try
-			{
-				imageURI = image.toURI();
-			}
-			catch ( URISyntaxException e )
-			{
-				throw new IOException( "Unable to convert URL to URI: " + e, e );
-			}
-
-			final File imageFile = new File( imageURI );
+			final String imageType = getImageType( imageFile );
 
 			out.write( "image_map" );
 			out.newLine();
@@ -967,7 +931,7 @@ extends PovObject
 				out.write( ' ' );
 			}
 			out.write( '"' );
-			out.write( imageFile.getPath() );
+			out.write( imageFile.toString() );
 			out.write( '"' );
 			out.newLine();
 
@@ -1268,15 +1232,17 @@ extends PovObject
 		out.writeln( "{" );
 		out.indentIn();
 
-		final URL image = _image;
+		final TextureMap image = _image;
 		if ( image != null )
 		{
-			if ( !"file".equals( image.getProtocol() ) )
+			final TextureLibrary textureLibrary = out.getTextureLibrary();
+			final File imageFile = textureLibrary == null ? new File( image.getName() ) : textureLibrary.getFile( image );
+			if ( imageFile == null )
 			{
-				throw new IOException( "POV-Ray can only access files, not URLs with protocol " + image.getProtocol() );
+				throw new IOException( "Failed to resolve texture '" + image.getName() + "' to a local file." );
 			}
 
-			final String imageType = getImageType();
+			final String imageType = getImageType( imageFile );
 
 			out.write( "image_map  { " );
 			if ( imageType != null )
@@ -1285,7 +1251,7 @@ extends PovObject
 				out.write( ' ' );
 			}
 			out.write( '"' );
-			out.write( image.getPath() );
+			out.write( imageFile.toString() );
 			out.write( "\" }" );
 			out.newLine();
 

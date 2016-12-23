@@ -1,8 +1,6 @@
-/* ====================================================================
- * $Id
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
+import java.io.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 
@@ -33,7 +31,6 @@ import org.jetbrains.annotations.*;
  * asynchronously.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class CubeTextureProxy
 	extends TextureProxy
@@ -43,48 +40,12 @@ public class CubeTextureProxy
 	 */
 	private CubeMap _cubeMap;
 
-	/** Texture data for the negative-X side of the cube. */ private volatile TextureData _x1Data = null;
-	/** Texture data for the negative-Y side of the cube. */ private volatile TextureData _y1Data = null;
-	/** Texture data for the negative-Z side of the cube. */ private volatile TextureData _z1Data = null;
-	/** Texture data for the positive-X side of the cube. */ private volatile TextureData _x2Data = null;
-	/** Texture data for the positive-Y side of the cube. */ private volatile TextureData _y2Data = null;
-	/** Texture data for the positive-Z side of the cube. */ private volatile TextureData _z2Data = null;
-
-	/**
-	 * Specifies the orientation/layout of a cube map represented as a single
-	 * texture. Constants are named after the side that the center square faces.
-	 */
-	public enum CubeMapOrientation
-	{
-		/**
-		 * Rotated 90 degrees around X-axis, compared to {@link #POSITIVE_Z}.
-		 * <pre>
-		 *     +---+
-		 *     | Z+|
-		 * +---+---+---+---+
-		 * | X-| Y-| X+| Y+|
-		 * +---+---+---+---+
-		 *     | Z-|
-		 *     +---+
-		 * </pre>
-		 */
-		NEGATIVE_Y ,
-
-		/**
-		 * Default orientation for OpenGL, meaning that no rotation of
-		 * sub-images is required using this layout.
-		 * <pre>
-		 *     +---+
-		 *     | Y+|
-		 * +---+---+---+---+
-		 * | X-| Z+| X+| Z-|
-		 * +---+---+---+---+
-		 *     | Y-|
-		 *     +---+
-		 * </pre>
-		 */
-		POSITIVE_Z
-	}
+	/** Texture data for the OpenGL -X side of the cube. */ private volatile TextureData _x1Data = null;
+	/** Texture data for the OpenGL -Y side of the cube. */ private volatile TextureData _y1Data = null;
+	/** Texture data for the OpenGL -Z side of the cube. */ private volatile TextureData _z1Data = null;
+	/** Texture data for the OpenGL +X side of the cube. */ private volatile TextureData _x2Data = null;
+	/** Texture data for the OpenGL +Y side of the cube. */ private volatile TextureData _y2Data = null;
+	/** Texture data for the OpenGL +Z side of the cube. */ private volatile TextureData _z2Data = null;
 
 	/**
 	 * Constructs a new cube map texture from a single image.
@@ -100,17 +61,19 @@ public class CubeTextureProxy
 
 	@Override
 	public TextureData call()
+	throws IOException
 	{
 		final CubeMap cubeMap = _cubeMap;
 
-		_x1Data = createTextureData( cubeMap.getImageX1() );
-		_y1Data = createTextureData( cubeMap.getImageY1() );
-		_z1Data = createTextureData( cubeMap.getImageZ1() );
-		_x2Data = createTextureData( cubeMap.getImageX2() );
-		_y2Data = createTextureData( cubeMap.getImageY2() );
-		_z2Data = createTextureData( cubeMap.getImageZ2() );
+		// NOTE: In OpenGL, the Y-axis is bottom/top and the Z-axis is front/back.
+		_x1Data = createTextureData( _textureCache.loadImage( cubeMap.getImageLeft() ) );
+		_y1Data = createTextureData( _textureCache.loadImage( cubeMap.getImageBottom() ) );
+		_z1Data = createTextureData( _textureCache.loadImage( cubeMap.getImageFront() ) );
+		_x2Data = createTextureData( _textureCache.loadImage( cubeMap.getImageRight() ) );
+		_y2Data = createTextureData( _textureCache.loadImage( cubeMap.getImageTop() ) );
+		_z2Data = createTextureData( _textureCache.loadImage( cubeMap.getImageRear() ) );
 
-		// Not really applicable for a cube map.
+		// Not applicable for a cube map.
 		return null;
 	}
 

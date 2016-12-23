@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,12 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.demo;
 
 import java.awt.*;
-import java.net.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -36,7 +33,6 @@ import org.jetbrains.annotations.*;
  * This shows the 'www.ASOBRAiN.com' animation.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class AsoBrainAnimation
 {
@@ -76,12 +72,12 @@ public class AsoBrainAnimation
 	{
 		final Scene scene = new Scene( Scene.M );
 
-		final BasicAppearance backgroundMaterial = new BasicAppearance();
+		final BasicAppearance backgroundMaterial = new BasicAppearance( "alu-plate" );
 		backgroundMaterial.setAmbientColor( new Color4f( 0.31f, 0.31f, 0.31f ) );
 		backgroundMaterial.setDiffuseColor( new Color4f( 0.41f, 0.41f, 0.41f ) );
 		backgroundMaterial.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		backgroundMaterial.setShininess( 16 );
-		backgroundMaterial.setColorMap( getTexture( "maps/alu-plate.jpg", 0.1f, 0.1f ) );
+		backgroundMaterial.setColorMap( new BasicTextureMap( "maps/alu-plate.jpg", 0.1f, 0.1f ) );
 
 		final BoxUVMap backgroundMap = new BoxUVMap( 0.04 );
 		final Rotator plateRotator = new Rotator( Matrix3D.getTranslation( 10.0, 0.0, 0.0 ), new Vector3D( 500.0, 500.0, 0.0 ), 0.0, -1.0 / 50.0 );
@@ -123,13 +119,13 @@ public class AsoBrainAnimation
 		scene.addContentNode( "flashLight", Matrix3D.getTranslation( 0.0, 0.0, 10.0 ), flashLight );
 
 		final Font font1 = new Font( "sansserif", Font.PLAIN, 1 );
-		final BasicAppearance wwwComColor = new BasicAppearance(); // blue
+		final BasicAppearance wwwComColor = new BasicAppearance( "blue" );
 		wwwComColor.setAmbientColor( new Color4f( 0.5f, 0.5f, 1.0f ) );
 		wwwComColor.setDiffuseColor( new Color4f( 0.5f, 0.5f, 1.0f ) );
 		wwwComColor.setSpecularColor( new Color4f( 0.2f, 0.2f, 0.2f ) );
 		wwwComColor.setShininess( 16 );
 
-		final BasicAppearance asoBrainColor = new BasicAppearance(); // white
+		final BasicAppearance asoBrainColor = new BasicAppearance( "white" );
 		asoBrainColor.setAmbientColor( new Color4f( 0.9f, 1.0f, 1.0f ) );
 		asoBrainColor.setDiffuseColor( new Color4f( 0.9f, 1.0f, 1.0f ) );
 		asoBrainColor.setSpecularColor( new Color4f( 1.0f, 1.0f, 1.0f ) );
@@ -152,33 +148,6 @@ public class AsoBrainAnimation
 		scene.addContentNode( ".com", Matrix3D.getTranslation( 1.8, 0.0, 1.0 ), comBuilder.getObject3D() );
 
 		return scene;
-	}
-
-	/**
-	 * Get {@link TextureMap} with resource with the given path.
-	 *
-	 * @param   imageResourcePath   Resource path for image file.
-	 * @param   physicalWidth       Physical width of image in meters.
-	 * @param   physicalHeight      Physical height of image in meters.
-	 *
-	 * @return  {@link TextureMap} for image;
-	 *          <code>null</code> if resource was not found.
-	 */
-	private static TextureMap getTexture( final String imageResourcePath, final float physicalWidth, final float physicalHeight )
-	{
-		final FileTextureMap result;
-
-		final URL url = AsoBrainAnimation.class.getClassLoader().getResource( imageResourcePath );
-		if ( url == null )
-		{
-			result = null;
-			System.err.println( "[Missing '" + imageResourcePath + "' resource]" );
-		}
-		else
-		{
-			result = new FileTextureMap( url, physicalWidth, physicalHeight );
-		}
-		return result;
 	}
 
 	/**

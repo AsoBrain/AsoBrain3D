@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -273,7 +273,7 @@ public class Ab3dsFile
 			final TextureMap textureMap = materialChunk.getTexture1Map();
 			if ( textureMap != null )
 			{
-				appearance.setColorMap( new FileTextureMap( new File( context, textureMap.getPath() ) ) );
+				appearance.setColorMap( new BasicTextureMap( textureMap.getPath() ) );
 			}
 
 			materials.put( name, appearance );
@@ -318,7 +318,7 @@ public class Ab3dsFile
 			final TextureMap textureMap = materialChunk.getTexture1Map();
 			if ( textureMap != null )
 			{
-				appearance.setColorMap( new ResourceLoaderTextureMap( resourceLoader, textureMap.getPath() ) );
+				appearance.setColorMap( new BasicTextureMap( textureMap.getPath() ) );
 			}
 
 			materials.put( name, appearance );

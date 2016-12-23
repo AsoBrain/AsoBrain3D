@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -210,7 +210,7 @@ public class JOGLRenderer
 	/**
 	 * Environment map for {@link #renderEnvironment()}.
 	 */
-	private SingleImageCubeMap _environmentMap = null;
+	private CubeMap _environmentMap = null;
 
 	/**
 	 * Construct new JOGL renderer.
@@ -945,24 +945,11 @@ public class JOGLRenderer
 	 */
 	private void renderEnvironment()
 	{
-		SingleImageCubeMap environmentMap = _environmentMap;
+		CubeMap environmentMap = _environmentMap;
 		if ( environmentMap == null )
 		{
-			final Class<?> clazz = getClass();
-			final ClassLoader classLoader = clazz.getClassLoader();
-			final URL skyImageUrl = classLoader.getResource( "images/maps/reflect-sky-bw.jpg" );
-			if ( skyImageUrl != null )
-			{
-				try
-				{
-					environmentMap = new SingleImageCubeMap( new BufferedImageTextureMap( ImageIO.read( skyImageUrl ) ) );
-					_environmentMap = environmentMap;
-				}
-				catch ( IOException e )
-				{
-					e.printStackTrace();
-				}
-			}
+			environmentMap = new CubeMap( "maps/reflect-sky-bw" );
+			_environmentMap = environmentMap;
 		}
 
 		final Texture cubeMapTexture = _textureCache.getCubeMap( environmentMap );
@@ -1469,7 +1456,7 @@ public class JOGLRenderer
 						 */
 						gl.glMatrixMode( GL.GL_TEXTURE );
 						gl.glPushMatrix();
-						JOGLTools.glMultMatrixd( gl, _viewToSceneRotation );
+						JOGLTools.glMultMatrixd( gl, _viewToSceneRotation.rotateX( Math.PI / -2 ) );
 						gl.glMatrixMode( GL.GL_MODELVIEW );
 
 						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
@@ -1689,7 +1676,7 @@ public class JOGLRenderer
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			// FIXME: Backface culling doesn't work on vertices. Do it ourselves? (Shader?)
+			// FIXME: Backface culling doesn't work on lines. Do it ourselves? (Shader?)
 			final boolean backfaceCulling = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
 
 			final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.OUTLINES );

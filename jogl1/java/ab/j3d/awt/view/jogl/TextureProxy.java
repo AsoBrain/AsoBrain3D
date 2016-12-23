@@ -1,8 +1,6 @@
-/* ====================================================================
- *  $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -42,7 +39,6 @@ import org.jetbrains.annotations.*;
  * {@link #setTextureData(Future)}.
  *
  * @author  G. Meinders
- * @version $Revision$ $Date$
  */
 public class TextureProxy
 	implements Callable<TextureData>
@@ -171,6 +167,7 @@ public class TextureProxy
 	 *
 	 * @return  Texture data.
 	 */
+	@Nullable
 	public TextureData getTextureData()
 	{
 		TextureData result = null;
@@ -211,10 +208,12 @@ public class TextureProxy
 	 *
 	 * @return  Texture data.
 	 */
+	@Override
+	@Nullable
 	public TextureData call()
 		throws IOException
 	{
-		return createTextureData( _textureMap.loadImage() );
+		return createTextureData( _textureCache.loadImage( _textureMap ) );
 	}
 
 	/**

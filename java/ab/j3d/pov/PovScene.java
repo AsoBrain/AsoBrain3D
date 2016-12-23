@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,13 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
 import java.io.*;
 import java.util.*;
 
+import ab.j3d.awt.view.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -31,7 +30,6 @@ import org.jetbrains.annotations.*;
  * FIXME   Improve geometry declaration (could be done in one class)
  *
  * @author  Sjoerd Bouwman
- * @version $Revision$ $Date$
  */
 public class PovScene
 {
@@ -117,15 +115,17 @@ public class PovScene
 	 * Get indenting writer from the specified writer. If the specified writer
 	 * is already an {@link PovWriter}, it will be returned as-is.
 	 *
-	 * @param   out     Writer to use for output.
+	 * @param out            Writer to use for output.
+	 * @param textureLibrary Texture library used to resolve textures to files;
+	 *                       if {@code null} texture names are used.
 	 *
-	 * @return  Indenting writer (may be the same as <code>out</code>).
+	 * @return Indenting writer (may be the same as <code>out</code>).
 	 *
-	 * @throws  NullPointerException if <code>out</code> is <code>null</code>.
+	 * @throws NullPointerException if <code>out</code> is <code>null</code>.
 	 */
-	static PovWriter getPovWriter( @NotNull final Writer out )
+	static PovWriter getPovWriter( @NotNull final Writer out, @Nullable final TextureLibrary textureLibrary )
 	{
-		return ( out instanceof PovWriter ) ? (PovWriter)out : new PovWriter( out, "\t" );
+		return ( out instanceof PovWriter ) ? (PovWriter)out : new PovWriter( out, textureLibrary, "\t" );
 	}
 
 	/**
@@ -438,15 +438,17 @@ public class PovScene
 	/**
 	 * Saves the current scene as a .pov file.
 	 *
-	 * @param   file    File or directory to write scene to.
- 	 *
-	 * @return  File that was written (different from <code>file</code> if
-	 *          it was set to <code>null</code> or a directory(.
+	 * @param file           File or directory to write scene to.
+	 * @param textureLibrary Texture library used to resolve textures to files;
+	 *                       if {@code null} texture names are used.
 	 *
-	 * @throws  IOException if the file could not be written.
+	 * @return File that was written (different from <code>file</code> if it was
+	 * set to <code>null</code> or a directory).
+	 *
+	 * @throws IOException if the file could not be written.
 	 */
 	@Nullable
-	public File write( final File file )
+	public File write( final File file, @Nullable final TextureLibrary textureLibrary )
 		throws IOException
 	{
 		File result;
@@ -473,7 +475,7 @@ public class PovScene
 			final FileWriter writer = new FileWriter( result );
 			try
 			{
-				write( writer );
+				write( writer, textureLibrary );
 			}
 			finally
 			{
@@ -495,15 +497,29 @@ public class PovScene
 	/**
 	 * Saves the current scene as a .pov file.
 	 *
-	 * @param   out     Writer to use for output.
+	 * @param out            Writer to use for output.
+	 * @param textureLibrary Texture library used to resolve textures to files;
+	 *                       if {@code null} texture names are used.
 	 *
-	 * @throws  IOException when writing failed.
+	 * @throws IOException when writing failed.
 	 */
-	public void write( final Writer out )
-		throws IOException
+	public void write( @NotNull final Writer out, @Nullable final TextureLibrary textureLibrary )
+	throws IOException
 	{
-		final PovWriter iw = getPovWriter( out );
+		write( getPovWriter( out, textureLibrary ) );
+	}
 
+
+	/**
+	 * Saves the current scene as a .pov file.
+	 *
+	 * @param out Writer to use for output.
+	 *
+	 * @throws IOException when writing failed.
+	 */
+	public void write( @NotNull final PovWriter out )
+	throws IOException
+	{
 		/*
 		 * Make sure, all geometry is sorted alfabetically.
 		 */
@@ -512,17 +528,17 @@ public class PovScene
 
 		//System.out.println( "WRITING POV FILE" );
 
-		writeFileHeader( iw );
-		writeAtmosphericEffects( iw );
-		writeGlobalSettings( iw );
-		writeCameras( iw, geometry );
-		writeLights( iw, geometry );
-		writeTextureDefs( iw );
-		writeDeclaredShapes( iw );
-		writeGeometry( iw, geometry );
+		writeFileHeader( out );
+		writeAtmosphericEffects( out );
+		writeGlobalSettings( out );
+		writeCameras( out, geometry );
+		writeLights( out, geometry );
+		writeTextureDefs( out );
+		writeDeclaredShapes( out );
+		writeGeometry( out, geometry );
 	}
 
-	protected static void writeFileHeader( final PovWriter out )
+	protected static void writeFileHeader( @NotNull final PovWriter out )
 		throws IOException
 	{
 		//out.writeln( "#version unofficial MegaPov 0.7;" );
@@ -533,7 +549,7 @@ public class PovScene
 		out.newLine();
 	}
 
-	protected void writeAtmosphericEffects( final PovWriter out )
+	protected void writeAtmosphericEffects( @NotNull final PovWriter out )
 		throws IOException
 	{
 		if ( _background != null )
@@ -549,7 +565,7 @@ public class PovScene
 		}
 	}
 
-	protected void writeGlobalSettings( final PovWriter out )
+	protected void writeGlobalSettings( @NotNull final PovWriter out )
 		throws IOException
 	{
 		out.writeln( "global_settings" );
@@ -602,7 +618,7 @@ public class PovScene
 		out.newLine();
 	}
 
-	protected static void writeCameras( final PovWriter out, final PovGeometry[] geometry )
+	protected static void writeCameras( @NotNull final PovWriter out, @NotNull final PovGeometry[] geometry )
 		throws IOException
 	{
 		for ( final PovGeometry geom : geometry )
@@ -615,7 +631,7 @@ public class PovScene
 		}
 	}
 
-	protected static void writeLights( final PovWriter out, final PovGeometry[] geometry )
+	protected static void writeLights( @NotNull final PovWriter out, @NotNull final PovGeometry[] geometry )
 		throws IOException
 	{
 		for ( final PovGeometry geom : geometry )
@@ -635,7 +651,7 @@ public class PovScene
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected void writeTextureDefs( final PovWriter out )
+	protected void writeTextureDefs( @NotNull final PovWriter out )
 		throws IOException
 	{
 		final Map<String,PovTexture> textures = _textures;
@@ -661,7 +677,7 @@ public class PovScene
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected void writeDeclaredShapes( final PovWriter out )
+	protected void writeDeclaredShapes( @NotNull final PovWriter out )
 		throws IOException
 	{
 		final Map<String,PovGeometry> declaredShapes = _declaredShapes;
@@ -694,7 +710,7 @@ public class PovScene
 		}
 	}
 
-	protected static void writeGeometry( final PovWriter out, final PovGeometry[] geometry )
+	protected static void writeGeometry( @NotNull final PovWriter out, @Nullable final PovGeometry[] geometry )
 		throws IOException
 	{
 		if ( ( geometry != null ) && ( geometry.length > 0 ) )

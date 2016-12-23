@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,6 @@ package ab.j3d.view;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.net.*;
 import java.util.List;
 import java.util.*;
 import javax.swing.*;
@@ -39,15 +37,40 @@ import ab.j3d.view.control.planar.*;
  *
  * @author Peter S. Heijnen
  */
-public class RenderEngineExample
+public abstract class RenderEngineExample
 {
 	/**
-	 * Construct example application.
-	 *
-	 * @param renderEngine Render engine used to create example.
+	 * Texture library.
 	 */
-	protected RenderEngineExample( final RenderEngine renderEngine )
+	private final TextureLibrary _textureLibrary;
+
+	/**
+	 * Construct example application.
+	 */
+	protected RenderEngineExample()
 	{
+		_textureLibrary = new ClassLoaderTextureLibrary( getClass().getClassLoader() );
+	}
+
+	protected TextureLibrary getTextureLibrary()
+	{
+		return _textureLibrary;
+	}
+
+	/**
+	 * Returns the render engine to use.
+	 *
+	 * @return Render engine.
+	 */
+	protected abstract RenderEngine createRenderEngine();
+
+	/**
+	 * Runs the example.
+	 */
+	public void run()
+	{
+		final RenderEngine renderEngine = createRenderEngine();
+
 		final double unit = Scene.MM;
 
 		final Scene scene = new Scene( unit );
@@ -79,7 +102,7 @@ public class RenderEngineExample
 		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
 		final BasicAppearance sphereAppearance = BasicAppearance.createForColor( new Color4f( 0.0f, 1.0f, 1.0f, 0.75f ) );
-		sphereAppearance.setReflectionMap( new SingleImageCubeMap( getResource( "maps/reflect-sky-bw.jpg" ) ) );
+		sphereAppearance.setReflectionMap( new CubeMap( "maps/reflect-sky-bw" ) );
 		sphereAppearance.setReflectionMin( 0.2f );
 		sphereAppearance.setReflectionMax( 0.8f );
 		final Object3D sphere = new Sphere3D( 0.1 / unit, 20, 20, sphereAppearance );
@@ -113,7 +136,7 @@ public class RenderEngineExample
 		viewPanel.add( View3DPanel.createToolBar( view, Locale.ENGLISH ), BorderLayout.NORTH );
 
 		final JFrame frame = new JFrame( renderEngine.getClass() + " example" );
-		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
 		frame.setContentPane( viewPanel );
 		final Toolkit toolkit = frame.getToolkit();
 		frame.setSize( 800, 600 );
@@ -715,56 +738,7 @@ public class RenderEngineExample
 		result.setDiffuseColor( Color4.WHITE );
 		result.setSpecularColor( new Color4f( 0.2f, 0.2f, 0.2f ) );
 		result.setShininess( 32 );
-		result.setColorMap( new FileTextureMap( getResource( "decors/" + texture + ".jpg" ), 1.0f, 1.0f ) );
+		result.setColorMap( new BasicTextureMap( "decors/" + texture + ".jpg", 1.0f, 1.0f ) );
 		return result;
 	}
-
-	/**
-	 * Get resource URL.
-	 *
-	 * @param path Resource path.
-	 *
-	 * @return Resource URL.
-	 */
-	private static URL getResource( final String path )
-	{
-		final Class<?> clazz = RenderEngineExample.class;
-
-		URL result = clazz.getResource( path );
-
-		/* fall back to absolute/relative resource path */
-		if ( result == null )
-		{
-			result = clazz.getResource( ( path.charAt( 0 ) != '/' ) ? '/' + path : path.substring( 1 ) );
-		}
-
-		/* fall back to file system */
-		if ( result == null )
-		{
-			try
-			{
-				final File file = new File( path );
-				if ( file.exists() )
-				{
-					result = file.toURI().toURL();
-				}
-			}
-			catch ( SecurityException ignored )
-			{
-				/* ignore sandbox error */
-			}
-			catch ( MalformedURLException e )
-			{
-				/* ignore malformed path error */
-			}
-
-		}
-
-		if ( result == null )
-		{
-			throw new RuntimeException( "Resource not found: " + path );
-		}
-		return result;
-	}
-
 }

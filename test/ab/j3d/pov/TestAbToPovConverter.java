@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@ import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import junit.framework.*;
@@ -56,7 +57,7 @@ extends TestCase
 		final PovScene povScene = converter.convert( scene );
 
 		final StringWriter stringWriter = new StringWriter();
-		final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
+		final PovWriter povWriter = PovScene.getPovWriter( stringWriter, new ClassLoaderTextureLibrary( ClassLoader.getSystemClassLoader(), "." ) );
 		povScene.write( povWriter );
 		final String povScript = stringWriter.toString();
 
@@ -1121,28 +1122,6 @@ extends TestCase
 	}
 
 	/**
-	 * Write the whole test scene to a POV-Ray file.
-	 *
-	 * @throws IOException if the scene could not be written.
-	 */
-	public static void writeToFile()
-	throws IOException
-	{
-		final AbPovTestModel testModel = new AbPovTestModel();
-		final Scene scene = testModel.getScene();
-
-		final View3D view = testModel.getView();
-		final Matrix3D view2scene = view.getView2Scene();
-		final Component viewComponent = view.getComponent();
-		final double aspectRatio = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
-
-		final AbToPovConverter converter = new AbToPovConverter();
-		final PovScene povScene = converter.convert( scene );
-		povScene.add( new PovCamera( view.getLabel(), view2scene, Math.toDegrees( view.getFieldOfView() ), aspectRatio ) );
-		povScene.write( new File( "test.pov" ) );
-	}
-
-	/**
 	 * Asserts that the given mesh matches the given list of triangles.
 	 *
 	 * @param expected Vertex coordinates of the expected triangles.
@@ -1244,7 +1223,7 @@ extends TestCase
 	{
 		final String actual;
 		final StringWriter stringWriter = new StringWriter();
-		final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
+		final PovWriter povWriter = PovScene.getPovWriter( stringWriter, new ClassLoaderTextureLibrary( ClassLoader.getSystemClassLoader(), "." ) );
 		povObject.write( povWriter );
 		actual = stringWriter.toString();
 		return actual;

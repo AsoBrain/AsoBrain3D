@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.java3d;
 
@@ -26,6 +24,7 @@ import javax.vecmath.*;
 import javax.vecmath.Vector3f;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
@@ -64,19 +63,35 @@ import org.jetbrains.annotations.*;
  * @see     Java3dTools
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class Shape3DBuilder
 {
 	/**
+	 * Texture library.
+	 */
+	private TextureLibrary _textureLibrary;
+
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param textureLibrary Texture library.
+	 */
+	public Shape3DBuilder( final TextureLibrary textureLibrary )
+	{
+		_textureLibrary = textureLibrary;
+	}
+
+	/**
 	 * Create a Java 3D {@link BranchGroup} containing a content graph by
 	 * converting {@link Object3D} instances.
 	 *
-	 * @param   objectNodes Collection of nodes to create the branch group from.
+	 * @param objectNodes    Collection of nodes to create the branch group
+	 *                       from.
+	 * @param textureLibrary Texture library.
 	 *
-	 * @return  {@link BranchGroup} containing the created content graph.
+	 * @return {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Collection<Node3DPath> objectNodes )
+	public static BranchGroup createBranchGroup( final Collection<Node3DPath> objectNodes, final TextureLibrary textureLibrary )
 	{
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -84,7 +99,7 @@ public class Shape3DBuilder
 
 		if ( ( objectNodes != null ) && !objectNodes.isEmpty() )
 		{
-			final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
+			final Shape3DBuilder shapeBuilder = new Shape3DBuilder( textureLibrary );
 
 			for ( final Node3DPath path : objectNodes )
 			{
@@ -130,14 +145,15 @@ public class Shape3DBuilder
 	 * Create a Java 3D {@link BranchGroup} containing a content graph by
 	 * converting an {@link Object3D} instance using this builder.
 	 *
-	 * @param   object2branch       Transform to apply to vertices.
-	 * @param   object3d    Object3D to convert.
+	 * @param object2branch  Transform to apply to vertices.
+	 * @param object3d       Object3D to convert.
+	 * @param textureLibrary Texture library.
 	 *
-	 * @return  {@link BranchGroup} containing the created content graph.
+	 * @return {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Matrix3D object2branch, final Object3D object3d )
+	public static BranchGroup createBranchGroup( final Matrix3D object2branch, final Object3D object3d, final TextureLibrary textureLibrary )
 	{
-		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
+		final Shape3DBuilder shapeBuilder = new Shape3DBuilder( textureLibrary );
 
 		for ( final FaceGroup faceGroup : object3d.getFaceGroups() )
 		{
@@ -448,15 +464,6 @@ public class Shape3DBuilder
 	}
 
 	/**
-	 * Construct builder.
-	 *
-	 * Please read the class comment for usage instructions.
-	 */
-	Shape3DBuilder()
-	{
-	}
-
-	/**
 	 * Build shapes. This will build the {@link Shape3D} objects from the
 	 * geometry data collected in the {@link AppearanceGroup}s, and add
 	 * them to a supplied {@link BranchGroup} node.
@@ -506,7 +513,7 @@ public class Shape3DBuilder
 			if ( result == null )
 			{
 				final Java3dTools tools = Java3dTools.getInstance();
-				final Appearance appearance = tools.getAppearance( abAppearance, 1.0f, hasBackface );
+				final Appearance appearance = tools.getAppearance( _textureLibrary, abAppearance, 1.0f, hasBackface );
 
 				result = new AppearanceGroup( abAppearance, hasBackface, appearance );
 				appearanceGroups.add( result );
@@ -515,5 +522,4 @@ public class Shape3DBuilder
 
 		return result;
 	}
-
 }

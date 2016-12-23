@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,6 @@ import ab.j3d.view.*;
  * This is a sample application for the {@link ObjLoader} class.
  *
  * @author Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class ObjLoaderApp
 {
@@ -55,9 +54,9 @@ public class ObjLoaderApp
 		//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
 
 		//Or load from directory
-		final ResourceLoader loader = new URLResourceLoader( new File( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/HiFi" ) );
+		final ResourceLoader loader = new URLResourceLoader( new File( System.getProperty( "user.home" ) + "/soda/ivenza/Ivenza_Platform/models/HiFi" ) );
 
-		final Object3D object3d = ObjLoader.load( transform, loader, "tv06.obj" );
+		final Object3D object3d = ObjLoader.load( transform, loader, "tv06.obj.gz" );
 		object3d.smooth( 30.0, 5.0, false );
 
 		final Bounds3D bounds = object3d.getOrientedBoundingBox();
@@ -87,7 +86,7 @@ public class ObjLoaderApp
 		light2.setFallOff( 0.0 );
 		scene.addContentNode( "light-2", Matrix3D.getTranslation( -10.0, 10.0, 10.0 ), light2 );
 
-		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() /*JOGLConfiguration.createLusciousInstance()*/ );
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new ResourceLoaderTextureLibrary( loader ), JOGLConfiguration.createDefaultInstance() );
 
 		final View3D view = renderEngine.createView( scene );
 		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );

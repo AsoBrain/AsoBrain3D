@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,6 @@
  */
 package ab.j3d.model;
 
-import java.net.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -52,7 +51,7 @@ extends TestCase
 		final BasicAppearance appearance = new BasicAppearance();
 		appearance.setDiffuseColor( Color4.WHITE );
 		appearance.setSpecularColor( Color4.WHITE );
-		appearance.setColorMap( new FileTextureMap( new URL( "file:test" ), 123.0f, 456.0f ) );
+		appearance.setColorMap( new BasicTextureMap( "test", 123.0f, 456.0f ) );
 
 		final UVMap uvMap = new BoxUVMap( Scene.MM );
 

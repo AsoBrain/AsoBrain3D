@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,12 +28,10 @@ import ab.j3d.view.*;
 public class JOGLEngineExample
 	extends RenderEngineExample
 {
-	/**
-	 * Construct new JOGLModelExample.
-	 */
-	public JOGLEngineExample()
+	@Override
+	protected RenderEngine createRenderEngine()
 	{
-		super( RenderEngineFactory.createJOGLEngine( JOGLConfiguration.createLusciousInstance() ) );
+		return RenderEngineFactory.createJOGLEngine( getTextureLibrary(), JOGLConfiguration.createLusciousInstance() );
 	}
 
 	/**
@@ -43,6 +41,6 @@ public class JOGLEngineExample
 	 */
 	public static void main( final String[] args )
 	{
-		new JOGLEngineExample();
+		new JOGLEngineExample().run();
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -81,7 +81,7 @@ class AbPovTestApp
 		/*
 		 * Create Java3D-engine.
 		 */
-		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new ClassLoaderTextureLibrary( ClassLoader.getSystemClassLoader(), "." ), new JOGLConfiguration() );
 
 		/*
 		 * Create and display view.

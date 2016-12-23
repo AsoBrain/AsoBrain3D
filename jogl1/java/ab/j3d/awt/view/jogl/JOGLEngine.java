@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@ package ab.j3d.awt.view.jogl;
 
 import javax.media.opengl.*;
 
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 
@@ -53,21 +54,24 @@ public class JOGLEngine
 
 	/**
 	 * Construct new JOGL render engine.
+	 *
+	 * @param textureLibrary Texture library.
 	 */
-	public JOGLEngine()
+	public JOGLEngine( final TextureLibrary textureLibrary )
 	{
-		this( new JOGLConfiguration() );
+		this( textureLibrary, new JOGLConfiguration() );
 	}
 
 	/**
 	 * Construct new JOGL render engine.
 	 *
-	 * @param   configuration   Configuration settings.
+	 * @param textureLibrary Texture library.
+	 * @param configuration  Configuration settings.
 	 */
-	public JOGLEngine( final JOGLConfiguration configuration )
+	public JOGLEngine( final TextureLibrary textureLibrary, final JOGLConfiguration configuration )
 	{
 		_configuration = configuration;
-		_textureCache = new TextureCache();
+		_textureCache = new TextureCache( textureLibrary );
 	}
 
 	public void dispose()

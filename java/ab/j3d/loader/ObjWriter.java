@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +19,13 @@
 package ab.j3d.loader;
 
 import java.io.*;
-import java.net.*;
 import java.text.*;
 import java.util.*;
 import java.util.zip.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
@@ -77,9 +77,23 @@ public class ObjWriter
 	private final HashList<Vector3D> _normals = new HashList<Vector3D>();
 
 	/**
+	 * Texture library to use.
+	 */
+	private final TextureLibrary _textureLibrary;
+
+	/**
 	 * Converter for image URLs used in MTL files.
 	 */
-	private UrlConverter _imageUrlConverter = new DefaultUrlConverter();
+	private TextureNameConverter _textureNameConverter = new DefaultTextureNameConverter();
+
+	/**
+	 * Whether reflection maps are written in MTL files.
+	 *
+	 * <p>Cube maps are used for reflections, and they are not well supported
+	 * in common rendering software. E.g. Blender imports the OBJ using only the
+	 * final 'cube_top' texture as if it were a longitude/latitude map.
+	 */
+	private boolean _reflectionMapsEnabled = false;
 
 	/**
 	 * Whether unsupported reflection properties are written as comments.
@@ -93,13 +107,44 @@ public class ObjWriter
 	private boolean _writeObjectsAsGroups = false;
 
 	/**
+	 * Constructs a new instance.
+	 *
+	 * @param textureLibrary Texture library used to include textures in the
+	 *                       output (ZIP only).
+	 */
+	public ObjWriter( @Nullable final TextureLibrary textureLibrary )
+	{
+		_textureLibrary = textureLibrary;
+	}
+
+	/**
 	 * Returns the converter for image URLs used in MTL files.
 	 *
 	 * @return URL converter.
 	 */
-	public UrlConverter getImageUrlConverter()
+	public TextureNameConverter getTextureNameConverter()
 	{
-		return _imageUrlConverter;
+		return _textureNameConverter;
+	}
+
+	/**
+	 * Sets the converter for image URLs used in MTL files.
+	 *
+	 * @param textureNameConverter URL converter to set.
+	 */
+	public void setTextureNameConverter( final TextureNameConverter textureNameConverter )
+	{
+		_textureNameConverter = textureNameConverter;
+	}
+
+	public boolean isReflectionMapsEnabled()
+	{
+		return _reflectionMapsEnabled;
+	}
+
+	public void setReflectionMapsEnabled( final boolean reflectionMapsEnabled )
+	{
+		_reflectionMapsEnabled = reflectionMapsEnabled;
 	}
 
 	/**
@@ -145,16 +190,6 @@ public class ObjWriter
 	public void setWriteObjectsAsGroups( final boolean writeObjectsAsGroups )
 	{
 		_writeObjectsAsGroups = writeObjectsAsGroups;
-	}
-
-	/**
-	 * Sets the converter for image URLs used in MTL files.
-	 *
-	 * @param imageUrlConverter URL converter to set.
-	 */
-	public void setImageUrlConverter( final UrlConverter imageUrlConverter )
-	{
-		_imageUrlConverter = imageUrlConverter;
 	}
 
 	/**
@@ -225,21 +260,7 @@ public class ObjWriter
 	 * @param out             Stream to write to.
 	 * @param node            Node to be written.
 	 * @param name            Name for the OBJ/MTL files (without extension).
-	 *
-	 * @throws IOException if an I/O error occurs.
-	 */
-	public void writeZIP( final OutputStream out, final Node3D node, final String name )
-	throws IOException
-	{
-		writeZIP( out, node, name, false );
-	}
-
-	/**
-	 * Writes a ZIP file with an OBJ and MTL file for the given node.
-	 *
-	 * @param out             Stream to write to.
-	 * @param node            Node to be written.
-	 * @param name            Name for the OBJ/MTL files (without extension).
+	 * @param includeTextures Whether to include texture images in the ZIP.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
@@ -262,41 +283,62 @@ public class ObjWriter
 		writeMTL( zipOut, appearances );
 		zipOut.closeEntry();
 
-		if ( includeTextures )
+		if ( includeTextures && _textureLibrary != null )
 		{
 			final byte[] buffer = new byte[ 10000 ];
 
-			final Set<URL> textures = new LinkedHashSet<URL>();
+			final Set<TextureMap> textures = new LinkedHashSet<TextureMap>();
 			for ( final Appearance appearance : _appearanceNames.keySet() )
 			{
 				final TextureMap colorMap = appearance.getColorMap();
 				if ( colorMap != null )
 				{
-					final URL imageUrl = colorMap.getImageUrl();
-					textures.add( imageUrl );
+					textures.add( colorMap );
 				}
+
+				final TextureMap bumpMap = appearance.getBumpMap();
+				if ( bumpMap != null )
+				{
+					textures.add( bumpMap );
+				}
+
+/*
+				final CubeMap reflectionMap = appearance.getReflectionMap();
+				if ( reflectionMap != null )
+				{
+					textures.add( reflectionMap.getImageLeft() );
+					textures.add( reflectionMap.getImageFront() );
+					textures.add( reflectionMap.getImageBottom() );
+					textures.add( reflectionMap.getImageRight() );
+					textures.add( reflectionMap.getImageRear() );
+					textures.add( reflectionMap.getImageTop() );
+				}
+*/
 			}
 
-			for ( final URL imageUrl : textures )
+			for ( final TextureMap texture : textures )
 			{
-				final String imageName = _imageUrlConverter.convertToString( imageUrl );
-				zipOut.putNextEntry( new ZipEntry( imageName ) );
-
-				final InputStream imageIn = imageUrl.openStream();
-				try
+				final InputStream imageIn = _textureLibrary.openImageStream( texture );
+				if ( imageIn != null )
 				{
-					int bytesRead;
-					while ( ( bytesRead = imageIn.read( buffer ) ) != -1 )
+					final String imageName = _textureNameConverter.convert( texture.getName() );
+					zipOut.putNextEntry( new ZipEntry( imageName ) );
+
+					try
 					{
-						zipOut.write( buffer, 0, bytesRead );
+						int bytesRead;
+						while ( ( bytesRead = imageIn.read( buffer ) ) != -1 )
+						{
+							zipOut.write( buffer, 0, bytesRead );
+						}
 					}
-				}
-				finally
-				{
-					imageIn.close();
-				}
+					finally
+					{
+						imageIn.close();
+					}
 
-				zipOut.closeEntry();
+					zipOut.closeEntry();
+				}
 			}
 		}
 
@@ -451,30 +493,49 @@ public class ObjWriter
 		final TextureMap colorMap = appearance.getColorMap();
 		if ( colorMap != null )
 		{
-			final URL colorMapImageUrl = colorMap.getImageUrl();
-			if ( colorMapImageUrl != null )
-			{
-				out.append( "map_Kd " );
-				out.append( _imageUrlConverter.convertToString( colorMapImageUrl ) );
-				out.append( "\r\n" );
-			}
+			out.append( "map_Kd " );
+			out.append( _textureNameConverter.convert( colorMap.getName() ) );
+			out.append( "\r\n" );
 		}
 
 		final TextureMap bumpMap = appearance.getBumpMap();
 		if ( bumpMap != null )
 		{
-			final URL bumpMapImageUrl = bumpMap.getImageUrl();
-			if ( bumpMapImageUrl != null )
-			{
-				out.append( "bump " );
-				out.append( _imageUrlConverter.convertToString( bumpMapImageUrl ) );
-				out.append( "\r\n" );
-			}
+			out.append( "bump " );
+			out.append( _textureNameConverter.convert( bumpMap.getName() ) );
+			out.append( "\r\n" );
 		}
 
 		final CubeMap reflectionMap = appearance.getReflectionMap();
 		if ( reflectionMap != null )
 		{
+			if ( isReflectionMapsEnabled() )
+			{
+				out.append( "refl -type cube_left " );
+				out.append( _textureNameConverter.convert( reflectionMap.getImageLeft().getName() ) );
+				out.append( "\r\n" );
+
+				out.append( "refl -type cube_front " );
+				out.append( _textureNameConverter.convert( reflectionMap.getImageFront().getName() ) );
+				out.append( "\r\n" );
+
+				out.append( "refl -type cube_bottom " );
+				out.append( _textureNameConverter.convert( reflectionMap.getImageBottom().getName() ) );
+				out.append( "\r\n" );
+
+				out.append( "refl -type cube_right " );
+				out.append( _textureNameConverter.convert( reflectionMap.getImageRight().getName() ) );
+				out.append( "\r\n" );
+
+				out.append( "refl -type cube_back " );
+				out.append( _textureNameConverter.convert( reflectionMap.getImageRear().getName() ) );
+				out.append( "\r\n" );
+
+				out.append( "refl -type cube_top " );
+				out.append( _textureNameConverter.convert( reflectionMap.getImageTop().getName() ) );
+				out.append( "\r\n" );
+			}
+
 			if ( isReflectionCommentsEnabled() )
 			{
 				// NOTE: MTL doesn't support minimum/maximum reflectivity. Write as comment instead.

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -89,7 +89,7 @@ public class Max3DSFileApp
 			Scene.addLegacyLights( scene );
 			maxFile.addMeshesToScene( scene );
 
-			final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() ); // new Color( 51 , 77 , 102 ) );
+			final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new DebugTextureLibrary(), new JOGLConfiguration() ); // new Color( 51 , 77 , 102 ) );
 
 			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );

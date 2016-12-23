@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@ import javax.swing.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -57,6 +58,11 @@ implements Runnable
 	 * Whether to render specular highlights.
 	 */
 	private static final boolean SPECULAR_HIGHLIGHTS = true;
+
+	/**
+	 * Texture library.
+	 */
+	private final ClassLoaderTextureLibrary _textureLibrary = new ClassLoaderTextureLibrary();
 
 	/**
 	 * Run application.
@@ -137,7 +143,7 @@ implements Runnable
 								povScene.add( new PovCamera( cameraName, view2Scene, cameraAngle, aspectRatio ) );
 								povScene.setBackground( new PovVector( 0.5f, 0.5f, 0.5f ) );
 
-								publish( PovRenderer.render( povScene, null, null, size.width, size.height, null, new PrintWriter( System.err ), true ) );
+								publish( PovRenderer.render( povScene, null, null, size.width, size.height, null, new PrintWriter( System.err ), true, _textureLibrary ) );
 							}
 							Thread.sleep( 1000L );
 						}
@@ -177,10 +183,10 @@ implements Runnable
 		frame.setVisible( true );
 	}
 
-	private static Collection<RenderEngine> createRenderEngines( final Scene scene )
+	private Collection<RenderEngine> createRenderEngines( final Scene scene )
 	{
 		final Collection<RenderEngine> models = new ArrayList<RenderEngine>();
-		models.add( RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() ) );
+		models.add( RenderEngineFactory.createJOGLEngine( _textureLibrary, new JOGLConfiguration() ) );
 //		models.add( new Java3dEngine( scene, Color.GRAY ) );
 		return models;
 	}
@@ -242,7 +248,7 @@ implements Runnable
 
 			shiny.setShininess( 64 );
 			shinier.setShininess( 128 );
-			final FileTextureMap colorMap = new FileTextureMap( ViewComparison.class.getResource( "decors/CB.jpg" ) );
+			final TextureMap colorMap = new BasicTextureMap( "decors/CB.jpg" );
 			textured.setColorMap( colorMap );
 			textured2.setColorMap( colorMap );
 			textured3.setColorMap( colorMap );

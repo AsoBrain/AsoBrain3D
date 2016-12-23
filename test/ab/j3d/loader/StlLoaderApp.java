@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,7 +68,7 @@ public class StlLoaderApp
 		Scene.addLegacyLights( scene );
 		scene.addContentNode( "object", Matrix3D.IDENTITY, object3D );
 
-		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new DebugTextureLibrary(), new JOGLConfiguration() );
 
 		final View3D view = renderEngine.createView( scene );
 		view.setBackground( Background.createGradient( new Color4f( 0x67, 0x79, 0x88 ), new Color4f( 0x17, 0x47, 0x72 ), new Color4f( 0x85, 0xA4, 0xBF ), new Color4f( 0x9F, 0xB8, 0xCE ) ) );

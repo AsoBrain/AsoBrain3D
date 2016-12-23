@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.java3d;
 
@@ -34,12 +32,12 @@ import javax.vecmath.Vector3f;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 
 /**
  * Utility methods for Java 3D support.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class Java3dTools
 {
@@ -190,7 +188,7 @@ public class Java3dTools
 
 			final Shape3D child = new Shape3D( quadArray, appearance );
 
-			/*@FIXME dirty hack to prevent "Intesection not allowed" exceptions when checking for mouseclicks */
+			// this apparently prevents "Intesection not allowed" exceptions when checking for mouse clicks
 			child.setPickable( false );
 
 			group.addChild( child );
@@ -292,13 +290,14 @@ public class Java3dTools
 	/**
 	 * Get Java3D {@link Appearance} for the specified material.
 	 *
-	 * @param   abAppearance    Material to get the {@link Appearance} for.
-	 * @param   opacity         Opacity to apply to the returned appearance.
-	 * @param   hasBackFace     Flag to indicate if face has a back-face.
+	 * @param textureLibrary Texture library to use.
+	 * @param abAppearance   Material to get the {@link Appearance} for.
+	 * @param opacity        Opacity to apply to the returned appearance.
+	 * @param hasBackFace    Flag to indicate if face has a back-face.
 	 *
-	 * @return  Appearance for the specified texture spec.
+	 * @return Appearance for the specified texture spec.
 	 */
-	public Appearance getAppearance( final ab.j3d.appearance.Appearance abAppearance, final float opacity, final boolean hasBackFace )
+	public Appearance getAppearance( final TextureLibrary textureLibrary, final ab.j3d.appearance.Appearance abAppearance, final float opacity, final boolean hasBackFace )
 	{
 		final Color4 abAmbient = abAppearance.getAmbientColor();
 		final Color4 abDiffuse = abAppearance.getDiffuseColor();
@@ -317,7 +316,7 @@ public class Java3dTools
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
 		appearance.setMaterial( j3dMaterial );
 
-		final Texture texture = getColorMapTexture( abAppearance );
+		final Texture texture = getColorMapTexture( textureLibrary, abAppearance );
 		if ( texture != null )
 		{
 			appearance.setTexture( texture );
@@ -354,13 +353,13 @@ public class Java3dTools
 	/**
 	 * Get {@link Texture} for color map of the specified material.
 	 *
-	 * @param   material    Material to get color map texture for.
+	 * @param textureLibrary Texture library to use.
+	 * @param material       Material to get color map texture for.
 	 *
-	 * @return  Texture for the specified name;
-	 *          <code>null</code> if the name was empty or no map by the
-	 *          given name was found.
+	 * @return Texture for the specified name; <code>null</code> if the name was
+	 * empty or no map by the given name was found.
 	 */
-	public Texture getColorMapTexture( final ab.j3d.appearance.Appearance material )
+	public Texture getColorMapTexture( final TextureLibrary textureLibrary, final ab.j3d.appearance.Appearance material )
 	{
 		Texture result = null;
 
@@ -379,7 +378,7 @@ public class Java3dTools
 					Image image = null;
 					try
 					{
-						image = colorMap.loadImage();
+						image = textureLibrary.loadImage( colorMap );
 					}
 					catch ( IOException e )
 					{

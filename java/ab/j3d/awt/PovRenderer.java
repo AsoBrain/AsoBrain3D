@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ import java.util.*;
 import javax.imageio.*;
 import javax.swing.*;
 
+import ab.j3d.awt.view.*;
 import ab.j3d.pov.*;
 import org.jetbrains.annotations.*;
 
@@ -39,23 +40,25 @@ public class PovRenderer
 	 * Renders the scene to an image with the specified size and returns the
 	 * resulting image.
 	 *
-	 * @param povScene      Scene to render.
-	 * @param povFile       File or directory to write POV file to (optional).
-	 * @param imageFile     Target image file ({@code null} use stdout on unix).
-	 * @param width         The width of the rendered image.
-	 * @param height        The height of the rendered image.
-	 * @param progressModel Progress model.
-	 * @param log           Log to write console output to.
-	 * @param background    Whether or not to draw a background.
+	 * @param povScene       Scene to render.
+	 * @param povFile        File or directory to write POV file to (optional).
+	 * @param imageFile      Target image file ({@code null} use stdout on
+	 *                       unix).
+	 * @param width          The width of the rendered image.
+	 * @param height         The height of the rendered image.
+	 * @param progressModel  Progress model.
+	 * @param log            Log to write console output to.
+	 * @param background     Whether or not to draw a background.
+	 * @param textureLibrary Texture library used to resolve textures to files.
 	 *
 	 * @return Rendered image.
 	 *
 	 * @throws IOException if there was a problem reading/writing data.
 	 */
-	public static BufferedImage render( final PovScene povScene, final File povFile, final File imageFile, final int width, final int height, final BoundedRangeModel progressModel, final PrintWriter log, final boolean background )
+	public static BufferedImage render( final PovScene povScene, final File povFile, final File imageFile, final int width, final int height, final BoundedRangeModel progressModel, final PrintWriter log, final boolean background, final TextureLibrary textureLibrary )
 	throws IOException
 	{
-		final File actualPovFile = povScene.write( povFile );
+		final File actualPovFile = povScene.write( povFile, textureLibrary );
 
 		final File actualImageFile;
 		if ( imageFile == null )

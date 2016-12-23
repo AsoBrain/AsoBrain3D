@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@ package ab.j3d.view;
 
 import java.lang.reflect.*;
 
+import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.java2d.*;
 
 /**
@@ -40,18 +41,19 @@ public class RenderEngineFactory
 	 * Creates a render engine based on JOGL. If no such engine is not available,
 	 * an exception is thrown.
 	 *
+	 * @param textureLibrary Texture library.
 	 * @param configuration Configuration settings.
 	 *
 	 * @return JOGL render engine.
 	 */
-	public static RenderEngine createJOGLEngine( final JOGLConfiguration configuration )
+	public static RenderEngine createJOGLEngine( final TextureLibrary textureLibrary, final JOGLConfiguration configuration )
 	{
 		try
 		{
 			final Class<?> clazz = Class.forName( "ab.j3d.awt.view.jogl.JOGLEngine" );
 			final Class<? extends RenderEngine> engineClass = clazz.asSubclass( RenderEngine.class );
-			final Constructor<? extends RenderEngine> constructor = engineClass.getConstructor( JOGLConfiguration.class );
-			return constructor.newInstance( configuration );
+			final Constructor<? extends RenderEngine> constructor = engineClass.getConstructor( TextureLibrary.class, JOGLConfiguration.class );
+			return constructor.newInstance( textureLibrary, configuration );
 		}
 		catch ( ClassNotFoundException ignored )
 		{

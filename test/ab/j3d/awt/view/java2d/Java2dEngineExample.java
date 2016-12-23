@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.java2d;
 
@@ -25,18 +23,15 @@ import ab.j3d.view.*;
 /**
  * Example program for the Java 2D render engine implementation.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class Java2dEngineExample
-	extends RenderEngineExample
+extends RenderEngineExample
 {
-	/**
-	 * Construct application.
-	 */
-	private Java2dEngineExample()
+	@Override
+	protected RenderEngine createRenderEngine()
 	{
-		super( new Java2dEngine() );
+		return new Java2dEngine();
 	}
 
 	/**
@@ -46,7 +41,6 @@ public class Java2dEngineExample
 	 */
 	public static void main( final String[] args )
 	{
-		new Java2dEngineExample();
+		new Java2dEngineExample().run();
 	}
-
 }

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,8 @@
  */
 package ab.j3d.awt.view.jogl;
 
+import java.awt.image.*;
+import java.io.*;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -27,6 +29,7 @@ import javax.media.opengl.glu.*;
 import javax.swing.*;
 
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import com.jogamp.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 
@@ -47,6 +50,11 @@ public class TextureCache
 	 * mapping.
 	 */
 	public static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
+
+	/**
+	 * Library providing texture images.
+	 */
+	private final TextureLibrary _textureLibrary;
 
 	/**
 	 * Cached textures, mapped by arbitrary key objects.
@@ -90,9 +98,13 @@ public class TextureCache
 
 	/**
 	 * Construct new texture cache.
+	 *
+	 * @param textureLibrary Texture library.
 	 */
-	public TextureCache()
+	public TextureCache( final TextureLibrary textureLibrary )
 	{
+		_textureLibrary = textureLibrary;
+
 		_textures = new HashMap<Object, TextureProxy>();
 		_alpha = new HashSet<Object>();
 		_executorService = Executors.newSingleThreadExecutor( new DaemonThreadFactory() );
@@ -448,6 +460,22 @@ public class TextureCache
 	public boolean isAsynchronous()
 	{
 		return _asynchronous;
+	}
+
+	/**
+	 * Loads the image for the given texture map.
+	 *
+	 * @param textureMap Texture map to load.
+	 *
+	 * @return Texture map image.
+	 *
+	 * @throws IOException if an I/O error occurs while reading the image.
+	 */
+	@Nullable
+	public BufferedImage loadImage( final TextureMap textureMap )
+	throws IOException
+	{
+		return _textureLibrary.loadImage( textureMap );
 	}
 
 	/**

@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.loader;
 
@@ -97,7 +95,6 @@ import org.jetbrains.annotations.*;
  * </ul>
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class ObjLoader
 {
@@ -126,28 +123,28 @@ public class ObjLoader
 		final Map<String,Appearance> materials = new HashMap<String,Appearance>();
 
 		/* default material (also used for unknown materials) */
-		materials.put( "default"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
+		materials.put( "default"      , BasicAppearance.createForColor( "default"      , new Color4f( 0xFFC0C0C0 ) ) );
 
 		/* basic colors */
-		materials.put( "black"        , BasicAppearance.createForColor( new Color4f( 0xFF000000 ) ) );
-		materials.put( "blue"         , BasicAppearance.createForColor( new Color4f( 0xFF0000FF ) ) );
-		materials.put( "green"        , BasicAppearance.createForColor( new Color4f( 0xFF00FF00 ) ) );
-		materials.put( "cyan"         , BasicAppearance.createForColor( new Color4f( 0xFF00FFFF ) ) );
-		materials.put( "red"          , BasicAppearance.createForColor( new Color4f( 0xFFFF0000 ) ) );
-		materials.put( "magenta"      , BasicAppearance.createForColor( new Color4f( 0xFFFF00FF ) ) );
-		materials.put( "yellow"       , BasicAppearance.createForColor( new Color4f( 0xFFFFFF00 ) ) );
-		materials.put( "white"        , BasicAppearance.createForColor( new Color4f( 0xFFFCFCFC ) ) );
+		materials.put( "black"        , BasicAppearance.createForColor( "black"        , new Color4f( 0xFF000000 ) ) );
+		materials.put( "blue"         , BasicAppearance.createForColor( "blue"         , new Color4f( 0xFF0000FF ) ) );
+		materials.put( "green"        , BasicAppearance.createForColor( "green"        , new Color4f( 0xFF00FF00 ) ) );
+		materials.put( "cyan"         , BasicAppearance.createForColor( "cyan"         , new Color4f( 0xFF00FFFF ) ) );
+		materials.put( "red"          , BasicAppearance.createForColor( "red"          , new Color4f( 0xFFFF0000 ) ) );
+		materials.put( "magenta"      , BasicAppearance.createForColor( "magenta"      , new Color4f( 0xFFFF00FF ) ) );
+		materials.put( "yellow"       , BasicAppearance.createForColor( "yellow"       , new Color4f( 0xFFFFFF00 ) ) );
+		materials.put( "white"        , BasicAppearance.createForColor( "white"        , new Color4f( 0xFFFCFCFC ) ) );
 
 		/* materials */
-//		materials.put( "brass"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E010 ) ) );
-//		materials.put( "glass"        , BasicAppearance.createForColor( new Color4f( 0x20102010 ) ) );
-//		materials.put( "light"        , BasicAppearance.createForColor( new Color4f( 0x80FFFF20 ) ) );
-//		materials.put( "metal"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E0F8 ) ) );
-//		materials.put( "plastic"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
-//		materials.put( "porcelin"     , BasicAppearance.createForColor( new Color4f( 0xFFFFFFFF ) ) );
-//		materials.put( "steel"        , BasicAppearance.createForColor( new Color4f( 0xFFD0D0E8 ) ) );
-//		materials.put( "white_plastic", BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
-//		materials.put( "wood"         , BasicAppearance.createForColor( new Color4f( 0xFF603820 ) ) );
+//		materials.put( "brass"        , BasicAppearance.createForColor( "brass"        , new Color4f( 0xFFE0E010 ) ) );
+//		materials.put( "glass"        , BasicAppearance.createForColor( "glass"        , new Color4f( 0x20102010 ) ) );
+//		materials.put( "light"        , BasicAppearance.createForColor( "light"        , new Color4f( 0x80FFFF20 ) ) );
+//		materials.put( "metal"        , BasicAppearance.createForColor( "metal"        , new Color4f( 0xFFE0E0F8 ) ) );
+//		materials.put( "plastic"      , BasicAppearance.createForColor( "plastic"      , new Color4f( 0xFFC0C0C0 ) ) );
+//		materials.put( "porcelin"     , BasicAppearance.createForColor( "porcelin"     , new Color4f( 0xFFFFFFFF ) ) );
+//		materials.put( "steel"        , BasicAppearance.createForColor( "steel"        , new Color4f( 0xFFD0D0E8 ) ) );
+//		materials.put( "white_plastic", BasicAppearance.createForColor( "white_plastic", new Color4f( 0xFFC0C0C0 ) ) );
+//		materials.put( "wood"         , BasicAppearance.createForColor( "wood"         , new Color4f( 0xFF603820 ) ) );
 
 		DEFAULT_MATERIALS = Collections.unmodifiableMap( materials );
 	}
@@ -921,7 +918,7 @@ public class ObjLoader
 								{
 									throw new IOException( "Malformed texture entry: " + line );
 								}
-								tempMaterial.setColorMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ], 1.0f, 1.0f ) );
+								tempMaterial.setColorMap( new BasicTextureMap( tokens[ 1 ], 1.0f, 1.0f ) );
 							}
 							else if ( "bump".equals( name ) )
 							{
@@ -929,7 +926,7 @@ public class ObjLoader
 								{
 									throw new IOException( "Malformed texture entry: " + line );
 								}
-								tempMaterial.setBumpMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ] ) );
+								tempMaterial.setBumpMap( new BasicTextureMap( tokens[ 1 ] ) );
 							}
 							//Non-recognized, non-# (comment) line.
 							//@TODO: Implement following MTL Lines:

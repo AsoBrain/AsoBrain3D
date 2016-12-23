@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -128,6 +128,7 @@ public class ViewerApplet
 		{
 			SwingUtilities.invokeLater( new Runnable()
 			{
+				@Override
 				public void run()
 				{
 					_view.dispose();
@@ -188,16 +189,19 @@ public class ViewerApplet
 			}
 		}
 
+		@Override
 		public void addView( final View3D view )
 		{
 			_views.add( view );
 		}
 
+		@Override
 		public void removeView( final View3D view )
 		{
 			_views.remove( view );
 		}
 
+		@Override
 		public void paintOverlay( final View3D view, final Graphics2D g )
 		{
 			if ( _status != null )
@@ -224,6 +228,7 @@ public class ViewerApplet
 	private class InitOnEDT
 		implements Runnable
 	{
+		@Override
 		public void run()
 		{
 			final Locale locale = getLocale();
@@ -233,6 +238,10 @@ public class ViewerApplet
 			{
 				final Scene scene = _scene;
 				final RenderEngine engine;
+
+				final String textures = getParameter( "textures" );
+				System.out.println( "Loading textures from: " + textures );
+				final TextureLibrary textureLibrary = new URLTextureLibrary( new URL( textures ) );
 
 				if ( Boolean.parseBoolean( getParameter( "opengl" ) ) )
 				{
@@ -244,7 +253,7 @@ public class ViewerApplet
 						configuration.setShadowMultisampleEnabled( true );
 					}
 
-					engine = RenderEngineFactory.createJOGLEngine( configuration );
+					engine = RenderEngineFactory.createJOGLEngine( textureLibrary, configuration );
 				}
 				else
 				{
@@ -325,6 +334,7 @@ public class ViewerApplet
 	private class Start
 		implements Runnable
 	{
+		@Override
 		public void run()
 		{
 			final Scene scene = _scene;
@@ -390,6 +400,7 @@ public class ViewerApplet
 	private class StartOnEDT
 		implements Runnable
 	{
+		@Override
 		public void run()
 		{
 			System.out.println( "start" );

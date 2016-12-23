@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,6 +53,11 @@ extends AbstractAction
 	private final View3D _view;
 
 	/**
+	 * Texture library used to resolve textures to files for POV-Ray.
+	 */
+	private TextureLibrary _textureLibrary;
+
+	/**
 	 * The {@link ImagePanel} used to draw the rendered POV-Ray image.
 	 */
 	private final ImagePanel _imagePanel;
@@ -68,16 +73,16 @@ extends AbstractAction
 	private static final String BUNDLE_NAME = ViewToPovAction.class.getPackage().getName() + ".LocalStrings";
 
 	/**
-	 * The {@link ImagePanel} is constructed and added to the view. When the user
-	 * clicks on the view, the panel is set invisible and the view component is set
-	 * visible (the original view is visible again).
-	 *
-	 * @param locale        Needed to retrieve the correct resource bundle.
-	 * @param view          View this action belongs to.
-	 * @param viewContainer Container that holds the view components.
-	 * @param constraints   Layout constraints for the image panel.
+	 * The {@link ImagePanel} is constructed and added to the view. When the
+	 * user clicks on the view, the panel is set invisible and the view
+	 * component is set visible (the original view is visible again).
+	 *  @param locale         Needed to retrieve the correct resource bundle.
+	 * @param view           View this action belongs to.
+	 * @param viewContainer  Container that holds the view components.
+	 * @param constraints    Layout constraints for the image panel.
+	 * @param textureLibrary Texture library used to resolve textures to files.
 	 */
-	public ViewToPovAction( final Locale locale, final View3D view, final JPanel viewContainer, final Object constraints )
+	public ViewToPovAction( final Locale locale, final View3D view, final JPanel viewContainer, final Object constraints, final TextureLibrary textureLibrary )
 	{
 		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 		_bundle = bundle;
@@ -116,6 +121,7 @@ extends AbstractAction
 		viewContainer.add( imagePanel, constraints );
 
 		_view = view;
+		_textureLibrary = textureLibrary;
 		_imagePanel = imagePanel;
 	}
 
@@ -238,7 +244,7 @@ extends AbstractAction
 			 */
 			try
 			{
-				image = PovRenderer.render( povScene, null, null, viewWidth, viewHeight, progressBar.getModel(), logWriter, false );
+				image = PovRenderer.render( povScene, null, null, viewWidth, viewHeight, progressBar.getModel(), logWriter, false, _textureLibrary );
 			}
 			catch ( IOException e )
 			{

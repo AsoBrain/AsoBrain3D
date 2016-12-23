@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import org.jetbrains.annotations.*;
@@ -64,27 +65,36 @@ public final class Java3dEngine
 	private final Map<Object,BranchGroup> _nodeContentMap = new HashMap<Object,BranchGroup>();
 
 	/**
+	 * Texture library to use.
+	 */
+	private TextureLibrary _textureLibrary;
+
+	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   scene   3D Scene to view.
+	 * @param scene          3D Scene to view.
+	 * @param textureLibrary Texture library to use.
 	 */
-	public Java3dEngine( final Scene scene )
+	public Java3dEngine( final Scene scene, final TextureLibrary textureLibrary )
 	{
-		this( scene , new Color( 51 , 77 , 102 ) );
+		this( scene, textureLibrary, new Color( 51 , 77 , 102 ) );
 	}
 
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   scene       3D Scene to view.
-	 * @param   background  Background color to use for 3D views.
+	 * @param scene          3D Scene to view.
+	 * @param textureLibrary Texture library to use.
+	 * @param background     Background color to use for 3D views.
 	 */
-	public Java3dEngine( @NotNull final Scene scene , final Color background )
+	public Java3dEngine( @NotNull final Scene scene, final TextureLibrary textureLibrary, final Color background )
 	{
-		scene.addSceneUpdateListener( this );
 		_scene = scene;
+		scene.addSceneUpdateListener( this );
 
-		final Java3dUniverse universe = new Java3dUniverse( scene.getUnit() , background );
+		_textureLibrary = textureLibrary;
+
+		final Java3dUniverse universe = new Java3dUniverse( scene.getUnit(), background );
 		_universe = universe;
 
 		_contentGraph = Java3dTools.createDynamicScene( universe.getContent() );
@@ -191,7 +201,7 @@ public final class Java3dEngine
 		Node3DTreeWalker.walk(  objectCollector, node3D );
 		final List<Node3DPath> objects = objectCollector.getCollectedNodes();
 
-		final BranchGroup bg = Shape3DBuilder.createBranchGroup( objects );
+		final BranchGroup bg = Shape3DBuilder.createBranchGroup( objects, _textureLibrary );
 
 		final Node3DCollector lightCollector = new Node3DCollector( Light3D.class );
 		Node3DTreeWalker.walk(  lightCollector, node3D );

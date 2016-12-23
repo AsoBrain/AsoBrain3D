@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,19 +15,25 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.appearance;
+
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Abstract implementation of the {@link TextureMap} interface.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
  */
 public abstract class AbstractTextureMap
 	implements TextureMap
 {
+	/**
+	 * Name of the texture.
+	 */
+	private String _name = null;
+
 	/**
 	 * Physical width of map in meters (<code>0.0</code>0 if indeterminate).
 	 */
@@ -44,6 +49,7 @@ public abstract class AbstractTextureMap
 	 */
 	protected AbstractTextureMap()
 	{
+		_name = null;
 		_physicalWidth = 0.0f;
 		_physicalHeight = 0.0f;
 	}
@@ -51,17 +57,35 @@ public abstract class AbstractTextureMap
 	/**
 	 * Construct map.
 	 *
-	 * @param   physicalWidth   Physical width in meters (<code>0.0</code> if
-	 *                          indeterminate).
-	 * @param   physicalHeight  Physical height in meters (<code>0.0</code> if
-	 *                          indeterminate).
+	 * @param name           Name of the texture.
+	 * @param physicalWidth  Physical width in meters (<code>0.0</code> if unknown).
+	 * @param physicalHeight Physical height in meters (<code>0.0</code> if unknown).
 	 */
-	protected AbstractTextureMap( final float physicalWidth, final float physicalHeight )
+	protected AbstractTextureMap( final String name, final float physicalWidth, final float physicalHeight )
 	{
+		_name = name;
 		_physicalWidth = physicalWidth;
 		_physicalHeight = physicalHeight;
 	}
 
+	@Override
+	@NotNull
+	public String getName()
+	{
+		return _name;
+	}
+
+	/**
+	 * Sets the name of the texture.
+	 *
+	 * @param name Texture name.
+	 */
+	public void setName( @NotNull final String name )
+	{
+		_name = name;
+	}
+
+	@Override
 	public float getPhysicalWidth()
 	{
 		return _physicalWidth;
@@ -79,6 +103,7 @@ public abstract class AbstractTextureMap
 		_physicalWidth = physicalWidth;
 	}
 
+	@Override
 	public float getPhysicalHeight()
 	{
 		return _physicalHeight;
@@ -107,7 +132,8 @@ public abstract class AbstractTextureMap
 		else if ( other instanceof TextureMap )
 		{
 			final TextureMap map = (TextureMap)other;
-			result = ( _physicalWidth == map.getPhysicalWidth() ) &&
+			result = MathTools.equals( _name, map.getName() ) &&
+			         ( _physicalWidth == map.getPhysicalWidth() ) &&
 			         ( _physicalHeight == map.getPhysicalHeight() );
 		}
 		else
@@ -120,7 +146,8 @@ public abstract class AbstractTextureMap
 	@Override
 	public int hashCode()
 	{
-		return Float.floatToRawIntBits( _physicalWidth ) ^
+		return _name.hashCode() ^
+		       Float.floatToRawIntBits( _physicalWidth ) ^
 		       Float.floatToRawIntBits( _physicalHeight );
 	}
 }

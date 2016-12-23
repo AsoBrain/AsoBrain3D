@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
@@ -42,7 +40,6 @@ import ab.j3d.view.*;
  * @see     AbPovTestApp
  *
  * @author  Rob Veneberg
- * @version $Revision$ $Date$
  */
 public class AbPovTestModel
 {
@@ -521,15 +518,7 @@ public class AbPovTestModel
 		result.setDiffuseColor( Color4.WHITE );
 		result.setSpecularColor( Color4.WHITE );
 		result.setShininess( 16 );
-
-		final URL colorMapUrl = AbPovTestModel.class.getResource( colorMap );
-		if ( colorMapUrl == null )
-		{
-			throw new IllegalArgumentException( "Missing resource: " + colorMap );
-		}
-
-		result.setColorMap( new FileTextureMap( colorMapUrl, physicalWidth, physicalHeight ) );
-
+		result.setColorMap( new BasicTextureMap( colorMap, physicalWidth, physicalHeight ) );
 		return result;
 	}
 }

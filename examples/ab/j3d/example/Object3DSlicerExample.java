@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -278,7 +278,7 @@ public class Object3DSlicerExample
 		configuration.setPerPixelLightingEnabled( true );
 		configuration.setVertexBufferObjectsEnabled( true );
 
-		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( configuration );
+		final RenderEngine renderEngine = RenderEngineFactory.createJOGLEngine( new ClassLoaderTextureLibrary( getClass().getClassLoader() ), configuration );
 
 		final View3D view = renderEngine.createView( _scene );
 		view.setRenderingPolicy( RenderingPolicy.SKETCH );

@@ -81,7 +81,7 @@ public class TessellationExample
 	 */
 	private static void showScene( final Scene scene )
 	{
-		final RenderEngine engine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
+		final RenderEngine engine = RenderEngineFactory.createJOGLEngine( new DebugTextureLibrary(), new JOGLConfiguration() );
 
 		final View3D view = engine.createView( scene );
 		view.setRenderingPolicy( RenderingPolicy.SKETCH );

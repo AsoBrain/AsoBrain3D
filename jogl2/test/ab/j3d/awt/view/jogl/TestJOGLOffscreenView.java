@@ -1,7 +1,6 @@
 /*
- * (C) Copyright Peter S. Heijnen 2016-2016
- *
  * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package ab.j3d.awt.view.jogl;
 
 import java.awt.image.*;
@@ -25,6 +23,7 @@ import javax.media.opengl.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.control.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
@@ -52,7 +51,7 @@ extends TestCase
 		final String where = CLASS_NAME + ".testRenderer()";
 		System.out.println( where );
 
-		final JOGLEngine joglEngine = new JOGLEngine( JOGLConfiguration.createLusciousInstance() );
+		final JOGLEngine joglEngine = new JOGLEngine( new ClassLoaderTextureLibrary( getClass().getClassLoader() ), JOGLConfiguration.createLusciousInstance() );
 
 		final Scene scene = new Scene( Scene.METER );
 		scene.addContentNode( "box", Matrix3D.getTranslation( -0.5, -0.5, -0.5 ), new Box3D( 1.0, 1.0, 1.0, null, BasicAppearances.GREEN ) );

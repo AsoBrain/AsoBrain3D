@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2016 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@ import javax.swing.Timer;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.view.*;
@@ -76,7 +77,7 @@ public class CollisionTestApp
 		scene.addContentNode( "light1", Matrix3D.getTranslation( 10.0, -10.0, 10.0 ), light1 );
 		scene.addContentNode( "light2", Matrix3D.getTranslation( -5.0, 10.0, 5.0 ), light2 );
 
-		final RenderEngine engine = RenderEngineFactory.createJOGLEngine( new JOGLConfiguration() );
+		final RenderEngine engine = RenderEngineFactory.createJOGLEngine( new DebugTextureLibrary(), new JOGLConfiguration() );
 
 		final View3D view = engine.createView( scene );
 		view.setFrontClipDistance( 0.001 );
