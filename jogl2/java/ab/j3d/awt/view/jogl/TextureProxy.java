@@ -180,11 +180,11 @@ public class TextureProxy
 			}
 			catch ( InterruptedException e )
 			{
-				System.err.println( "getTextureData( " + _textureMap + " ) => " + e );
+				System.err.println( "getTextureData( " + _textureMap.getName() + " ) => " + e );
 			}
 			catch ( ExecutionException e )
 			{
-				System.err.println( "getTextureData( " + _textureMap + " ) => " + e.getCause() );
+				System.err.println( "getTextureData( " + _textureMap.getName() + " ) => " + e.getCause() );
 				_textureData = null;
 			}
 		}
