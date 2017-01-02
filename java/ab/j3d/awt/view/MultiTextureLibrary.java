@@ -32,7 +32,7 @@ import org.jetbrains.annotations.*;
  * @author Gerrit Meinders
  */
 public class MultiTextureLibrary
-	implements TextureLibrary
+implements TextureLibrary
 {
 	/**
 	 * Texture libraries.
@@ -60,14 +60,33 @@ public class MultiTextureLibrary
 	throws IOException
 	{
 		BufferedImage result = null;
+		IOException exception = null;
+
 		for ( final TextureLibrary textureLibrary : _textureLibraries )
 		{
-			result = textureLibrary.loadImage( textureMap );
+			try
+			{
+				result = textureLibrary.loadImage( textureMap );
+			}
+			catch ( IOException e )
+			{
+				if ( exception == null )
+				{
+					exception = e;
+				}
+			}
+
 			if ( result != null )
 			{
 				break;
 			}
 		}
+
+		if ( ( result == null ) && ( exception != null ) )
+		{
+			throw exception;
+		}
+
 		return result;
 	}
 
@@ -77,14 +96,33 @@ public class MultiTextureLibrary
 	throws IOException
 	{
 		InputStream result = null;
+		IOException exception = null;
+
 		for ( final TextureLibrary textureLibrary : _textureLibraries )
 		{
-			result = textureLibrary.openImageStream( textureMap );
+			try
+			{
+				result = textureLibrary.openImageStream( textureMap );
+			}
+			catch ( IOException e )
+			{
+				if ( exception == null )
+				{
+					exception = e;
+				}
+			}
+
 			if ( result != null )
 			{
 				break;
 			}
 		}
+
+		if ( ( result == null ) && ( exception != null ) )
+		{
+			throw exception;
+		}
+
 		return result;
 	}
 
