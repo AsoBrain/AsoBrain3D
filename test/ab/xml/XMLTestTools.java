@@ -234,7 +234,7 @@ public class XMLTestTools
 		final Characters characters = event.asCharacters();
 		final String actualUrl = characters.getData();
 
-		assertEquals( messagePrefix + "Invalid resource URL for name '" + name + '\'', actualUrl, resourceUrl.toExternalForm() );
+		assertEquals( messagePrefix + "Invalid resource URL for name '" + name + '\'', resourceUrl.toExternalForm(), actualUrl );
 	}
 
 	/**
