@@ -1,8 +1,6 @@
 /*
- * $Id$
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -30,7 +27,6 @@ import org.jetbrains.annotations.*;
  * A group of faces with a common appearance.
  *
  * @author G. Meinders
- * @version $Revision$ $Date$
  */
 public class FaceGroup
 {
@@ -45,7 +41,7 @@ public class FaceGroup
 	 * <p />
 	 * This flag is typically used to adjust the shading algorithm, e.g. by
 	 * interpolating vertex normals across the surface (Phong shading).
-	*/
+	 */
 	private boolean _smooth;
 
 	/**
@@ -63,9 +59,9 @@ public class FaceGroup
 	/**
 	 * Construct new face group.
 	 *
-	 * @param   appearance      Material to apply to the face.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param appearance Material to apply to the face.
+	 * @param smooth     Face is smooth/curved vs. flat.
+	 * @param twoSided   Face is two-sided.
 	 */
 	public FaceGroup( @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
@@ -76,10 +72,21 @@ public class FaceGroup
 	}
 
 	/**
-	 * Returns the faces in this group.
+	 * Construct new face group.
 	 *
-	 * @return  Faces in this group.
+	 * @param appearance Material to apply to the face.
+	 * @param smooth     Face is smooth/curved vs. flat.
+	 * @param twoSided   Face is two-sided.
+	 * @param faces      Initial faces in group.
 	 */
+	public FaceGroup( @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided, @NotNull final Collection<Face3D> faces )
+	{
+		_faces = new ArrayList<Face3D>( faces );
+		_appearance = appearance;
+		_smooth = smooth;
+		_twoSided = twoSided;
+	}
+
 	public List<Face3D> getFaces()
 	{
 		return Collections.unmodifiableList( _faces );
@@ -88,7 +95,7 @@ public class FaceGroup
 	/**
 	 * Add a face to this group.
 	 *
-	 * @param   face    Face to add.
+	 * @param face Face to add.
 	 */
 	public void addFace( final Face3D face )
 	{
@@ -98,73 +105,39 @@ public class FaceGroup
 	/**
 	 * Remove a face from this group.
 	 *
-	 * @param   face    Face to remove.
+	 * @param face Face to remove.
 	 */
 	public void removeFace( final Face3D face )
 	{
 		_faces.remove( face );
 	}
 
-	/**
-	 * Returns the smoothing flag of faces in this group. Smooth faces are used
-	 * to approximate smooth/curved/rounded parts of objects.
-	 *
-	 * @return  Smoothing flag.
-	 */
 	public boolean isSmooth()
 	{
 		return _smooth;
 	}
 
-	/**
-	 * Sets the smoothing flag of faces in this group. Smooth faces are used
-	 * to approximate smooth/curved/rounded parts of objects.
-	 *
-	 * @param   smooth  Smoothing flag.
-	 */
 	public void setSmooth( final boolean smooth )
 	{
 		_smooth = smooth;
 	}
 
-	/**
-	 * Returns the material of faces in this group.
-	 *
-	 * @return  Material of faces in this group.
-	 */
 	@Nullable
 	public Appearance getAppearance()
 	{
 		return _appearance;
 	}
 
-	/**
-	 * Sets the material of faces in this group.
-	 *
-	 * @param   appearance    Material to be set.
-	 */
 	public void setAppearance( @Nullable final Appearance appearance )
 	{
 		_appearance = appearance;
 	}
 
-	/**
-	 * Returns whether faces in this group are two-sided.
-	 *
-	 * @return  {@code true} if faces are two-sided;
-	 *          {@code false} if faces are single-sided.
-	 */
 	public boolean isTwoSided()
 	{
 		return _twoSided;
 	}
 
-	/**
-	 * Sets whether faces in this group are two-sided.
-	 *
-	 * @param   twoSided    {@code true} if faces are two-sided;
-	 *                      {@code false} if faces are single-sided.
-	 */
 	public void setTwoSided( final boolean twoSided )
 	{
 		_twoSided = twoSided;
