@@ -17,7 +17,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import Vector3D from '../ab.j3d/Vector3D';
 import Matrix3D from '../ab.j3d/Matrix3D';
 
 import TransformUVGenerator from './TransformUVGenerator';

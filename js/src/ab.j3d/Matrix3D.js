@@ -1334,7 +1334,7 @@ export default class Matrix3D
 				{
 					for ( let resultIndex = 0; resultIndex < resultLength; resultIndex++ )
 					{
-						result[ i ] = source[ i ];
+						result[ resultIndex ] = source[ resultIndex ];
 					}
 				}
 			}

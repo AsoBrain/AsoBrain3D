@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "`dirname $0`"
 PATH="${PATH}:node_modules/.bin"
 BUILD="$SHELL '$0'"
 
@@ -30,6 +31,10 @@ function run()
     watch)
         mkdir -p lib &&
         babel --no-comments --watch --out-dir lib src
+        ;;
+
+    watchdep)
+        gulp watchdep
         ;;
 
     test)

@@ -20,6 +20,7 @@
 import ArrayTools from '@numdata/oss/lib/com.numdata.oss/ArrayTools';
 
 import Matrix3D from '../ab.j3d/Matrix3D';
+import Vector3D from '../ab.j3d/Vector3D';
 
 import PlanarUVMap from './PlanarUVMap';
 import UVMap from './UVMap';
@@ -61,18 +62,27 @@ export default class BoxUVMap
 	 * Construct new UV-map that applies a uniform box mapping with the
 	 * specified box coordinate system.
 	 *
-	 * @param {number} scale  Size of a model unit in meters.
-	 * @param {Matrix3D} box2wcs     Transforms box to world coordinates.
-	 * @param {boolean} flipLeft    Flip left texture direction.
-	 * @param {boolean} flipRight   Flip right texture direction.
-	 * @param {boolean} flipFront   Flip front texture direction.
-	 * @param {boolean} flipBack    Flip right texture direction.
-	 * @param {boolean} flipTop     Flip top texture direction.
-	 * @param {boolean} flipBottom  Flip bottom texture direction.
+	 * @param {number} scale Size of a model unit in meters.
+	 * @param {Matrix3D} [box2wcs] Transforms box to world coordinates.
+	 * @param {boolean} [flipLeft] Flip left texture direction.
+	 * @param {boolean} [flipRight] Flip right texture direction.
+	 * @param {boolean} [flipFront] Flip front texture direction.
+	 * @param {boolean} [flipBack] Flip right texture direction.
+	 * @param {boolean} [flipTop] Flip top texture direction.
+	 * @param {boolean} [flipBottom] Flip bottom texture direction.
 	 */
 	constructor( scale, box2wcs, flipLeft, flipRight, flipFront, flipBack, flipTop, flipBottom )
 	{
 		super();
+
+		if ( box2wcs === undefined )
+		{
+			box2wcs = Matrix3D.IDENTITY;
+		}
+		else if ( box2wcs instanceof Vector3D )
+		{
+			box2wcs = Matrix3D.getTranslation( box2wcs );
+		}
 
 		const maps = [];
 		const flips = [];
@@ -82,39 +92,39 @@ export default class BoxUVMap
 			-box2wcs.yy,  box2wcs.yz, -box2wcs.yx, box2wcs.yo,     // [ -1,  0,  0 ] * box2wcs
 			-box2wcs.zy,  box2wcs.zz, -box2wcs.zx, box2wcs.zo ) ); // [  0,  1,  0 ]
 
-		flips[ BoxUVMap.LEFT ] = flipLeft;
+		flips[ BoxUVMap.LEFT ] = !!flipLeft;
 
 		maps[ BoxUVMap.RIGHT ] = new PlanarUVMap( scale, scale, new Matrix3D(
 			 box2wcs.xy,  box2wcs.xz,  box2wcs.xx, box2wcs.xo,     // [ 0,  0,  1 ]
 			 box2wcs.yy,  box2wcs.yz,  box2wcs.yx, box2wcs.yo,     // [ 1,  0,  0 ] * box2wcs
 			 box2wcs.zy,  box2wcs.zz,  box2wcs.zx, box2wcs.zo ) ); // [ 0,  1,  0 ]
 
-		flips[ BoxUVMap.RIGHT ] = flipRight;
+		flips[ BoxUVMap.RIGHT ] = !!flipRight;
 
 		maps[ BoxUVMap.FRONT ] = new PlanarUVMap( scale, scale, new Matrix3D(
 			 box2wcs.xx,  box2wcs.xz, -box2wcs.xy, box2wcs.xo,    // [ 1,  0,  0 ]
 			 box2wcs.yx,  box2wcs.yz, -box2wcs.yy, box2wcs.yo,    // [ 0,  0, -1 ] * box2wcs
 			 box2wcs.zx,  box2wcs.zz, -box2wcs.zy, box2wcs.zo ) ); // [ 0,  1,  0 ]
 
-		flips[ BoxUVMap.FRONT ] = flipFront;
+		flips[ BoxUVMap.FRONT ] = !!flipFront;
 
 		maps[ BoxUVMap.BACK ] = new PlanarUVMap( scale, scale, new Matrix3D(
 			-box2wcs.xx,  box2wcs.xz,  box2wcs.xy, box2wcs.xo,     // [ -1,  0,  0 ]
 			-box2wcs.yx,  box2wcs.yz,  box2wcs.yy, box2wcs.yo,     // [  0,  0,  1 ] * box2wcs
 			-box2wcs.zx,  box2wcs.zz,  box2wcs.zy, box2wcs.zo ) ); // [  0,  1,  0 ]
 
-		flips[ BoxUVMap.BACK ] = flipBack;
+		flips[ BoxUVMap.BACK ] = !!flipBack;
 
 		maps[ BoxUVMap.BOTTOM ] = new PlanarUVMap( scale, scale, new Matrix3D(
 			-box2wcs.xx,  box2wcs.xy, -box2wcs.xz, box2wcs.xo,     // [ -1,  0,  0 ]
 			-box2wcs.yx,  box2wcs.yy, -box2wcs.yz, box2wcs.yo,     // [  0,  1,  0 ] * box2wcs
 			-box2wcs.zx,  box2wcs.zy, -box2wcs.zz, box2wcs.zo ) ); // [  0,  0, -1 ]
 
-		flips[ BoxUVMap.BOTTOM ] = flipBottom;
+		flips[ BoxUVMap.BOTTOM ] = !!flipBottom;
 
 		maps[ BoxUVMap.TOP ] = new PlanarUVMap( scale, scale, box2wcs );
 
-		flips[ BoxUVMap.TOP ] = flipTop;
+		flips[ BoxUVMap.TOP ] = !!flipTop;
 
 		this._box2wcs = box2wcs;
 		this._maps = maps;

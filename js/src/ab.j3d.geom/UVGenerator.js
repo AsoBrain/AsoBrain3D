@@ -48,7 +48,7 @@ export default class UVGenerator
 
 		if ( appearance && uvMap )
 		{
-			const colorMap = appearance.getColorMap();
+			const colorMap = appearance.colorMap;
 			if ( colorMap )
 			{
 				result = uvMap.getGenerator( colorMap, normal, flipTexture );
@@ -82,7 +82,7 @@ export default class UVGenerator
 	 * @param {number} y Y coordinate of 3D point to generate U/V coordinates for.
 	 * @param {number} z Z coordinate of 3D point to generate U/V coordinates for.
 	 */
-	generate( x, y, z )
+	generate( x, y, z ) // eslint-disable-line no-unused-vars
 	{
 	}
 }
