@@ -23,22 +23,8 @@ function run()
         eslint --env mocha test || exit $?
         ;;
 
-    build)
-        mkdir -p lib &&
-        babel --no-comments --out-dir lib src
-        ;;
-
-    watch)
-        mkdir -p lib &&
-        babel --no-comments --watch --out-dir lib src
-        ;;
-
-    watchdep)
-        gulp watchdep
-        ;;
-
     test)
-        mocha --recursive test
+        mocha --recursive test || exit $?
         ;;
 
     patch)
@@ -50,7 +36,7 @@ function run()
         ;;
 
     *)
-        echo "Unknown task"
+        gulp "$@"
         ;;
     esac
 }
