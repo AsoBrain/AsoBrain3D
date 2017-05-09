@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -351,7 +351,68 @@ extends Object3D
 		}
 		else
 		{
-			result = super.collidesWith( fromOtherToThis, other );
+			boolean containsPoint = false;
+
+			/*
+			 * Test if the cylinder contains the other object. Theoretically
+			 * checking a single vertex should be sufficient, but the
+			 * containment check includes points (almost) on the boundary of the
+			 * cylinder, so checking only a single vertex would lead to false
+			 * positives.
+			 */
+			final List<Vector3D> vertexCoordinates = getVertexCoordinates();
+			final List<Vector3D> otherVertexCoordinates = other.getVertexCoordinates();
+			if ( !vertexCoordinates.isEmpty() && !otherVertexCoordinates.isEmpty() )
+			{
+				/*
+				 * Only solid cylinders can contain anything.
+				 */
+				if ( ( _topAppearance != null ) && ( _bottomAppearance != null ) )
+				{
+					containsPoint = true;
+					for ( final Vector3D point : otherVertexCoordinates )
+					{
+						final double x = fromOtherToThis.transformX( point );
+						final double y = fromOtherToThis.transformY( point );
+						final double z = fromOtherToThis.transformZ( point );
+						if ( !GeometryTools.testCylinderContainsPoint( x, y, z, _height, _radius ) )
+						{
+							containsPoint = false;
+							break;
+						}
+					}
+				}
+
+				/*
+				 * If the other object is also a cylinder, test if it contains
+				 * this cylinder.
+				 */
+				if ( !containsPoint && other instanceof Cylinder3D )
+				{
+					final Cylinder3D otherCylinder = (Cylinder3D)other;
+
+					/*
+					 * Only solid cylinders can contain anything.
+					 */
+					if ( otherCylinder._topAppearance != null && otherCylinder._bottomAppearance != null )
+					{
+						containsPoint = true;
+						for ( final Vector3D point : vertexCoordinates )
+						{
+							final double x = fromOtherToThis.inverse().transformX( point );
+							final double y = fromOtherToThis.inverse().transformY( point );
+							final double z = fromOtherToThis.inverse().transformZ( point );
+							if ( !GeometryTools.testCylinderContainsPoint( x, y, z, otherCylinder._height, otherCylinder._radius ) )
+							{
+								containsPoint = false;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			result = containsPoint || super.collidesWith( fromOtherToThis, other );
 		}
 
 		return result;

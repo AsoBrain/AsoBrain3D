@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -118,5 +118,62 @@ extends TestCase
 			Vector3DTester.assertEquals( message + ", face " + i + ", vertex 2: unexpected normal", expectedNormals[ i ], face.getVertexNormal( 2 ), 1.0e-8 );
 			Vector3DTester.assertEquals( message + ", face " + i + ", vertex 3: unexpected normal", expectedNormals[ j ], face.getVertexNormal( 3 ), 1.0e-8 );
 		}
+	}
+
+	/**
+	 * Tests {@link Cylinder3D#collidesWith}.
+	 */
+	public void testCollidesWith()
+	{
+		final String where = CLASS_NAME + ".testCollidesWith()";
+		System.out.println( where );
+
+		final Appearance appearance = BasicAppearances.WHITE;
+		final Cylinder3D cylinder1 = new Cylinder3D( 10, 50, 16, appearance, null, false, appearance, null, appearance, null, false );
+		final Cylinder3D cylinder2 = new Cylinder3D( 5, 20, 16, appearance, null, false, appearance, null, appearance, null, false );
+
+		// Along X-axis
+		checkCollision( "Outside", cylinder1, cylinder2, Matrix3D.getTranslation( -80, 0, 2.5 ), false );
+		checkCollision( "Touch outside", cylinder1, cylinder2, Matrix3D.getTranslation( -70, 0, 2.5 ), false );
+		checkCollision( "Intersect", cylinder1, cylinder2, Matrix3D.getTranslation( -60, 0, 2.5 ), true );
+		checkCollision( "Intersect", cylinder1, cylinder2, Matrix3D.getTranslation( -40, 0, 2.5 ), true );
+		checkCollision( "Touch inside", cylinder1, cylinder2, Matrix3D.getTranslation( -30, 0, 2.5 ), true );
+		checkCollision( "Inside", cylinder1, cylinder2, Matrix3D.getTranslation( -20, 0, 2.5 ), true );
+		checkCollision( "Inside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 2.5 ), true );
+		checkCollision( "Inside", cylinder1, cylinder2, Matrix3D.getTranslation( 20, 0, 2.5 ), true );
+		checkCollision( "Touch inside", cylinder1, cylinder2, Matrix3D.getTranslation( 30, 0, 2.5 ), true );
+		checkCollision( "Intersect", cylinder1, cylinder2, Matrix3D.getTranslation( 40, 0, 2.5 ), true );
+		checkCollision( "Intersect", cylinder1, cylinder2, Matrix3D.getTranslation( 60, 0, 2.5 ), true );
+		checkCollision( "Touch outside", cylinder1, cylinder2, Matrix3D.getTranslation( 70, 0, 2.5 ), false );
+		checkCollision( "Outside", cylinder1, cylinder2, Matrix3D.getTranslation( 80, 0, 2.5 ), false );
+
+		// Along Z-axis
+		checkCollision( "Outside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, -7.5 ), false );
+		checkCollision( "Touch outside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, -5.0 ), false );
+		checkCollision( "Intersect", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, -2.5 ), true );
+		checkCollision( "Touch inside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 0 ), true );
+		checkCollision( "Inside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 2.5 ), true );
+		checkCollision( "Touch inside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 5.0 ), true );
+		checkCollision( "Intersect", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 7.5 ), true );
+		checkCollision( "Touch outside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 10.0 ), false );
+		checkCollision( "Outside", cylinder1, cylinder2, Matrix3D.getTranslation( 0, 0, 12.5 ), false );
+	}
+
+	/**
+	 * Tests the specified collision, both ways.
+	 *
+	 * @param message           Failure message.
+	 * @param first             First cylinder.
+	 * @param second            Second cylinder.
+	 * @param fromSecondToFirst Transform from second to first.
+	 * @param expected          Whether a collision is expected.
+	 */
+	private static void checkCollision( final String message, final Cylinder3D first, final Cylinder3D second, final Matrix3D fromSecondToFirst, final boolean expected )
+	{
+		final boolean firstResult = first.collidesWith( fromSecondToFirst, second );
+		assertEquals( message + ", first.collidesWith(second)", expected, firstResult );
+
+		final boolean secondResult = second.collidesWith( fromSecondToFirst.inverse(), first );
+		assertEquals( message + ", second.collidesWith(first)", expected, secondResult );
 	}
 }
