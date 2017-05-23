@@ -1,20 +1,17 @@
 const gulp = require( 'gulp' );
-const watch = require( 'gulp-watch' );
+const babel = require( 'gulp-babel' );
+const newer = require( 'gulp-newer' );
 
-const localDependencies = {
-	'@numdata/oss': {
-		src: [ '../../numdata_open/NumdataOpenSource/js/lib/**' ],
-		dest: 'node_modules/@numdata/oss/lib'
-	}
+const paths = {
+	source: 'src/**/*.js',
+	target: 'lib'
 };
 
-gulp.task( 'watchdep', () =>
-{
-	const watchOptions = { verbose: true };
+gulp.task( 'build', () =>
+		gulp.src( paths.source )
+			.pipe( newer( paths.target ) )
+			.pipe( babel() )
+			.pipe( gulp.dest( paths.target ) )
+);
 
-	Object.keys( localDependencies ).forEach( key =>
-	{
-		const dep = localDependencies[ key ];
-		watch( dep.src, Object.assign( { name: key }, watchOptions ) ).pipe( gulp.dest( dep.dest ) );
-	} );
-} );
+gulp.task( 'watch', () => gulp.watch( paths.source, [ 'build' ] ) );
