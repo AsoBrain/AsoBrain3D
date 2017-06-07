@@ -11,7 +11,7 @@
     "email": "meinders@numdata.com"
   },
   "dependencies": {
-    "@numdata/oss": "^1.0.10"
+    "@numdata/oss": "^1.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
