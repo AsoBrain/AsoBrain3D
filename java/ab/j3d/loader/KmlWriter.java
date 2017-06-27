@@ -23,7 +23,6 @@ package ab.j3d.loader;
 
 import java.io.*;
 import java.util.*;
-
 import javax.xml.*;
 
 import ab.xml.*;
@@ -36,7 +35,7 @@ import ab.xml.*;
  * look.
  *
  * <p>
- * NOTE: This implementation writes only very minimalistic KML files, the bare minimum for Google Sketchup inter-operability.
+ * NOTE: This implementation writes only very minimalistic KML files, the bare minimum for SketchUp inter-operability.
  *
  * @see     <a href="http://www.opengeospatial.org/standards/kml/">Open Geospatial Consortium KML standard</a>
  *
