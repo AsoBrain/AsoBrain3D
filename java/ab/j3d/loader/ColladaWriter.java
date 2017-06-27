@@ -19,7 +19,6 @@
 package ab.j3d.loader;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import javax.xml.*;
 
@@ -672,7 +671,7 @@ public class ColladaWriter
 					{
 						tagName = "trifans";
 
-						// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
+						// NOTE: According to SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
 						vertices = primitive.getVertices();
 						count = vertices.length - 2;
 					}
@@ -680,7 +679,7 @@ public class ColladaWriter
 					{
 						tagName = "tristrips";
 
-						// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
+						// NOTE: According to SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
 						vertices = primitive.getVertices();
 						count = vertices.length - 2;
 					}
