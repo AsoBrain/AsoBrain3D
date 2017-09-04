@@ -36,7 +36,7 @@ function run()
         ;;
 
     *)
-        gulp "$@"
+        node build.js "$@"
         ;;
     esac
 }
