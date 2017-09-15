@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -542,7 +542,7 @@ public class PovScene
 		throws IOException
 	{
 		//out.writeln( "#version unofficial MegaPov 0.7;" );
-		out.writeln( "#include \"colors.inc\"" );
+		//out.writeln( "#include \"colors.inc\"" );
 		//out.writeln( "#include \"textures.inc\"" );
 		//out.writeln( "#include \"glass.inc\"" );
 		//out.writeln( "#include \"metals.inc\"" );

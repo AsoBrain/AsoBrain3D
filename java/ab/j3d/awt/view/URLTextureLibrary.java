@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -169,5 +169,11 @@ implements TextureLibrary
 	public URL getUrl( @NotNull final TextureMap textureMap )
 	{
 		return getImageUrl( _imagesUrl, textureMap.getName() );
+	}
+
+	@NotNull
+	public URL getImagesUrl()
+	{
+		return _imagesUrl;
 	}
 }
