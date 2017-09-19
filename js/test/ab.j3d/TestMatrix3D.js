@@ -16,15 +16,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-"use strict";
-var chai = require( 'chai' );
-const assert = chai.assert;
-const AssertionError = chai.AssertionError;
+import { assert, AssertionError } from 'chai';
 
-const toRadians = require( '@numdata/oss/lib/com.numdata.oss/toRadians' ).default;
+import toRadians from '@numdata/oss/lib/com.numdata.oss/toRadians';
 
-const Matrix3D = require( '../../lib/ab.j3d/Matrix3D' ).default;
-const Vector3D = require( '../../lib/ab.j3d/Vector3D' ).default;
+import Matrix3D from '../../lib/ab.j3d/Matrix3D';
+import Vector3D from '../../lib/ab.j3d/Vector3D';
 
 /**
  * This tests the {@link Matrix3D} class.
