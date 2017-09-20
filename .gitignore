@@ -1,5 +1,6 @@
 /classes
 /lib
+/target
 /test-report
 /*.jar
 /build.properties
