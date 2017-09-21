@@ -51,7 +51,7 @@
 			<arg value="install:install-file"/>
 			<arg value="-Dfile=jogl-${jogl1.version}-linux-i586.jar"/>
 			<arg value="-DgroupId=net.java.jogl"/>
-			<arg value="-DartifactId=jogl-linux-i585"/>
+			<arg value="-DartifactId=jogl-linux-i586"/>
 			<arg value="-Dpackaging=jar"/>
 			<arg value="-Dversion=${jogl1.version}"/>
 		</exec>
