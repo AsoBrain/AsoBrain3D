@@ -99,7 +99,6 @@
 				<attribute name="Permissions" value="all-permissions"/>
 				<attribute name="Codebase" value="*"/>
 			</manifest>
-			<fileset dir="xml/target/classes"/>
 			<fileset dir="core/target/classes"/>
 		</jar>
 		<jar destfile="lib/ab3d-rt-java2d.jar">
@@ -108,7 +107,6 @@
 				<attribute name="Permissions" value="all-permissions"/>
 				<attribute name="Codebase" value="*"/>
 			</manifest>
-			<fileset dir="xml/target/classes"/>
 			<fileset dir="core/target/classes">
 				<include name="ab/j3d/*"/>
 				<include name="ab/j3d/appearance/*"/>
@@ -129,7 +127,6 @@
 				<attribute name="Permissions" value="all-permissions"/>
 				<attribute name="Codebase" value="*"/>
 			</manifest>
-			<fileset dir="xml/target/classes"/>
 			<fileset dir="core/target/classes">
 				<include name="ab/j3d/*"/>
 				<include name="ab/j3d/appearance/*"/>
@@ -158,7 +155,6 @@
 				<attribute name="Permissions" value="all-permissions"/>
 				<attribute name="Codebase" value="*"/>
 			</manifest>
-			<fileset dir="xml/target/classes"/>
 			<fileset dir="core/target/classes">
 				<include name="ab/j3d/*"/>
 				<include name="ab/j3d/appearance/*"/>
@@ -283,23 +279,19 @@
 		<condition property="release.uptodate">
 			<and>
 				<uptodate>
-					<srcfiles dir="xml/src"/>
 					<srcfiles dir="core/src"/>
 					<mapper type="merge" to="${basedir}/lib/ab3d.jar"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir="xml/src"/>
 					<srcfiles dir="core/src"/>
 					<mapper type="merge" to="${basedir}/lib/ab3d-rt-java2d.jar"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir="xml/src"/>
 					<srcfiles dir="core/src"/>
 					<srcfiles dir="jogl1/src"/>
 					<mapper type="merge" to="${basedir}/lib/ab3d-rt-jogl1.jar"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir="xml/src"/>
 					<srcfiles dir="core/src"/>
 					<srcfiles dir="jogl2/src"/>
 					<mapper type="merge" to="${basedir}/lib/ab3d-rt-jogl2.jar"/>
