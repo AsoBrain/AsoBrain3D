@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.asobrain</groupId>
+		<artifactId>ab3d</artifactId>
+		<version>1.1</version>
+	</parent>
+
+	<artifactId>ab3d-jogl1</artifactId>
+	<version>1.1</version>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.asobrain</groupId>
+			<artifactId>ab3d-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jogl</groupId>
+			<artifactId>jogl</artifactId>
+			<version>1.1.1a</version>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.gluegen</groupId>
+			<artifactId>gluegen-rt</artifactId>
+			<version>1.1.1a</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+		</dependency>
+	</dependencies>
+</project>

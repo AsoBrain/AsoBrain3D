@@ -1,0 +1,20 @@
+{
+  "name": "@numdata/ab3d",
+  "version": "1.0.2",
+  "description": "AsoBrain 3D Toolkit",
+  "license": "LGPL-2.1",
+  "publishConfig": {
+    "registry": "https://earl.ivenza.net/npm/"
+  },
+  "author": {
+    "name": "Gerrit Meinders",
+    "email": "meinders@numdata.com"
+  },
+  "dependencies": {
+    "@numdata/oss": "^1.1.0"
+  },
+  "devDependencies": {
+    "@numdata/common-build-gulp": "^1.0.0",
+    "chai": "^3.5.0"
+  }
+}

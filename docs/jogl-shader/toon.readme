@@ -1,0 +1,29 @@
+This is a simple toon shader that can be used in conjuction with jogl.
+
+To use this toon shader in the JOGL implementation of AsoBrain3D, you have to
+do the following:
+
+- load the toon.vert file and toon.frag file to a seperate String[] array.
+- put a call to JOGLTools.loadShaders( final GL gl , final String[] fragmentShader , final String[] vertexShader )
+  and store the returning int into a variable(here i use _shaderProgramId). This
+  only needs to be done once. (Preffered place is the initGL() method)
+- before the objects are drawn and after the camera's and lights are set,
+  you specify the following:
+
+  gl.glUseProgramObjectARB( _shaderProgramId );
+  int colourVarNr = gl.glGetUniformLocationARB( _shaderProgramId, "Colour4");
+  gl.glUniform4fARB(colourVarNr, 0.25f, 0.25f, 0.25f, 1);
+  int colourVarNr2 = gl.glGetUniformLocationARB( _shaderProgramId, "Colour3");
+  gl.glUniform4fARB(colourVarNr2, 0.5f, 0.5f, 0.5f, 1);
+  int colourVarNr3 = gl.glGetUniformLocationARB( _shaderProgramId, "Colour2");
+  gl.glUniform4fARB(colourVarNr3, 0.75f, 0.75f, 0.75f, 1);
+  int colourVarNr4 = gl.glGetUniformLocationARB( _shaderProgramId, "Colour1");
+  gl.glUniform4fARB(colourVarNr4, 1.0f, 1.0f, 1.0f, 1);
+
+- With the 8 lower lines you can set the 4 colours to use for shading
+  (see the toon.frag file)
+- then after the objects are drawn, specify the following line:
+
+  gl.glUseProgramObjectARB( 0 );
+
+  This will make sure that standard OpenGL behavior is used after that line.
