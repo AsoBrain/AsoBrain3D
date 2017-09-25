@@ -397,22 +397,18 @@
 		<condition property="java.uptodate">
 			<and>
 				<uptodate>
-					<srcfiles dir=".">
-						<include name="xml/src/main/java/**"/>
-						<include name="core/src/main/java/**"/>
-						<include name="jogl1/src/main/java/**"/>
-						<include name="jogl2/src/main/java/**"/>
-					</srcfiles>
-					<mapper type="glob" from="*.java" to="classes/*.class"/>
+					<srcfiles dir="xml/src/main/java"/>
+					<srcfiles dir="core/src/main/java"/>
+					<srcfiles dir="jogl1/src/main/java"/>
+					<srcfiles dir="jogl2/src/main/java"/>
+					<mapper type="glob" from="*.java" to="../../../../classes/java/*.class"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir=".">
-						<include name="xml/src/main/resources/**"/>
-						<include name="core/src/main/resources/**"/>
-						<include name="jogl1/src/main/resources/**"/>
-						<include name="jogl2/src/main/resources/**"/>
-					</srcfiles>
-					<mapper type="glob" from="*" to="classes/*"/>
+					<srcfiles dir="xml/src/main/resources"/>
+					<srcfiles dir="core/src/main/resources"/>
+					<srcfiles dir="jogl1/src/main/resources"/>
+					<srcfiles dir="jogl2/src/main/resources"/>
+					<mapper type="glob" from="*" to="../../../../classes/java/*"/>
 				</uptodate>
 			</and>
 		</condition>
@@ -430,12 +426,12 @@
 		<condition property="examples.uptodate">
 			<and>
 				<uptodate>
-					<srcfiles dir="." includes="examples/src/main/java/**"/>
-					<mapper type="glob" from="*.java" to="classes/*.class"/>
+					<srcfiles dir="examples/src/main/java"/>
+					<mapper type="glob" from="*.java" to="../../../../classes/java/*.class"/>
 				</uptodate>
 				<uptodate>
-					<srcfiles dir="." includes="examples/src/main/resources/**"/>
-					<mapper type="glob" from="*" to="classes/*"/>
+					<srcfiles dir="examples/src/main/resources"/>
+					<mapper type="glob" from="*" to="../../../../classes/java/*"/>
 				</uptodate>
 			</and>
 		</condition>

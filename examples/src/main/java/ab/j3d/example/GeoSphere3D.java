@@ -22,6 +22,10 @@ package ab.j3d.example;
 
 import java.util.*;
 
+import ab.j3d.*;
+import ab.j3d.appearance.*;
+import ab.j3d.model.*;
+
 /**
  * A geodesic sphere is an approximation of a sphere, based on subdivision of a
  * regular polyhedron according to the great circles (geodesics) of the sphere.

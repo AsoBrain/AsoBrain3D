@@ -21,6 +21,9 @@ package ab.j3d.example;
 import java.awt.*;
 import javax.swing.*;
 
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+
 /**
  * Applet with a single 3D view, used as a base class for (most) examples.
  *

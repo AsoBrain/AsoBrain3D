@@ -18,6 +18,12 @@
  */
 package ab.j3d.example;
 
+import ab.j3d.*;
+import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+
 /**
  * Renders a scene with several colored spheres, lit by two spot lights with
  * shadow casting enabled. Uses the {@link RenderEngine}.

@@ -24,6 +24,15 @@ import java.net.*;
 import java.util.*;
 import javax.swing.*;
 
+import ab.j3d.*;
+import ab.j3d.appearance.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.loader.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+
 /**
  * This application provides an example for  the {@link Object3DSlicer} class.
  *
