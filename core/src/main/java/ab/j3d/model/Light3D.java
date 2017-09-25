@@ -44,7 +44,7 @@ package ab.j3d.model;
  * <pre>
  *                    1
  * attenuation = ------------
- *               c + ld + qd²
+ *               c + ld + qdÂ²
  * </pre>
  *
  * @author  Peter S. Heijnen
@@ -481,7 +481,7 @@ public class Light3D
 	 * <pre>
 	 *    constant  = 0.0
 	 *    linear    = 0.0
-	 *    quadratic = 2.0 / fallOff²
+	 *    quadratic = 2.0 / fallOffÂ²
 	 * </pre>
 	 *
 	 * <p>

@@ -1430,7 +1430,7 @@ public class GeometryTools
 		final Vector3D result;
 
 		// p1 + ua . d1 = p2 + ub . d2
-		// ua = (d2 × (p1 - p2)) / (d2 × d1)
+		// ua = (d2 Ã— (p1 - p2)) / (d2 Ã— d1)
 
 		final double d = d2.y * d1.x - d2.x * d1.y;
 		if ( almostEqual( d, 0.0 ) )
