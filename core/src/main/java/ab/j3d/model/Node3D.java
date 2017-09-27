@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,7 @@ public class Node3D
 	/**
 	 * Collection of children of this node.
 	 */
+	@NotNull
 	private final List<Node3D> _children;
 
 	/**
@@ -51,6 +52,7 @@ public class Node3D
 	 * @see     #getTag
 	 * @see     #setTag
 	 */
+	@Nullable
 	private Object _tag;
 
 	/**
@@ -80,6 +82,7 @@ public class Node3D
 	 *
 	 * @see     #setTag
 	 */
+	@Nullable
 	public Object getTag()
 	{
 		final Map<String, Object> propertyMap = getPropertyMap();
@@ -97,16 +100,20 @@ public class Node3D
 	 *
 	 * @see     #getTag
 	 */
-	public void setTag( final Object tag )
+	public void setTag( @Nullable final Object tag )
 	{
 		final Map<String, Object> propertyMap = getPropertyMap();
 		if ( propertyMap == null )
 		{
 			_tag = tag;
 		}
+		else if ( tag == null )
+		{
+			removeProperty( "tag" );
+		}
 		else
 		{
-			propertyMap.put( "tag", tag );
+			setProperty( "tag", String.valueOf( tag ) );
 		}
 	}
 
