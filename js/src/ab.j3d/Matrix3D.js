@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -147,11 +147,15 @@ export default class Matrix3D
 	             nyx, nyy, nyz, nyo,
 	             nzx, nzy, nzz, nzo )
 	{
-		if ( typeof nxx !== 'number' || typeof nxy !== 'number' || typeof nxz !== 'number' || typeof nxo !== 'number' ||
-			 typeof nyx !== 'number' || typeof nyy !== 'number' || typeof nyz !== 'number' || typeof nyo !== 'number' ||
-			 typeof nzx !== 'number' || typeof nzy !== 'number' || typeof nzz !== 'number' || typeof nzo !== 'number' )
+		if ( !Number.isFinite( nxx ) || !Number.isFinite( nxy ) || !Number.isFinite( nxz ) || !Number.isFinite( nxo ) ||
+			 !Number.isFinite( nyx ) || !Number.isFinite( nyy ) || !Number.isFinite( nyz ) || !Number.isFinite( nyo ) ||
+			 !Number.isFinite( nzx ) || !Number.isFinite( nzy ) || !Number.isFinite( nzz ) || !Number.isFinite( nzo ) )
 		{
-			throw new TypeError();
+			throw new TypeError( [
+				nxx, nxy, nxz, nxo,
+				nyx, nyy, nyz, nyo,
+				nzx, nzy, nzz, nzo
+			] );
 		}
 
 		this.xx = nxx;
@@ -650,6 +654,10 @@ export default class Matrix3D
 	 */
 	multiply( other )
 	{
+		if ( !( other instanceof Matrix3D ) )
+		{
+			throw new TypeError( other );
+		}
 		return Matrix3D._multiply( this.xx, this.xy, this.xz, this.xo,
 		                           this.yx, this.yy, this.yz, this.yo,
 		                           this.zx, this.zy, this.zz, this.zo,
