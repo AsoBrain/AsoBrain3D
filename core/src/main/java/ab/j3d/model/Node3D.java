@@ -131,6 +131,34 @@ public class Node3D
 	}
 
 	/**
+	 * Returns the specified number property as an integer.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public Integer getProperty( @NotNull final String name, final Integer defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof Number ? ( (Number)value ).intValue() : defaultValue;
+	}
+
+	/**
+	 * Returns the specified number property as a double.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public Double getProperty( @NotNull final String name, final Double defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof Number ? ( (Number)value ).doubleValue() : defaultValue;
+	}
+
+	/**
 	 * Returns the specified string property.
 	 *
 	 * @param name Property to get.
@@ -142,6 +170,62 @@ public class Node3D
 	{
 		final Object value = getProperty( name );
 		return value instanceof String ? (String)value : defaultValue;
+	}
+
+	/**
+	 * Returns the specified vector property.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public Vector3D getProperty( @NotNull final String name, final Vector3D defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof Vector3D ? (Vector3D)value : defaultValue;
+	}
+
+	/**
+	 * Returns the specified matrix property.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public Matrix3D getProperty( @NotNull final String name, final Matrix3D defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof Matrix3D ? (Matrix3D)value : defaultValue;
+	}
+
+	/**
+	 * Returns the specified boolean property.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public Boolean getProperty( @NotNull final String name, final Boolean defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof Boolean ? (Boolean)value : defaultValue;
+	}
+
+	/**
+	 * Returns the specified collection property.
+	 *
+	 * @param name Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	public Collection<?> getProperty( @NotNull final String name, final Collection<?> defaultValue )
+	{
+		final Object value = getProperty( name );
+		return value instanceof Collection ? (Collection)value : defaultValue;
 	}
 
 	/**
@@ -236,6 +320,18 @@ public class Node3D
 	{
 		final Map<String, Object> properties = getPropertyMapNotNull();
 		properties.put( key, Boolean.valueOf( value ) );
+	}
+
+	/**
+	 * Sets a node property.
+	 *
+	 * @param key   Property to set.
+	 * @param value Property value.
+	 */
+	public void setProperty( @NotNull final String key, final Collection<?> value )
+	{
+		final Map<String, Object> properties = getPropertyMapNotNull();
+		properties.put( key, value );
 	}
 
 	/**
