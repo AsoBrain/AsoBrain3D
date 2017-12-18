@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,6 +77,11 @@ public class ColladaWriter
 	private final Map<TextureMap, String> _libraryImages;
 
 	/**
+	 * ID of each light to be written in the {@code library_lights} section.
+	 */
+	private final Map<Light3D, String> _libraryLights;
+
+	/**
 	 * Internet Media Type for COLLADA.
 	 *
 	 * @see     <a href="http://www.iana.org/assignments/media-types/model/vnd.collada+xml">http://www.iana.org/assignments/media-types/model/vnd.collada+xml</a>
@@ -95,6 +100,7 @@ public class ColladaWriter
 		_libraryGeometry = new LinkedHashMap<Node3D, String>();
 		_libraryMaterials = new LinkedHashMap<Appearance, String>();
 		_libraryImages = new LinkedHashMap<TextureMap, String>();
+		_libraryLights = new LinkedHashMap<Light3D, String>();
 	}
 
 	/**
@@ -142,6 +148,7 @@ public class ColladaWriter
 		writeLibraryMaterials( writer );
 		writeLibraryEffects( writer );
 		writeLibraryImages( writer );
+		writeLibraryLights( writer );
 		writeScene( writer );
 
 		writer.endTag( NS_COLLADA_1_4, "COLLADA" );
@@ -334,7 +341,24 @@ public class ColladaWriter
 		}
 		else if ( node instanceof Light3D )
 		{
-			// TODO: <instance_light>
+			Vector3D direction = Vector3D.NEGATIVE_Z_AXIS;
+			if ( node instanceof DirectionalLight3D )
+			{
+				direction = ( (DirectionalLight3D)node ).getDirection();
+			}
+			else if ( node instanceof SpotLight3D )
+			{
+				direction = ( (SpotLight3D)node ).getDirection();
+			}
+
+			if ( !direction.equals( Vector3D.NEGATIVE_Z_AXIS ) )
+			{
+				writeMatrix( writer, Matrix3D.getPlaneTransform( Vector3D.ZERO, direction.inverse(), true ) );
+			}
+
+			writer.emptyTag( NS_COLLADA_1_4, "instance_light" );
+			writer.attribute( null, "url", "#" + getLightID( (Light3D)node ) );
+			writer.endTag( NS_COLLADA_1_4, "instance_light" );
 		}
 		else if ( node instanceof Transform3D )
 		{
@@ -803,6 +827,25 @@ public class ColladaWriter
 	}
 
 	/**
+	 * Returns the ID of the given light. If needed, the light is added to the
+	 * library with a new ID.
+	 *
+	 * @param   light  Light to get an ID for.
+	 *
+	 * @return  Light ID.
+	 */
+	protected String getLightID( final Light3D light )
+	{
+		String result = _libraryLights.get( light );
+		if ( result == null )
+		{
+			result = allocateID( "l" );
+			_libraryLights.put( light, result );
+		}
+		return result;
+	}
+
+	/**
 	 * Writes a <code>library_effects</code> element containing definitions of
 	 * the effects used to implement any previously referenced materials.
 	 *
@@ -987,6 +1030,28 @@ public class ColladaWriter
 	 * @param   r       Red component to be written.
 	 * @param   g       Green component to be written.
 	 * @param   b       Blue component to be written.
+	 *
+	 * @throws  XMLException if there's a problem writing the XML document.
+	 */
+	protected void writeColor( final XMLWriter writer, final float r, final float g, final float b )
+		throws XMLException
+	{
+		writer.startTag( NS_COLLADA_1_4, "color" );
+		writer.text( DatatypeConverter.printFloat( r ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( g ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( b ) );
+		writer.endTag( NS_COLLADA_1_4, "color" );
+	}
+
+	/**
+	 * Writes a <code>color</code> element.
+	 *
+	 * @param   writer  Writer to write to.
+	 * @param   r       Red component to be written.
+	 * @param   g       Green component to be written.
+	 * @param   b       Blue component to be written.
 	 * @param   a       Alpha component to be written.
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
@@ -1079,6 +1144,105 @@ public class ColladaWriter
 	public Collection<TextureMap> getImages()
 	{
 		return _libraryImages.keySet();
+	}
+
+	/**
+	 * Writes a <code>library_lights</code> element containing definitions of
+	 * previously referenced lights.
+	 *
+	 * @param   writer  Writer to write to.
+	 *
+	 * @throws  XMLException if there's a problem writing the XML document.
+	 */
+	protected void writeLibraryLights( final XMLWriter writer )
+	throws XMLException
+	{
+		writer.startTag( NS_COLLADA_1_4, "library_lights" );
+
+		for ( final Map.Entry<Light3D, String> entry : _libraryLights.entrySet() )
+		{
+			final Light3D light = entry.getKey();
+			final String id = entry.getValue();
+
+			writeLight( writer, id, light );
+		}
+
+		final Scene scene = _scene;
+		if ( scene.getAmbientRed() > 0 || scene.getAmbientGreen() > 0 || scene.getAmbientBlue() > 0 )
+		{
+			writer.startTag( NS_COLLADA_1_4, "light" );
+			writer.attribute( null, "id", "ambient" );
+			writer.startTag( NS_COLLADA_1_4, "technique_common" );
+			writer.startTag( NS_COLLADA_1_4, "ambient" );
+			writeColor( writer, scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue() );
+			writer.endTag( NS_COLLADA_1_4, "ambient" );
+			writer.endTag( NS_COLLADA_1_4, "technique_common" );
+			writer.endTag( NS_COLLADA_1_4, "light" );
+		}
+
+		writer.endTag( NS_COLLADA_1_4, "library_lights" );
+	}
+
+	/**
+	 * Writes a {@code light} element.
+	 *
+	 * @param writer Writer to write to.
+	 * @param id     Light id.
+	 * @param light  Light to write.
+	 *
+	 * @throws XMLException if there's a problem writing the XML document.
+	 */
+	private void writeLight( final XMLWriter writer, final String id, final Light3D light )
+	throws XMLException
+	{
+		writer.startTag( NS_COLLADA_1_4, "light" );
+		writer.attribute( null, "id", id );
+
+		writer.startTag( NS_COLLADA_1_4, "technique_common" );
+
+		if ( light instanceof DirectionalLight3D )
+		{
+			writer.startTag( NS_COLLADA_1_4, "directional" );
+			writeColor( writer, light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue() );
+			writer.endTag( NS_COLLADA_1_4, "directional" );
+		}
+		else
+		{
+			final boolean spot = light instanceof SpotLight3D;
+
+			writer.startTag( NS_COLLADA_1_4, spot ? "spot" : "point" );
+			writeColor( writer, light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue() );
+
+			writer.startTag( NS_COLLADA_1_4, "constant_attenuation" );
+			writer.text( DatatypeConverter.printFloat( light.getConstantAttenuation() ) );
+			writer.endTag( NS_COLLADA_1_4, "constant_attenuation" );
+
+			writer.startTag( NS_COLLADA_1_4, "linear_attenuation" );
+			writer.text( DatatypeConverter.printFloat( light.getLinearAttenuation() ) );
+			writer.endTag( NS_COLLADA_1_4, "linear_attenuation" );
+
+			writer.startTag( NS_COLLADA_1_4, "quadratic_attenuation" );
+			writer.text( DatatypeConverter.printFloat( light.getQuadraticAttenuation() ) );
+			writer.endTag( NS_COLLADA_1_4, "quadratic_attenuation" );
+
+			if ( spot )
+			{
+				final SpotLight3D spotLight = (SpotLight3D)light;
+
+				writer.startTag( NS_COLLADA_1_4, "falloff_angle" );
+				writer.text( DatatypeConverter.printFloat( 2 * spotLight.getSpreadAngle() ) );
+				writer.endTag( NS_COLLADA_1_4, "falloff_angle" );
+
+				writer.startTag( NS_COLLADA_1_4, "falloff_exponent" );
+				writer.text( DatatypeConverter.printFloat( spotLight.getConcentration() ) );
+				writer.endTag( NS_COLLADA_1_4, "falloff_exponent" );
+			}
+
+			writer.endTag( NS_COLLADA_1_4, spot ? "spot" : "point" );
+		}
+
+		writer.endTag( NS_COLLADA_1_4, "technique_common" );
+		writer.endTag( NS_COLLADA_1_4, "light" );
 	}
 
 	/**

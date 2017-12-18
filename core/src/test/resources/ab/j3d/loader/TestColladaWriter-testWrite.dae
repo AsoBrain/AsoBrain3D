@@ -65,6 +65,27 @@
 					</instance_geometry>
 				</node>
 			</node>
+			<node name="light">
+				<matrix>6.123233995736766E-17 -1.0 0.0 0.0  0.7071067811865476 4.329780281177467E-17 0.7071067811865475 -2.0  -0.7071067811865475 -4.329780281177466E-17 0.7071067811865476 4.0  0.0 0.0 0.0 1.0</matrix>
+				<node>
+					<matrix>0.0 -0.0 -1.0 0.0  -1.0 0.0 -0.0 0.0  0.0 1.0 -0.0 0.0  0.0 0.0 0.0 1.0</matrix>
+					<instance_light url="#l1" />
+				</node>
+			</node>
+			<node name="lightbulb">
+				<matrix>1.0 0.0 -6.123233995736766E-17 0.0  -4.329780281177467E-17 0.7071067811865475 -0.7071067811865476 -2.0  4.329780281177466E-17 0.7071067811865476 0.7071067811865475 4.0  0.0 0.0 0.0 1.0</matrix>
+				<node>
+					<instance_geometry url="#o4">
+						<bind_material>
+							<technique_common>
+								<instance_material symbol="m9" target="#m9">
+									<bind_vertex_input semantic="UVSET0" input_semantic="TEXCOORD" input_set="0" />
+								</instance_material>
+							</technique_common>
+						</bind_material>
+					</instance_geometry>
+				</node>
+			</node>
 		</visual_scene>
 	</library_visual_scenes>
 	<library_geometries>
@@ -656,6 +677,144 @@
 				</triangles>
 			</mesh>
 		</geometry>
+		<geometry id="o4">
+			<mesh>
+				<source id="o4-position">
+					<float_array id="o4-position-array" count="51">0.0 -0.2 0.0 0.07653668647301796 -0.18477590650225736 0.0 0.1414213562373095 -0.14142135623730953 0.0 0.18477590650225736 -0.07653668647301798 0.0 0.2 -1.2246467991473533E-17 0.0 0.18477590650225736 0.07653668647301795 0.0 0.14142135623730953 0.1414213562373095 0.0 0.07653668647301798 0.18477590650225736 0.0 2.4492935982947065E-17 0.2 0.0 -0.07653668647301794 0.1847759065022574 0.0 -0.1414213562373095 0.14142135623730953 0.0 -0.1847759065022573 0.07653668647301808 0.0 -0.2 3.6739403974420595E-17 0.0 -0.18477590650225734 -0.076536686473018 0.0 -0.14142135623730953 -0.14142135623730948 0.0 -0.07653668647301809 -0.1847759065022573 0.0 0.0 0.0 0.4 </float_array>
+					<technique_common>
+						<accessor source="o4-position-array" count="17" stride="3">
+							<param name="X" type="float" />
+							<param name="Y" type="float" />
+							<param name="Z" type="float" />
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="o4-normal">
+					<float_array id="o4-normal-array" count="192">-0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 -0.0 0.0 -1.0 0.17516203303825068 -0.8805990062142505 0.44029950310712523 0.17516203303825068 -0.8805990062142505 0.44029950310712523 0.17516203303825068 -0.8805990062142505 0.44029950310712523 0.49881926743246185 -0.7465357901680003 0.4402995031071251 0.49881926743246185 -0.7465357901680003 0.4402995031071251 0.49881926743246185 -0.7465357901680003 0.4402995031071251 0.7465357901680002 -0.49881926743246213 0.44029950310712523 0.7465357901680002 -0.49881926743246213 0.44029950310712523 0.7465357901680002 -0.49881926743246213 0.44029950310712523 0.8805990062142505 -0.17516203303825068 0.44029950310712523 0.8805990062142505 -0.17516203303825068 0.44029950310712523 0.8805990062142505 -0.17516203303825068 0.44029950310712523 0.8805990062142505 0.17516203303825068 0.44029950310712523 0.8805990062142505 0.17516203303825068 0.44029950310712523 0.8805990062142505 0.17516203303825068 0.44029950310712523 0.7465357901680004 0.49881926743246185 0.44029950310712523 0.7465357901680004 0.49881926743246185 0.44029950310712523 0.7465357901680004 0.49881926743246185 0.44029950310712523 0.49881926743246213 0.7465357901680002 0.44029950310712523 0.49881926743246213 0.7465357901680002 0.44029950310712523 0.49881926743246213 0.7465357901680002 0.44029950310712523 0.17516203303825073 0.8805990062142504 0.44029950310712523 0.17516203303825073 0.8805990062142504 0.44029950310712523 0.17516203303825073 0.8805990062142504 0.44029950310712523 -0.17516203303825037 0.8805990062142505 0.44029950310712523 -0.17516203303825037 0.8805990062142505 0.44029950310712523 -0.17516203303825037 0.8805990062142505 0.44029950310712523 -0.498819267432462 0.7465357901680003 0.4402995031071252 -0.498819267432462 0.7465357901680003 0.4402995031071252 -0.498819267432462 0.7465357901680003 0.4402995031071252 -0.7465357901680002 0.49881926743246213 0.4402995031071252 -0.7465357901680002 0.49881926743246213 0.4402995031071252 -0.7465357901680002 0.49881926743246213 0.4402995031071252 -0.8805990062142504 0.17516203303825115 0.44029950310712523 -0.8805990062142504 0.17516203303825115 0.44029950310712523 -0.8805990062142504 0.17516203303825115 0.44029950310712523 -0.8805990062142505 -0.17516203303825081 0.44029950310712523 -0.8805990062142505 -0.17516203303825081 0.44029950310712523 -0.8805990062142505 -0.17516203303825081 0.44029950310712523 -0.7465357901680002 -0.498819267432462 0.4402995031071252 -0.7465357901680002 -0.498819267432462 0.4402995031071252 -0.7465357901680002 -0.498819267432462 0.4402995031071252 -0.4988192674324624 -0.746535790168 0.4402995031071252 -0.4988192674324624 -0.746535790168 0.4402995031071252 -0.4988192674324624 -0.746535790168 0.4402995031071252 -0.17516203303825104 -0.8805990062142504 0.4402995031071252 -0.17516203303825104 -0.8805990062142504 0.4402995031071252 -0.17516203303825104 -0.8805990062142504 0.4402995031071252 </float_array>
+					<technique_common>
+						<accessor source="o4-normal-array" count="64" stride="3">
+							<param name="X" type="float" />
+							<param name="Y" type="float" />
+							<param name="Z" type="float" />
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="o4-texcoord">
+					<float_array id="o4-texcoord-array" count="128">NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN </float_array>
+					<technique_common>
+						<accessor source="o4-texcoord-array" count="64" stride="2">
+							<param name="S" type="float" />
+							<param name="T" type="float" />
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="o4-vertices">
+					<input semantic="POSITION" source="#o4-position" />
+				</vertices>
+				<triangles count="14" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>15 15 14 14 13 13 15 15 13 13 12 12 15 15 12 12 11 11 15 15 11 11 10 10 15 15 10 10 9 9 15 15 9 9 8 8 15 15 8 8 7 7 15 15 7 7 6 6 15 15 6 6 5 5 15 15 5 5 4 4 15 15 4 4 3 3 15 15 3 3 2 2 15 15 2 2 1 1 15 15 1 1 0 0 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 18 0 17 1 16 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 21 1 20 2 19 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 24 2 23 3 22 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 27 3 26 4 25 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 30 4 29 5 28 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 33 5 32 6 31 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 36 6 35 7 34 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 39 7 38 8 37 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 42 8 41 9 40 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 45 9 44 10 43 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 48 10 47 11 46 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 51 11 50 12 49 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 54 12 53 13 52 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 57 13 56 14 55 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 60 14 59 15 58 </p>
+				</triangles>
+				<triangles count="1" material="m9">
+					<input semantic="VERTEX" source="#o4-vertices" offset="0" />
+					<input semantic="NORMAL" source="#o4-normal" offset="1" />
+					<input semantic="TEXCOORD" source="#o4-texcoord" offset="1" set="0" />
+					<p>16 63 15 62 0 61 </p>
+				</triangles>
+			</mesh>
+		</geometry>
 	</library_geometries>
 	<library_materials>
 		<material id="m1">
@@ -681,6 +840,9 @@
 		</material>
 		<material id="m8">
 			<instance_effect url="#em8"/>
+		</material>
+		<material id="m9">
+			<instance_effect url="#em9" />
 		</material>
 	</library_materials>
 	<library_effects>
@@ -824,14 +986,14 @@
 		</effect>
 		<effect id="em7">
 			<profile_COMMON>
-				<newparam sid="o4">
+				<newparam sid="o5">
 					<surface type="2D">
 						<init_from>i1</init_from>
 					</surface>
 				</newparam>
-				<newparam sid="o5">
+				<newparam sid="o6">
 					<sampler2D>
-						<source>o4</source>
+						<source>o5</source>
 					</sampler2D>
 				</newparam>
 				<technique sid="default">
@@ -840,7 +1002,7 @@
 							<color>0.61 0.61 0.61 1.0</color>
 						</ambient>
 						<diffuse>
-							<texture texture="o5" texcoord="UVSET0"/>
+							<texture texture="o6" texcoord="UVSET0" />
 						</diffuse>
 						<specular>
 							<color>0.31 0.31 0.31 1.0</color>
@@ -881,12 +1043,56 @@
 				</technique>
 			</profile_COMMON>
 		</effect>
+		<effect id="em9">
+			<profile_COMMON>
+				<technique sid="default">
+					<phong>
+						<ambient>
+							<color>1.0 1.0 0.0 1.0</color>
+						</ambient>
+						<diffuse>
+							<color>1.0 1.0 0.0 1.0</color>
+						</diffuse>
+						<specular>
+							<color>0.2 0.2 0.2 1.0</color>
+						</specular>
+						<shininess>
+							<float>32.0</float>
+						</shininess>
+						<transparency>
+							<float>1.0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
 	</library_effects>
 	<library_images>
 		<image id="i1">
 			<init_from>maps/alu-plate.jpg</init_from>
 		</image>
 	</library_images>
+	<library_lights>
+		<light id="l1">
+			<technique_common>
+				<spot>
+					<color>20.0 15.0 10.0</color>
+					<constant_attenuation>0.0</constant_attenuation>
+					<linear_attenuation>0.0</linear_attenuation>
+					<quadratic_attenuation>1.0</quadratic_attenuation>
+					<falloff_angle>64.0</falloff_angle>
+					<falloff_exponent>0.5</falloff_exponent>
+				</spot>
+			</technique_common>
+		</light>
+		<light id="ambient">
+			<technique_common>
+				<ambient>
+					<color>0.2 0.2 0.2</color>
+				</ambient>
+			</technique_common>
+		</light>
+	</library_lights>
 	<scene>
 		<instance_visual_scene url="#scene"/>
 	</scene>

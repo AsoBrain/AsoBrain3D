@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2017 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -62,6 +62,19 @@ extends TestCase
 		final Box3D cube = new Box3D( 1.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, aluUVMap, BasicAppearances.ALU_PLATE, aluUVMap, BasicAppearances.MAGENTA, aluUVMap, BasicAppearances.ALU_PLATE, aluUVMap );
 		scene.addContentNode( "cube", Matrix3D.getTransform( 0.0, 45.0, 45.0, 0.0, 0.0, 0.0 ), cube );
 
+		scene.setAmbient( 0.2f );
+		final Matrix3D lightTransform = Matrix3D.getTransform( 45, 0, 90, 0, -2, 4 );
+
+		final SpotLight3D light = new SpotLight3D( Vector3D.POSITIVE_X_AXIS, 32 );
+		light.setIntensity( 20, 15, 10 );
+		light.setConcentration( 0.5f );
+
+		final Matrix3D lightDirectionTransform = Matrix3D.getPlaneTransform( Vector3D.ZERO, light.getDirection().inverse(), true );
+		final Matrix3D combinedLightTransform = lightDirectionTransform.multiply( lightTransform );
+
+		scene.addContentNode( "light", lightTransform, light );
+		scene.addContentNode( "lightbulb", combinedLightTransform, new Cone3D( 0.4, 0.2, 0, 16, BasicAppearances.YELLOW, null, true, BasicAppearances.YELLOW, null, BasicAppearances.YELLOW, null, false ) );
+
 		final ColladaWriter writer = new ColladaWriter( scene );
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try
@@ -74,7 +87,7 @@ extends TestCase
 		}
 
 		final InputStream actual = new ByteArrayInputStream( out.toByteArray() );
-		final InputStream expected = TestColladaWriter.class.getResourceAsStream( "TestColladaWriter-testWrite.xml" );
+		final InputStream expected = TestColladaWriter.class.getResourceAsStream( "TestColladaWriter-testWrite.dae" );
 		try
 		{
 			XMLTestTools.assertXMLEquals( expected, actual );
