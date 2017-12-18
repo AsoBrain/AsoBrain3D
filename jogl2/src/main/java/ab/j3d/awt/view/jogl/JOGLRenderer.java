@@ -1298,16 +1298,14 @@ public class JOGLRenderer
 		final GL gl = _gl;
 		final GL2 gl2 = gl.getGL2();
 
-		gl2.glLightfv( lightNumber, GLLightingFunc.GL_AMBIENT, new float[] {
-		0.0f, 0.0f, 0.0f, 1.0f
-		}, 0 );
+		gl2.glLightfv( lightNumber, GLLightingFunc.GL_AMBIENT, new float[] { 0.0f, 0.0f, 0.0f, 1.0f }, 0 );
 		gl2.glLightfv( lightNumber, GLLightingFunc.GL_DIFFUSE, new float[] { light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue(), 1.0f }, 0 );
 		gl2.glLightfv( lightNumber, GLLightingFunc.GL_SPECULAR, new float[] { light.getSpecularRed(), light.getSpecularGreen(), light.getSpecularBlue(), 1.0f }, 0 );
 
 		if ( light instanceof DirectionalLight3D )
 		{
 			final DirectionalLight3D directional = (DirectionalLight3D)light;
-			final Vector3D direction = directional.getDirection();
+			final Vector3D direction = light2world.rotate( directional.getDirection() );
 			gl2.glLightfv( lightNumber, GLLightingFunc.GL_POSITION, new float[] { -(float)direction.x, -(float)direction.y, -(float)direction.z, 0.0f }, 0 );
 			gl2.glLightf( lightNumber, GLLightingFunc.GL_CONSTANT_ATTENUATION, 1.0f );
 			gl2.glLightf( lightNumber, GLLightingFunc.GL_LINEAR_ATTENUATION, 0.0f );
