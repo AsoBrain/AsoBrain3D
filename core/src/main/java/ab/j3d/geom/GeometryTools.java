@@ -29,6 +29,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "StandardVariableNames", "WeakerAccess" } )
 public class GeometryTools
 {
 	/**
@@ -46,6 +47,7 @@ public class GeometryTools
 	 * Cosine of 1 decimal degree. This is close to 1.0 and can be used as a
 	 * border value.
 	 */
+	@SuppressWarnings( "ConstantMathCall" )
 	private static final double COSINE_ONE_DEGREE = Math.cos( Math.toRadians( 1.0 ) );
 
 	/**
@@ -299,6 +301,29 @@ public class GeometryTools
 	}
 
 	/**
+	 * Test whether two rectangles intersect.
+	 *
+	 * @param ax1 First X coordinate of first rectangle.
+	 * @param ay1 First Y coordinate of first rectangle.
+	 * @param ax2 Second X coordinate of first rectangle.
+	 * @param ay2 Second Y coordinate of first rectangle.
+	 * @param bx1 First X coordinate of second rectangle.
+	 * @param by1 First Y coordinate of second rectangle.
+	 * @param bx2 Second X coordinate of second rectangle.
+	 * @param by2 Second Y coordinate of second rectangle.
+	 *
+	 * @return {@code true} if the rectangles intersect.
+	 */
+	public static boolean testRectangleRectangleIntersection( final double ax1, final double ay1, final double ax2, final double ay2,
+	                                                          final double bx1, final double by1, final double bx2, final double by2 )
+	{
+		return ( Math.min( ax1, ax2 ) <= Math.max( bx1, bx2 ) ) &&
+		       ( Math.min( bx1, bx2 ) <= Math.max( ax1, ax2 ) ) &&
+		       ( Math.min( ay1, ay2 ) <= Math.max( by1, by2 ) ) &&
+		       ( Math.min( by1, by2 ) <= Math.max( ay1, ay2 ) );
+	}
+
+	/**
 	 * Test intersection between to triangles in 3D.
 	 *
 	 * @param v0 First vertex of first triangle.
@@ -353,6 +378,7 @@ public class GeometryTools
 	{
 		double maxDistance = 0.0;
 
+		//noinspection Duplicates
 		if ( sphereCenterX < boxMinX )
 		{
 			final double dx = boxMinX - sphereCenterX;
@@ -374,6 +400,7 @@ public class GeometryTools
 			maxDistance = maxDistance + ( dx * dx );
 		}
 
+		//noinspection Duplicates
 		if ( sphereCenterY < boxMinY )
 		{
 			final double dy = boxMinY - sphereCenterY;
@@ -395,6 +422,7 @@ public class GeometryTools
 			maxDistance = maxDistance + ( dy * dy );
 		}
 
+		//noinspection Duplicates
 		if ( sphereCenterZ < boxMinZ )
 		{
 			final double dz = boxMinZ - sphereCenterZ;
@@ -596,6 +624,7 @@ public class GeometryTools
 	 * @return Points describing the intersection (1 or 2 points); {@code null}
 	 * if no intersection was found.
 	 */
+	@Nullable
 	public static Vector2D[] getIntersectionBetweenLineSegments( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
 	{
 		Vector2D[] result = null;
@@ -624,6 +653,7 @@ public class GeometryTools
 					isPositive = false;
 				}
 
+				//noinspection Duplicates
 				if ( x3 <= x4 )
 				{
 					if ( x3 > sx1 )
@@ -666,6 +696,7 @@ public class GeometryTools
 						isPositive = !isPositive;
 					}
 
+					//noinspection Duplicates
 					if ( y3 <= y4 )
 					{
 						if ( y3 > sy1 )
@@ -983,8 +1014,8 @@ public class GeometryTools
 		final double crossY = uz * vx - ux * vz;
 		final double crossZ = ux * vy - uy * vx;
 
-		final double l = Vector3D.length( crossX, crossY, crossZ );
-		return ( l == 0.0 ) ? null : ( l == 1.0 ) ? new Vector3D( crossX, crossY, crossZ ) : new Vector3D( crossX / l, crossY / l, crossZ / l );
+		final double len = Vector3D.length( crossX, crossY, crossZ );
+		return ( len == 0.0 ) ? null : ( len == 1.0 ) ? new Vector3D( crossX, crossY, crossZ ) : new Vector3D( crossX / len, crossY / len, crossZ / len );
 	}
 
 	/**
@@ -1010,8 +1041,9 @@ public class GeometryTools
 	/**
 	 * Test if the specified point is 'inside' the specified 3D polygon. Points
 	 * on the edges and vertices are also considered 'inside'. <dl>
-	 * <dt>IMPORTANT:</dt> <dd>The point must be specified in the object's own
-	 * coordinate system.</dd> </dl> For an explanation of the math used here,
+	 *
+	 * <dt>IMPORTANT:</dt><dd>The point must be specified in the object's own
+	 * coordinate system.</dd> </dl>For an explanation of the math used here,
 	 * see this site under 'Solution 4 (3D)': <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
 	 *
 	 * @param polygon Polygon to test point against.
@@ -1022,7 +1054,7 @@ public class GeometryTools
 	 * @return {@code true} if the point is inside the polygon; {@code false}
 	 * otherwise.
 	 *
-	 * @throws NullPointerException if <code>polygon</code> is {@code null}.
+	 * @throws NullPointerException if {@code polygon} is {@code null}.
 	 */
 	public static boolean isPointInsidePolygon( final Polygon3D polygon, final double x, final double y, final double z )
 	{
@@ -1229,7 +1261,7 @@ public class GeometryTools
 	 * @param value1 First value to compare.
 	 * @param value2 Second value to compare.
 	 *
-	 * @return <code>true</code> is {@code value1} is greater than or within a
+	 * @return {@code true} is {@code value1} is greater than or within a
 	 * tolerance of {@link #EPSILON} of {@code value2}; {@code false}
 	 * otherwise.
 	 */
@@ -1245,7 +1277,7 @@ public class GeometryTools
 	 * @param value1 First value to compare.
 	 * @param value2 Second value to compare.
 	 *
-	 * @return <code>true</code> is {@code value1} is less than or within a
+	 * @return {@code true} is {@code value1} is less than or within a
 	 * tolerance of {@link #EPSILON} of {@code value2}; {@code false}
 	 * otherwise.
 	 */
@@ -1262,7 +1294,7 @@ public class GeometryTools
 	 * @param value1 First value to compare.
 	 * @param value2 Second value to compare.
 	 *
-	 * @return <code>true</code> is {@code value1} is at least {@link #EPSILON}
+	 * @return {@code true} is {@code value1} is at least {@link #EPSILON}
 	 * greater than {@code value2}; {@code false} otherwise.
 	 */
 	public static boolean significantlyGreaterThan( final double value1, final double value2 )
@@ -1277,7 +1309,7 @@ public class GeometryTools
 	 * @param value1 First value to compare.
 	 * @param value2 Second value to compare.
 	 *
-	 * @return <code>true</code> is {@code value1} is at least {@link #EPSILON}
+	 * @return {@code true} is {@code value1} is at least {@link #EPSILON}
 	 * less than {@code value2}; {@code false} otherwise.
 	 */
 	public static boolean significantlyLessThan( final double value1, final double value2 )

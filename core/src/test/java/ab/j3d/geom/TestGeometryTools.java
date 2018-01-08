@@ -22,7 +22,7 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.junit.*;
-import junit.framework.*;
+import org.junit.*;
 
 /**
  * This class tests the {@link GeometryTools} class.
@@ -30,7 +30,6 @@ import junit.framework.*;
  * @author Peter S. Heijnen
  */
 public class TestGeometryTools
-extends TestCase
 {
 	/**
 	 * Name of this class.
@@ -41,6 +40,7 @@ extends TestCase
 	 * Test the {@link GeometryTools#testOrientedBoundingBoxIntersection}
 	 * method.
 	 */
+	@Test
 	public void testTestOrientedBoundingBoxIntersection()
 	{
 		System.out.println( CLASS_NAME + ".testTestOrientedBoundingBoxIntersection()" );
@@ -52,7 +52,7 @@ extends TestCase
 			0.0, 0.0, 1.0, 0.0,
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 18.0 );
-			assertFalse( "Expected nocollision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertFalse( "Expected no collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -62,7 +62,7 @@ extends TestCase
 			1.0, 0.0, 0.0, 11.0,
 			0.0, 0.0, -1.0, 0.0,
 			0.0, 1.0, 0.0, 10.5 );
-			assertFalse( "Expected no collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertFalse( "Expected no collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -72,7 +72,7 @@ extends TestCase
 			1.0, 0.0, 0.0, 184.3,
 			0.0, 1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 195.5 );
-			assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -82,7 +82,7 @@ extends TestCase
 			1.0, 0.0, 0.0, 184.3,
 			0.0, 1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 195.5 );
-			assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -92,7 +92,7 @@ extends TestCase
 			0.0, 0.0, 1.0, 336.6,
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 18.0 );
-			assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -102,7 +102,7 @@ extends TestCase
 			1.0, 0.0, 0.0, 11.0,
 			0.0, 0.0, -1.0, 0.1,
 			0.0, 1.0, 0.0, 10.5 );
-			assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -112,7 +112,7 @@ extends TestCase
 			1.0, 0.0, 0.0, 11.0,
 			0.0, 0.0, -1.0, 0.1,
 			0.0, 1.0, 0.0, 10.5 );
-			assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -122,18 +122,16 @@ extends TestCase
 			0.0, 0.0, 1.0, 581.9,
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 18.0 );
-			assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 	}
 
 	/**
 	 * Test the {@link GeometryTools#getIntersectionBetweenRayAndPolygon}
 	 * method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testGetIntersectionBetweenRayAndPolygon()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersectionBetweenRayAndPolygon()" );
 
@@ -175,42 +173,42 @@ extends TestCase
 
 		final Test[] tests =
 		{
-			/* Test #1  */ new Test( leftSide, -2.0, 0.0, 0.0, 1.0, 0.0, 0.0, Vector3D.NEGATIVE_X_AXIS ),
-			/* Test #2  */ new Test( leftSide, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, Vector3D.NEGATIVE_X_AXIS ),
-			/* Test #3  */ new Test( leftSide, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, null ),
-			/* Test #4  */ new Test( leftSide, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, null ),
-			/* Test #5  */ new Test( leftSide, 2.0, 0.0, 0.0, 1.0, 0.0, 0.0, null ),
+		/* Test #1  */ new Test( leftSide, -2.0, 0.0, 0.0, 1.0, 0.0, 0.0, Vector3D.NEGATIVE_X_AXIS ),
+		/* Test #2  */ new Test( leftSide, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, Vector3D.NEGATIVE_X_AXIS ),
+		/* Test #3  */ new Test( leftSide, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, null ),
+		/* Test #4  */ new Test( leftSide, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, null ),
+		/* Test #5  */ new Test( leftSide, 2.0, 0.0, 0.0, 1.0, 0.0, 0.0, null ),
 
-			/* Test #6  */ new Test( rightSide, -2.0, 0.0, 0.0, -1.0, 0.0, 0.0, null ),
-			/* Test #7  */ new Test( rightSide, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, null ),
-			/* Test #8  */ new Test( rightSide, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, null ),
-			/* Test #9  */ new Test( rightSide, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0, Vector3D.POSITIVE_X_AXIS ),
-			/* Test #10 */ new Test( rightSide, 2.0, 0.0, 0.0, -1.0, 0.0, 0.0, Vector3D.POSITIVE_X_AXIS ),
+		/* Test #6  */ new Test( rightSide, -2.0, 0.0, 0.0, -1.0, 0.0, 0.0, null ),
+		/* Test #7  */ new Test( rightSide, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, null ),
+		/* Test #8  */ new Test( rightSide, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, null ),
+		/* Test #9  */ new Test( rightSide, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0, Vector3D.POSITIVE_X_AXIS ),
+		/* Test #10 */ new Test( rightSide, 2.0, 0.0, 0.0, -1.0, 0.0, 0.0, Vector3D.POSITIVE_X_AXIS ),
 
-			/* Test #11 */ new Test( frontSide, 0.0, -2.0, 0.0, 0.0, 1.0, 0.0, Vector3D.NEGATIVE_Y_AXIS ),
-			/* Test #12 */ new Test( frontSide, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, Vector3D.NEGATIVE_Y_AXIS ),
-			/* Test #13 */ new Test( frontSide, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, null ),
-			/* Test #14 */ new Test( frontSide, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, null ),
-			/* Test #15 */ new Test( frontSide, 0.0, 2.0, 0.0, 0.0, 1.0, 0.0, null ),
+		/* Test #11 */ new Test( frontSide, 0.0, -2.0, 0.0, 0.0, 1.0, 0.0, Vector3D.NEGATIVE_Y_AXIS ),
+		/* Test #12 */ new Test( frontSide, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, Vector3D.NEGATIVE_Y_AXIS ),
+		/* Test #13 */ new Test( frontSide, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, null ),
+		/* Test #14 */ new Test( frontSide, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, null ),
+		/* Test #15 */ new Test( frontSide, 0.0, 2.0, 0.0, 0.0, 1.0, 0.0, null ),
 
-			/* Test #16 */ new Test( rearSide, 0.0, -2.0, 0.0, 0.0, -1.0, 0.0, null ),
-			/* Test #17 */ new Test( rearSide, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, null ),
-			/* Test #18 */ new Test( rearSide, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, null ),
-			/* Test #19 */ new Test( rearSide, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, Vector3D.POSITIVE_Y_AXIS ),
-			/* Test #20 */ new Test( rearSide, 0.0, 2.0, 0.0, 0.0, -1.0, 0.0, Vector3D.POSITIVE_Y_AXIS ),
+		/* Test #16 */ new Test( rearSide, 0.0, -2.0, 0.0, 0.0, -1.0, 0.0, null ),
+		/* Test #17 */ new Test( rearSide, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, null ),
+		/* Test #18 */ new Test( rearSide, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, null ),
+		/* Test #19 */ new Test( rearSide, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, Vector3D.POSITIVE_Y_AXIS ),
+		/* Test #20 */ new Test( rearSide, 0.0, 2.0, 0.0, 0.0, -1.0, 0.0, Vector3D.POSITIVE_Y_AXIS ),
 
-			/* Test #21 */ new Test( bottomSide, 0.0, 0.0, -2.0, 0.0, 0.0, 1.0, Vector3D.NEGATIVE_Z_AXIS ),
-			/* Test #22 */ new Test( bottomSide, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, Vector3D.NEGATIVE_Z_AXIS ),
-			/* Test #23 */ new Test( bottomSide, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, null ),
-			/* Test #24 */ new Test( bottomSide, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, null ),
-			/* Test #25 */ new Test( bottomSide, 0.0, 0.0, 2.0, 0.0, 0.0, 1.0, null ),
+		/* Test #21 */ new Test( bottomSide, 0.0, 0.0, -2.0, 0.0, 0.0, 1.0, Vector3D.NEGATIVE_Z_AXIS ),
+		/* Test #22 */ new Test( bottomSide, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, Vector3D.NEGATIVE_Z_AXIS ),
+		/* Test #23 */ new Test( bottomSide, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, null ),
+		/* Test #24 */ new Test( bottomSide, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, null ),
+		/* Test #25 */ new Test( bottomSide, 0.0, 0.0, 2.0, 0.0, 0.0, 1.0, null ),
 
-			/* Test #26 */ new Test( topSide, 0.0, 0.0, -2.0, 0.0, 0.0, -1.0, null ),
-			/* Test #27 */ new Test( topSide, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, null ),
-			/* Test #28 */ new Test( topSide, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, null ),
-			/* Test #29 */ new Test( topSide, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, Vector3D.POSITIVE_Z_AXIS ),
-			/* Test #30 */ new Test( topSide, 0.0, 0.0, 2.0, 0.0, 0.0, -1.0, Vector3D.POSITIVE_Z_AXIS ),
-			};
+		/* Test #26 */ new Test( topSide, 0.0, 0.0, -2.0, 0.0, 0.0, -1.0, null ),
+		/* Test #27 */ new Test( topSide, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, null ),
+		/* Test #28 */ new Test( topSide, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, null ),
+		/* Test #29 */ new Test( topSide, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, Vector3D.POSITIVE_Z_AXIS ),
+		/* Test #30 */ new Test( topSide, 0.0, 0.0, 2.0, 0.0, 0.0, -1.0, Vector3D.POSITIVE_Z_AXIS ),
+		};
 
 		/*
 		 * Execute tests.
@@ -222,7 +220,7 @@ extends TestCase
 
 			final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPolygon( test._polygon, test._ray );
 
-			assertEquals( description, test._expected, result );
+			Assert.assertEquals( description, test._expected, result );
 		}
 	}
 
@@ -231,6 +229,7 @@ extends TestCase
 	 *
 	 * @throws Exception if the test fails.
 	 */
+	@Test
 	@SuppressWarnings( "rawtypes" )
 	public void testGetIntersectionBetweenRayAndPlane()
 	throws Exception
@@ -274,85 +273,85 @@ extends TestCase
 		 */
 		final Test[] tests =
 		{
-			/*
-			 * Tests with plane: Z = -5
-			 */
+		/*
+		 * Tests with plane: Z = -5
+		 */
 
-			/* Test #1  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #2  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
-			/* Test #3  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
-			/* Test #4  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #5  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #6  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #1  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #2  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+		/* Test #3  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+		/* Test #4  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #5  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #6  */ new Test( 0.0, 0.0, 1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #7  */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #8  */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
-			/* Test #9  */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
-			/* Test #10 */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
-			/* Test #11 */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #12 */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #7  */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #8  */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+		/* Test #9  */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+		/* Test #10 */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+		/* Test #11 */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #12 */ new Test( 0.0, 0.0, 1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/*
-			 * Tests with plane: Z = 0
-			 */
+		/*
+		 * Tests with plane: Z = 0
+		 */
 
-			/* Test #13 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #14 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO ),
-			/* Test #15 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO ),
-			/* Test #16 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #17 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #18 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #13 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #14 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO ),
+		/* Test #15 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO ),
+		/* Test #16 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #17 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #18 */ new Test( 0.0, 0.0, 1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #19 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #20 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #21 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #22 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO ),
-			/* Test #23 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO ),
-			/* Test #24 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #19 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #20 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #21 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #22 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO ),
+		/* Test #23 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO ),
+		/* Test #24 */ new Test( 0.0, 0.0, -1.0, 0.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/*
-			 * Tests with plane: Z = 5
-			 */
+		/*
+		 * Tests with plane: Z = 5
+		 */
 
-			/* Test #25 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #26 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #27 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #28 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #29 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #30 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #25 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #26 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #27 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #28 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #29 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #30 */ new Test( 0.0, 0.0, 1.0, 5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #31 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #32 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #33 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #34 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #35 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #36 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #31 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #32 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #33 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #34 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #35 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #36 */ new Test( 0.0, 0.0, 1.0, 5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #37 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #38 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #39 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #40 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #41 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #42 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #37 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #38 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #39 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #40 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #41 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #42 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #43 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #44 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			/* Test #45 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #46 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #47 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
-			/* Test #48 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #43 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #44 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		/* Test #45 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #46 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #47 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, 5.0 ) ),
+		/* Test #48 */ new Test( 0.0, 0.0, -1.0, -5.0, true, new Vector3D( 0.0, 0.0, 10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/*
-			 * Tests with plane: X = 0
-			 */
+		/*
+		 * Tests with plane: X = 0
+		 */
 
-			/* Test #49 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.POSITIVE_X_AXIS, null ),
-			/* Test #50 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.POSITIVE_Y_AXIS, null ),
-			/* Test #51 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
-			/* Test #52 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.NEGATIVE_X_AXIS, new Vector3D( 0.0, 1.0, 1.0 ) ),
-			/* Test #53 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.NEGATIVE_Y_AXIS, null ),
-			/* Test #54 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
-			};
+		/* Test #49 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.POSITIVE_X_AXIS, null ),
+		/* Test #50 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.POSITIVE_Y_AXIS, null ),
+		/* Test #51 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+		/* Test #52 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.NEGATIVE_X_AXIS, new Vector3D( 0.0, 1.0, 1.0 ) ),
+		/* Test #53 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.NEGATIVE_Y_AXIS, null ),
+		/* Test #54 */ new Test( 1.0, 0.0, 0.0, 0.0, false, new Vector3D( 1.0, 1.0, 1.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+		};
 
 		/*
 		 * Execute tests.
@@ -373,10 +372,10 @@ extends TestCase
 				final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPlane( test._planeNormalX, test._planeNormalY, test._planeNormalZ, test._planeDistance, test._planeTwoSided, test._rayOrigin, test._rayDirection, true );
 				if ( expectedException != null )
 				{
-					fail( description + " should have thrown exception" );
+					Assert.fail( description + " should have thrown exception" );
 				}
 
-				assertEquals( description, test._expected, result );
+				Assert.assertEquals( description, test._expected, result );
 			}
 			catch ( final Exception e )
 			{
@@ -386,18 +385,16 @@ extends TestCase
 					throw e;
 				}
 
-				assertEquals( description + " threw wrong exception", expectedException, e.getClass() );
+				Assert.assertEquals( description + " threw wrong exception", expectedException, e.getClass() );
 			}
 		}
 	}
 
 	/**
 	 * Test the {@link GeometryTools#getPlaneNormal} method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testGetPlaneNormal()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testGetPlaneNormal()" );
 
@@ -437,28 +434,28 @@ extends TestCase
 
 		final Test[] tests =
 		{
-			/* Test #1  */ new Test( leftRearBottom, leftRearTop, leftFrontTop, -1.0, 0.0, 0.0 ),
-			/* Test #2  */ new Test( rightFrontBottom, rightFrontTop, rightRearTop, 1.0, 0.0, 0.0 ),
-			/* Test #3  */ new Test( leftFrontBottom, leftFrontTop, rightFrontTop, 0.0, -1.0, 0.0 ),
-			/* Test #4  */ new Test( rightRearBottom, rightRearTop, leftRearTop, 0.0, 1.0, 0.0 ),
-			/* Test #5  */ new Test( leftRearBottom, leftFrontBottom, rightFrontBottom, 0.0, 0.0, -1.0 ),
-			/* Test #6  */ new Test( leftFrontTop, leftRearTop, rightRearTop, 0.0, 0.0, 1.0 ),
+		/* Test #1  */ new Test( leftRearBottom, leftRearTop, leftFrontTop, -1.0, 0.0, 0.0 ),
+		/* Test #2  */ new Test( rightFrontBottom, rightFrontTop, rightRearTop, 1.0, 0.0, 0.0 ),
+		/* Test #3  */ new Test( leftFrontBottom, leftFrontTop, rightFrontTop, 0.0, -1.0, 0.0 ),
+		/* Test #4  */ new Test( rightRearBottom, rightRearTop, leftRearTop, 0.0, 1.0, 0.0 ),
+		/* Test #5  */ new Test( leftRearBottom, leftFrontBottom, rightFrontBottom, 0.0, 0.0, -1.0 ),
+		/* Test #6  */ new Test( leftFrontTop, leftRearTop, rightRearTop, 0.0, 0.0, 1.0 ),
 
-			/* Test #7  */ new Test( leftRearBottom, leftRearTop, rightFrontTop, -hr2, -hr2, 0.0 ),
-			/* Test #8  */ new Test( rightRearBottom, rightRearTop, leftFrontTop, -hr2, hr2, 0.0 ),
-			/* Test #9  */ new Test( rightFrontBottom, rightFrontTop, leftRearTop, hr2, hr2, 0.0 ),
-			/* Test #10 */ new Test( leftFrontBottom, leftFrontTop, rightRearTop, hr2, -hr2, 0.0 ),
+		/* Test #7  */ new Test( leftRearBottom, leftRearTop, rightFrontTop, -hr2, -hr2, 0.0 ),
+		/* Test #8  */ new Test( rightRearBottom, rightRearTop, leftFrontTop, -hr2, hr2, 0.0 ),
+		/* Test #9  */ new Test( rightFrontBottom, rightFrontTop, leftRearTop, hr2, hr2, 0.0 ),
+		/* Test #10 */ new Test( leftFrontBottom, leftFrontTop, rightRearTop, hr2, -hr2, 0.0 ),
 
-			/* Test #11 */ new Test( rightRearBottom, leftRearTop, leftFrontTop, -hr2, 0.0, -hr2 ),
-			/* Test #12 */ new Test( leftRearBottom, rightRearTop, rightFrontTop, -hr2, 0.0, hr2 ),
-			/* Test #13 */ new Test( rightFrontBottom, leftFrontTop, leftRearTop, hr2, 0.0, hr2 ),
-			/* Test #14 */ new Test( leftFrontBottom, rightFrontTop, rightRearTop, hr2, 0.0, -hr2 ),
+		/* Test #11 */ new Test( rightRearBottom, leftRearTop, leftFrontTop, -hr2, 0.0, -hr2 ),
+		/* Test #12 */ new Test( leftRearBottom, rightRearTop, rightFrontTop, -hr2, 0.0, hr2 ),
+		/* Test #13 */ new Test( rightFrontBottom, leftFrontTop, leftRearTop, hr2, 0.0, hr2 ),
+		/* Test #14 */ new Test( leftFrontBottom, rightFrontTop, rightRearTop, hr2, 0.0, -hr2 ),
 
-			/* Test #15 */ new Test( leftRearBottom, leftFrontTop, rightFrontTop, 0.0, -hr2, -hr2 ),
-			/* Test #16 */ new Test( leftFrontBottom, leftRearTop, rightRearTop, 0.0, -hr2, hr2 ),
-			/* Test #17 */ new Test( leftFrontTop, leftRearBottom, rightRearBottom, 0.0, hr2, hr2 ),
-			/* Test #18 */ new Test( leftRearTop, leftFrontBottom, rightFrontBottom, 0.0, hr2, -hr2 ),
-			};
+		/* Test #15 */ new Test( leftRearBottom, leftFrontTop, rightFrontTop, 0.0, -hr2, -hr2 ),
+		/* Test #16 */ new Test( leftFrontBottom, leftRearTop, rightRearTop, 0.0, -hr2, hr2 ),
+		/* Test #17 */ new Test( leftFrontTop, leftRearBottom, rightRearBottom, 0.0, hr2, hr2 ),
+		/* Test #18 */ new Test( leftRearTop, leftFrontBottom, rightFrontBottom, 0.0, hr2, -hr2 ),
+		};
 
 		/*
 		 * Execute tests.
@@ -480,9 +477,9 @@ extends TestCase
 	 *
 	 * @throws Exception if the test fails.
 	 */
+	@Test
 	@SuppressWarnings( "JavaDoc" )
 	public void testIsPointInsidePolygon()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testIsPointInsidePolygon()" );
 
@@ -531,15 +528,15 @@ extends TestCase
 		{
 			private final Vector3D[] _vertices =
 			{
-					/* 0 */ new Vector3D( 0.0, 20.0, 5.0 ),
-					/* 1 */ new Vector3D( 10.0, 30.0, 5.0 ),
-					/* 2 */ new Vector3D( 30.0, 30.0, 5.0 ),
-					/* 3 */ new Vector3D( 30.0, 20.0, 5.0 ),
-					/* 4 */ new Vector3D( 30.0, 10.0, 5.0 ),
-					/* 5 */ new Vector3D( 30.0, 0.0, 5.0 ),
-					/* 6 */ new Vector3D( 10.0, 0.0, 5.0 ),
-					/* 7 */ new Vector3D( 0.0, 10.0, 5.0 ),
-					};
+			/* 0 */ new Vector3D( 0.0, 20.0, 5.0 ),
+			/* 1 */ new Vector3D( 10.0, 30.0, 5.0 ),
+			/* 2 */ new Vector3D( 30.0, 30.0, 5.0 ),
+			/* 3 */ new Vector3D( 30.0, 20.0, 5.0 ),
+			/* 4 */ new Vector3D( 30.0, 10.0, 5.0 ),
+			/* 5 */ new Vector3D( 30.0, 0.0, 5.0 ),
+			/* 6 */ new Vector3D( 10.0, 0.0, 5.0 ),
+			/* 7 */ new Vector3D( 0.0, 10.0, 5.0 ),
+			};
 
 			private final Vector3D _normal;
 
@@ -599,11 +596,11 @@ extends TestCase
 		{
 			private final Vector3D[] _vertices =
 			{
-					/* 0 */ new Vector3D( -10.0, -10.0, 5.0 ),
-					/* 1 */ new Vector3D( 10.0, -10.0, 5.0 ),
-					/* 2 */ new Vector3D( 10.0, 10.0, 5.0 ),
-					/* 3 */ new Vector3D( -10.0, 10.0, 5.0 ),
-					};
+			/* 0 */ new Vector3D( -10.0, -10.0, 5.0 ),
+			/* 1 */ new Vector3D( 10.0, -10.0, 5.0 ),
+			/* 2 */ new Vector3D( 10.0, 10.0, 5.0 ),
+			/* 3 */ new Vector3D( -10.0, 10.0, 5.0 ),
+			};
 
 			private final Vector3D _normal = new Vector3D( 0.0, 0.0, -1.0 );
 
@@ -652,70 +649,70 @@ extends TestCase
 
 		final Test[] tests =
 		{
-			/* center */
+		/* center */
 
-			/* Test #1  */ new Test( polygon1, 20.0, 15.0, 0.0, false ),
-			/* Test #2  */ new Test( polygon1, 20.0, 15.0, 5.0, true ),
-			/* Test #3  */ new Test( polygon1, 20.0, 15.0, 10.0, false ),
+		/* Test #1  */ new Test( polygon1, 20.0, 15.0, 0.0, false ),
+		/* Test #2  */ new Test( polygon1, 20.0, 15.0, 5.0, true ),
+		/* Test #3  */ new Test( polygon1, 20.0, 15.0, 10.0, false ),
 
-			/* Test #4  */ new Test( polygon2, 0.0, 0.0, 0.0, false ),
-			/* Test #5  */ new Test( polygon2, 0.0, 0.0, 5.0, true ),
-			/* Test #6  */ new Test( polygon2, 0.0, 0.0, 10.0, false ),
+		/* Test #4  */ new Test( polygon2, 0.0, 0.0, 0.0, false ),
+		/* Test #5  */ new Test( polygon2, 0.0, 0.0, 5.0, true ),
+		/* Test #6  */ new Test( polygon2, 0.0, 0.0, 10.0, false ),
 
-			/* outside */
+		/* outside */
 
-			/* Test #7  */ new Test( polygon1, 0.0, 0.0, 0.0, false ),
-			/* Test #8  */ new Test( polygon1, 0.0, 0.0, 5.0, false ),
-			/* Test #9  */ new Test( polygon1, 2.5, 2.5, 5.0, false ),
-			/* Test #10 */ new Test( polygon1, 0.0, 40.0, 5.0, false ),
-			/* Test #11 */ new Test( polygon1, 40.0, 20.0, 5.0, false ),
+		/* Test #7  */ new Test( polygon1, 0.0, 0.0, 0.0, false ),
+		/* Test #8  */ new Test( polygon1, 0.0, 0.0, 5.0, false ),
+		/* Test #9  */ new Test( polygon1, 2.5, 2.5, 5.0, false ),
+		/* Test #10 */ new Test( polygon1, 0.0, 40.0, 5.0, false ),
+		/* Test #11 */ new Test( polygon1, 40.0, 20.0, 5.0, false ),
 
-			/* Test #12 */ new Test( polygon2, -10.1, 0.0, 5.0, false ),
-			/* Test #13 */ new Test( polygon2, -10.1, 10.0, 5.0, false ),
-			/* Test #14 */ new Test( polygon2, -10.1, 10.1, 5.0, false ),
-			/* Test #15 */ new Test( polygon2, -10.0, 10.1, 5.0, false ),
-			/* Test #16 */ new Test( polygon2, 0.0, 10.1, 5.0, false ),
-			/* Test #17 */ new Test( polygon2, 10.0, 10.1, 5.0, false ),
-			/* Test #18 */ new Test( polygon2, 10.1, 10.1, 5.0, false ),
-			/* Test #19 */ new Test( polygon2, 10.1, 0.0, 5.0, false ),
-			/* Test #20 */ new Test( polygon2, 10.1, -10.0, 5.0, false ),
-			/* Test #21 */ new Test( polygon2, 10.1, -10.1, 5.0, false ),
-			/* Test #22 */ new Test( polygon2, 10.0, -10.1, 5.0, false ),
-			/* Test #23 */ new Test( polygon2, 0.0, -10.1, 5.0, false ),
-			/* Test #24 */ new Test( polygon2, -10.0, -10.1, 5.0, false ),
-			/* Test #25 */ new Test( polygon2, -10.1, -10.1, 5.0, false ),
-			/* Test #26 */ new Test( polygon2, -10.1, -10.0, 5.0, false ),
+		/* Test #12 */ new Test( polygon2, -10.1, 0.0, 5.0, false ),
+		/* Test #13 */ new Test( polygon2, -10.1, 10.0, 5.0, false ),
+		/* Test #14 */ new Test( polygon2, -10.1, 10.1, 5.0, false ),
+		/* Test #15 */ new Test( polygon2, -10.0, 10.1, 5.0, false ),
+		/* Test #16 */ new Test( polygon2, 0.0, 10.1, 5.0, false ),
+		/* Test #17 */ new Test( polygon2, 10.0, 10.1, 5.0, false ),
+		/* Test #18 */ new Test( polygon2, 10.1, 10.1, 5.0, false ),
+		/* Test #19 */ new Test( polygon2, 10.1, 0.0, 5.0, false ),
+		/* Test #20 */ new Test( polygon2, 10.1, -10.0, 5.0, false ),
+		/* Test #21 */ new Test( polygon2, 10.1, -10.1, 5.0, false ),
+		/* Test #22 */ new Test( polygon2, 10.0, -10.1, 5.0, false ),
+		/* Test #23 */ new Test( polygon2, 0.0, -10.1, 5.0, false ),
+		/* Test #24 */ new Test( polygon2, -10.0, -10.1, 5.0, false ),
+		/* Test #25 */ new Test( polygon2, -10.1, -10.1, 5.0, false ),
+		/* Test #26 */ new Test( polygon2, -10.1, -10.0, 5.0, false ),
 
-			/* on vertices */
+		/* on vertices */
 
-			/* Test #27 */ new Test( polygon1, polygon1.getX( 0 ), polygon1.getY( 0 ), polygon1.getZ( 0 ), true ),
-			/* Test #28 */ new Test( polygon1, polygon1.getX( 1 ), polygon1.getY( 1 ), polygon1.getZ( 1 ), true ),
-			/* Test #29 */ new Test( polygon1, polygon1.getX( 2 ), polygon1.getY( 2 ), polygon1.getZ( 2 ), true ),
-			/* Test #30 */ new Test( polygon1, polygon1.getX( 3 ), polygon1.getY( 3 ), polygon1.getZ( 3 ), true ),
-			/* Test #31 */ new Test( polygon1, polygon1.getX( 4 ), polygon1.getY( 4 ), polygon1.getZ( 4 ), true ),
-			/* Test #32 */ new Test( polygon1, polygon1.getX( 5 ), polygon1.getY( 5 ), polygon1.getZ( 5 ), true ),
-			/* Test #33 */ new Test( polygon1, polygon1.getX( 6 ), polygon1.getY( 6 ), polygon1.getZ( 6 ), true ),
-			/* Test #34 */ new Test( polygon1, polygon1.getX( 7 ), polygon1.getY( 7 ), polygon1.getZ( 7 ), true ),
-			/* Test #35 */ new Test( polygon2, polygon2.getX( 0 ), polygon2.getY( 0 ), polygon2.getZ( 0 ), true ),
-			/* Test #36 */ new Test( polygon2, polygon2.getX( 1 ), polygon2.getY( 1 ), polygon2.getZ( 1 ), true ),
-			/* Test #37 */ new Test( polygon2, polygon2.getX( 2 ), polygon2.getY( 2 ), polygon2.getZ( 2 ), true ),
-			/* Test #38 */ new Test( polygon2, polygon2.getX( 3 ), polygon2.getY( 3 ), polygon2.getZ( 3 ), true ),
+		/* Test #27 */ new Test( polygon1, polygon1.getX( 0 ), polygon1.getY( 0 ), polygon1.getZ( 0 ), true ),
+		/* Test #28 */ new Test( polygon1, polygon1.getX( 1 ), polygon1.getY( 1 ), polygon1.getZ( 1 ), true ),
+		/* Test #29 */ new Test( polygon1, polygon1.getX( 2 ), polygon1.getY( 2 ), polygon1.getZ( 2 ), true ),
+		/* Test #30 */ new Test( polygon1, polygon1.getX( 3 ), polygon1.getY( 3 ), polygon1.getZ( 3 ), true ),
+		/* Test #31 */ new Test( polygon1, polygon1.getX( 4 ), polygon1.getY( 4 ), polygon1.getZ( 4 ), true ),
+		/* Test #32 */ new Test( polygon1, polygon1.getX( 5 ), polygon1.getY( 5 ), polygon1.getZ( 5 ), true ),
+		/* Test #33 */ new Test( polygon1, polygon1.getX( 6 ), polygon1.getY( 6 ), polygon1.getZ( 6 ), true ),
+		/* Test #34 */ new Test( polygon1, polygon1.getX( 7 ), polygon1.getY( 7 ), polygon1.getZ( 7 ), true ),
+		/* Test #35 */ new Test( polygon2, polygon2.getX( 0 ), polygon2.getY( 0 ), polygon2.getZ( 0 ), true ),
+		/* Test #36 */ new Test( polygon2, polygon2.getX( 1 ), polygon2.getY( 1 ), polygon2.getZ( 1 ), true ),
+		/* Test #37 */ new Test( polygon2, polygon2.getX( 2 ), polygon2.getY( 2 ), polygon2.getZ( 2 ), true ),
+		/* Test #38 */ new Test( polygon2, polygon2.getX( 3 ), polygon2.getY( 3 ), polygon2.getZ( 3 ), true ),
 
-			/* on edges */
+		/* on edges */
 
-			/* Test #39 */ new Test( polygon1, 0.5 * ( polygon1.getX( 0 ) + polygon1.getX( 1 ) ), 0.5 * ( polygon1.getY( 0 ) + polygon1.getY( 1 ) ), 0.5 * ( polygon1.getZ( 0 ) + polygon1.getZ( 1 ) ), true ),
-			/* Test #40 */ new Test( polygon1, 0.5 * ( polygon1.getX( 1 ) + polygon1.getX( 2 ) ), 0.5 * ( polygon1.getY( 1 ) + polygon1.getY( 2 ) ), 0.5 * ( polygon1.getZ( 1 ) + polygon1.getZ( 2 ) ), true ),
-			/* Test #41 */ new Test( polygon1, 0.5 * ( polygon1.getX( 2 ) + polygon1.getX( 3 ) ), 0.5 * ( polygon1.getY( 2 ) + polygon1.getY( 3 ) ), 0.5 * ( polygon1.getZ( 2 ) + polygon1.getZ( 3 ) ), true ),
-			/* Test #42 */ new Test( polygon1, 0.5 * ( polygon1.getX( 3 ) + polygon1.getX( 4 ) ), 0.5 * ( polygon1.getY( 3 ) + polygon1.getY( 4 ) ), 0.5 * ( polygon1.getZ( 3 ) + polygon1.getZ( 4 ) ), true ),
-			/* Test #43 */ new Test( polygon1, 0.5 * ( polygon1.getX( 4 ) + polygon1.getX( 5 ) ), 0.5 * ( polygon1.getY( 4 ) + polygon1.getY( 5 ) ), 0.5 * ( polygon1.getZ( 4 ) + polygon1.getZ( 5 ) ), true ),
-			/* Test #44 */ new Test( polygon1, 0.5 * ( polygon1.getX( 5 ) + polygon1.getX( 6 ) ), 0.5 * ( polygon1.getY( 5 ) + polygon1.getY( 6 ) ), 0.5 * ( polygon1.getZ( 5 ) + polygon1.getZ( 6 ) ), true ),
-			/* Test #45 */ new Test( polygon1, 0.5 * ( polygon1.getX( 6 ) + polygon1.getX( 7 ) ), 0.5 * ( polygon1.getY( 6 ) + polygon1.getY( 7 ) ), 0.5 * ( polygon1.getZ( 6 ) + polygon1.getZ( 7 ) ), true ),
-			/* Test #46 */ new Test( polygon1, 0.5 * ( polygon1.getX( 7 ) + polygon1.getX( 0 ) ), 0.5 * ( polygon1.getY( 7 ) + polygon1.getY( 0 ) ), 0.5 * ( polygon1.getZ( 7 ) + polygon1.getZ( 0 ) ), true ),
-			/* Test #47 */ new Test( polygon2, 0.5 * ( polygon2.getX( 0 ) + polygon2.getX( 1 ) ), 0.5 * ( polygon2.getY( 0 ) + polygon2.getY( 1 ) ), 0.5 * ( polygon2.getZ( 0 ) + polygon2.getZ( 1 ) ), true ),
-			/* Test #48 */ new Test( polygon2, 0.5 * ( polygon2.getX( 1 ) + polygon2.getX( 2 ) ), 0.5 * ( polygon2.getY( 1 ) + polygon2.getY( 2 ) ), 0.5 * ( polygon2.getZ( 1 ) + polygon2.getZ( 2 ) ), true ),
-			/* Test #49 */ new Test( polygon2, 0.5 * ( polygon2.getX( 2 ) + polygon2.getX( 3 ) ), 0.5 * ( polygon2.getY( 2 ) + polygon2.getY( 3 ) ), 0.5 * ( polygon2.getZ( 2 ) + polygon2.getZ( 3 ) ), true ),
-			/* Test #50 */ new Test( polygon2, 0.5 * ( polygon2.getX( 3 ) + polygon2.getX( 0 ) ), 0.5 * ( polygon2.getY( 3 ) + polygon2.getY( 0 ) ), 0.5 * ( polygon2.getZ( 3 ) + polygon2.getZ( 0 ) ), true ),
-			};
+		/* Test #39 */ new Test( polygon1, 0.5 * ( polygon1.getX( 0 ) + polygon1.getX( 1 ) ), 0.5 * ( polygon1.getY( 0 ) + polygon1.getY( 1 ) ), 0.5 * ( polygon1.getZ( 0 ) + polygon1.getZ( 1 ) ), true ),
+		/* Test #40 */ new Test( polygon1, 0.5 * ( polygon1.getX( 1 ) + polygon1.getX( 2 ) ), 0.5 * ( polygon1.getY( 1 ) + polygon1.getY( 2 ) ), 0.5 * ( polygon1.getZ( 1 ) + polygon1.getZ( 2 ) ), true ),
+		/* Test #41 */ new Test( polygon1, 0.5 * ( polygon1.getX( 2 ) + polygon1.getX( 3 ) ), 0.5 * ( polygon1.getY( 2 ) + polygon1.getY( 3 ) ), 0.5 * ( polygon1.getZ( 2 ) + polygon1.getZ( 3 ) ), true ),
+		/* Test #42 */ new Test( polygon1, 0.5 * ( polygon1.getX( 3 ) + polygon1.getX( 4 ) ), 0.5 * ( polygon1.getY( 3 ) + polygon1.getY( 4 ) ), 0.5 * ( polygon1.getZ( 3 ) + polygon1.getZ( 4 ) ), true ),
+		/* Test #43 */ new Test( polygon1, 0.5 * ( polygon1.getX( 4 ) + polygon1.getX( 5 ) ), 0.5 * ( polygon1.getY( 4 ) + polygon1.getY( 5 ) ), 0.5 * ( polygon1.getZ( 4 ) + polygon1.getZ( 5 ) ), true ),
+		/* Test #44 */ new Test( polygon1, 0.5 * ( polygon1.getX( 5 ) + polygon1.getX( 6 ) ), 0.5 * ( polygon1.getY( 5 ) + polygon1.getY( 6 ) ), 0.5 * ( polygon1.getZ( 5 ) + polygon1.getZ( 6 ) ), true ),
+		/* Test #45 */ new Test( polygon1, 0.5 * ( polygon1.getX( 6 ) + polygon1.getX( 7 ) ), 0.5 * ( polygon1.getY( 6 ) + polygon1.getY( 7 ) ), 0.5 * ( polygon1.getZ( 6 ) + polygon1.getZ( 7 ) ), true ),
+		/* Test #46 */ new Test( polygon1, 0.5 * ( polygon1.getX( 7 ) + polygon1.getX( 0 ) ), 0.5 * ( polygon1.getY( 7 ) + polygon1.getY( 0 ) ), 0.5 * ( polygon1.getZ( 7 ) + polygon1.getZ( 0 ) ), true ),
+		/* Test #47 */ new Test( polygon2, 0.5 * ( polygon2.getX( 0 ) + polygon2.getX( 1 ) ), 0.5 * ( polygon2.getY( 0 ) + polygon2.getY( 1 ) ), 0.5 * ( polygon2.getZ( 0 ) + polygon2.getZ( 1 ) ), true ),
+		/* Test #48 */ new Test( polygon2, 0.5 * ( polygon2.getX( 1 ) + polygon2.getX( 2 ) ), 0.5 * ( polygon2.getY( 1 ) + polygon2.getY( 2 ) ), 0.5 * ( polygon2.getZ( 1 ) + polygon2.getZ( 2 ) ), true ),
+		/* Test #49 */ new Test( polygon2, 0.5 * ( polygon2.getX( 2 ) + polygon2.getX( 3 ) ), 0.5 * ( polygon2.getY( 2 ) + polygon2.getY( 3 ) ), 0.5 * ( polygon2.getZ( 2 ) + polygon2.getZ( 3 ) ), true ),
+		/* Test #50 */ new Test( polygon2, 0.5 * ( polygon2.getX( 3 ) + polygon2.getX( 0 ) ), 0.5 * ( polygon2.getY( 3 ) + polygon2.getY( 0 ) ), 0.5 * ( polygon2.getZ( 3 ) + polygon2.getZ( 0 ) ), true ),
+		};
 
 		/*
 		 * Execute tests.
@@ -726,41 +723,43 @@ extends TestCase
 			final String description = "Test #" + ( i + 1 );
 
 			final boolean result = GeometryTools.isPointInsidePolygon( test._polygon, test._x, test._y, test._z );
-			assertEquals( description, test._expected, result );
+			Assert.assertEquals( description, test._expected, result );
 		}
 	}
 
 	/**
 	 * Unit test for {@link GeometryTools#testSphereCylinderIntersection}.
 	 */
+	@Test
 	public void testIntersectSphereCylinder()
 	{
 		// Obvious intersections and misses.
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
-		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 2.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
-		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 2.0, 1.0, 1.0, 2.0, 1.0 ) );
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -0.5, 1.0, 2.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
+		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 2.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
+		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 2.0, 1.0, 1.0, 2.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -0.5, 1.0, 2.0, 1.0 ) );
 
 		// Sphere center below cylinder. (extreme cases)
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
-		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) - 0.001, 1.0, 2.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
+		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) - 0.001, 1.0, 2.0, 1.0 ) );
 
 		// Sphere center above cylinder. (extreme cases)
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
-		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) + 0.001, 1.0, 2.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
+		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) + 0.001, 1.0, 2.0, 1.0 ) );
 
 		// Sphere center on cylinder center line.
-		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.001, 1.0, 1.0, 1.0 ) );
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.0, 1.0, 1.0, 1.0 ) );
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 ) );
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ) );
-		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.0, 1.0, 1.0, 1.0 ) );
-		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.001, 1.0, 1.0, 1.0 ) );
+		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.001, 1.0, 1.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.0, 1.0, 1.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ) );
+		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.0, 1.0, 1.0, 1.0 ) );
+		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.001, 1.0, 1.0, 1.0 ) );
 	}
 
 	/**
 	 * Unit test for {@link GeometryTools#testCylinderContainsPoint}.
 	 */
+	@Test
 	@SuppressWarnings( "ConstantMathCall" )
 	public void testCylinderContainsPoint()
 	{
@@ -778,60 +777,97 @@ extends TestCase
 				final boolean xInRange = ( x >= -radius ) && ( x <= radius );
 				final double diagonal = Math.sqrt( 0.5 ) * x;
 
-				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, height, radius ) );
 
 				// Z+
-				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, 0.0, 0.0, 1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, 0.0, 0.0, 1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
 
 				// Z-
-				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, -z, 0.0, 0.0, -1.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, -z, 0.0, 0.0, -1.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
 
 				// X+
-				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, 0.0, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, x, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, -x, 1.0, 0.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, 0.0, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, x, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, -x, 1.0, 0.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
 
 				// Y-
-				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, x, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, -x, 0.0, -1.0, 0.0, height, radius ) );
-				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, x, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, -x, 0.0, -1.0, 0.0, height, radius ) );
+				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
 			}
+		}
+	}
+
+	/**
+	 * Test {@link GeometryTools#getTriangleArea(Vector2D, Vector2D, Vector2D)}.
+	 */
+	@Test
+	public void testGetTriangleArea()
+	{
+		System.out.println( CLASS_NAME + ".testGetTriangleArea" );
+
+		{
+			final Vector2D p1 = Vector2D.ZERO;
+			final Vector2D p2 = new Vector2D( 10.0, 0.0 );
+			final Vector2D p3 = new Vector2D( 10.0, 10.0 );
+			Assert.assertEquals( "Test #1", 50.000, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+		}
+
+		{
+			final Vector2D p1 = Vector2D.ZERO;
+			final Vector2D p2 = new Vector2D( 10.0, 0.0 );
+			final Vector2D p3 = new Vector2D( 20.0, 10.0 );
+			Assert.assertEquals( "Test #2", 49.999, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+		}
+
+		{
+			final Vector2D p1 = Vector2D.ZERO;
+			final Vector2D p2 = new Vector2D( 10.0, 0.0 );
+			final Vector2D p3 = new Vector2D( 5.0, 10.0 );
+			Assert.assertEquals( "Test #3", 50.000, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+		}
+
+		{
+			final Vector2D p1 = Vector2D.ZERO;
+			final Vector2D p2 = Vector2D.ZERO;
+			final Vector2D p3 = new Vector2D( 0.0, 10.0 );
+			Assert.assertEquals( "Test #4", 0.000, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
 		}
 	}
 }
