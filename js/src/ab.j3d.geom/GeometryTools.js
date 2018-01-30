@@ -132,7 +132,7 @@ export default class GeometryTools
 		const oz1 = box1.v1.z;
 		const dx1 = box1.v2.x - box1.v1.x;
 		const dy1 = box1.v2.y - box1.v1.y;
-		const dz1 = box1.v2.z - box1.v1.z
+		const dz1 = box1.v2.z - box1.v1.z;
 		const ox2 = box2.v1.x;
 		const oy2 = box2.v1.y;
 		const oz2 = box2.v1.z;
@@ -166,7 +166,7 @@ export default class GeometryTools
 		const absZY = Math.abs( from2to1.zy );
 		const absZZ = Math.abs( from2to1.zz );
 
-		return
+		const result =
 		/* Test 1 X axis */ GeometryTools.significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot6( extents2X, extents2Y, extents2Z, absXX, absXY, absXZ ) ) &&
 		/* Test 1 Y axis */ GeometryTools.significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot6( extents2X, extents2Y, extents2Z, absYX, absYY, absYZ ) ) &&
 		/* Test 1 Z axis */ GeometryTools.significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot6( extents2X, extents2Y, extents2Z, absZX, absZY, absZZ ) ) &&
@@ -183,5 +183,6 @@ export default class GeometryTools
 		/* Test 3 case 8 */ ( Math.abs( separationY * from2to1.xy - separationX * from2to1.yy ) <= extents1X * absYY + extents1Y * absXY + extents2X * absZZ + extents2Z * absZX ) &&
 		/* Test 3 case 9 */ ( Math.abs( separationY * from2to1.xz - separationX * from2to1.yz ) <= extents1X * absYZ + extents1Y * absXZ + extents2X * absZY + extents2Y * absZX );
 		/* No separating axes => we have intersection */
+		return result;
 	}
 }
