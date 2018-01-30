@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -280,6 +280,30 @@ export default class Vector3D
 	static dot( v1, v2 )
 	{
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	}
+
+	/**
+	 * Calculate dot product (a.k.a. inner product) of this vector and another one
+	 * specified as argument.
+	 *
+	 * <p The dot product is related to the cosine function by the equation
+	 * *
+	 * <blockquote>a &middot; b = |a| |b| cos &theta;</blockquote>
+	 *
+	 * where &theta; denotes the angle between the two vectors.
+	 *
+	 * @param {number} x1 X-coordinate of first vector operand.
+	 * @param {number} y1 Y-coordinate of first vector operand.
+	 * @param {number} z1 Z-coordinate of first vector operand.
+	 * @param {number} x2 X-coordinate of second vector operand.
+	 * @param {number} y2 Y-coordinate of second vector operand.
+	 * @param {number} z2 Z-coordinate of second vector operand.
+	 *
+	 * @return {number} Dot product.
+	 */
+	static dot6( x1, y1, z1, x2, y2, z2 )
+	{
+		return x1 * x2 + y1 * y2 + z1 * z2;
 	}
 
 	/**
