@@ -6,6 +6,7 @@
 	<property name="asobrain.cert.keystore" value="${env.ASOBRAIN_KEYSTORE}"/>
 	<property name="asobrain.cert.storepass" value="${env.ASOBRAIN_KEYSTORE_ALIAS}"/>
 	<property name="asobrain.cert.alias" value="${env.ASOBRAIN_KEYSTORE_PASSWORD}"/>
+	<property name="tsaurl" value="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
 	<include file="build-pack200.xml"/>
 	<condition property="maven.executable" value="mvn.cmd" else="mvn">
 		<os family="windows"/>
@@ -240,7 +241,7 @@
 		<repack200 jar="lib/ab3d-rt-jogl2-natives-windows-amd64.jar"/>
 		<repack200 jar="lib/ab3d-rt-jogl2-natives-windows-i586.jar"/>
 		<repack200 jar="lib/ab3d-demos.jar"/>
-		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}" tsaurl="http://tsa.starfieldtech.com">
+		<signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}" tsaurl="${tsaurl}">
 			<fileset file="lib/ab3d.jar"/>
 			<fileset file="lib/ab3d-rt-java2d.jar"/>
 			<fileset file="lib/ab3d-rt-jogl1.jar"/>
