@@ -30,6 +30,7 @@
 		<!--<module>java3d</module>-->
 		<module>examples</module>
 		<module>demos</module>
+		<module>js</module>
 	</modules>
 
 	<dependencyManagement>
