@@ -1,0 +1,16 @@
+*.gif binary
+*.glsl eol=lf
+*.gz binary
+*.html eol=lf
+*.jar binary
+*.java eol=lf
+*.jpg binary
+*.js eol=lf
+*.json eol=lf
+*.md eol=lf
+*.png binary
+*.properties eol=lf
+*.sh eol=lf
+*.txt eol=lf
+*.xml eol=lf
+.git* eol=lf
