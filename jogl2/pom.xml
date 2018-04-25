@@ -33,4 +33,302 @@
 			<artifactId>annotations</artifactId>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>webstart</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>3.0.2</version>
+						<configuration>
+							<archive>
+								<manifestEntries>
+									<Application-Name>AsoBrain 3D Toolkit (JOGL 2 runtime)</Application-Name>
+									<Permissions>all-permissions</Permissions>
+									<Codebase>*</Codebase>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jogamp.jogl</groupId>
+											<artifactId>jogl-all</artifactId>
+											<version>2.2.4</version>
+											<destFileName>ab3d-rt-jogl2-jogl.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.jogl</groupId>
+											<artifactId>jogl-all</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-linux-amd64</classifier>
+											<destFileName>ab3d-rt-jogl2-jogl-natives-linux-amd64.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.jogl</groupId>
+											<artifactId>jogl-all</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-linux-i586</classifier>
+											<destFileName>ab3d-rt-jogl2-jogl-natives-linux-i586.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.jogl</groupId>
+											<artifactId>jogl-all</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-macosx-universal</classifier>
+											<destFileName>ab3d-rt-jogl2-jogl-natives-macosx-universal.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.jogl</groupId>
+											<artifactId>jogl-all</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-windows-amd64</classifier>
+											<destFileName>ab3d-rt-jogl2-jogl-natives-windows-amd64.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.jogl</groupId>
+											<artifactId>jogl-all</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-windows-i586</classifier>
+											<destFileName>ab3d-rt-jogl2-jogl-natives-windows-i586.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.gluegen</groupId>
+											<artifactId>gluegen-rt</artifactId>
+											<version>2.2.4</version>
+											<destFileName>ab3d-rt-jogl2-gluegen.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.gluegen</groupId>
+											<artifactId>gluegen-rt</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-linux-amd64</classifier>
+											<destFileName>ab3d-rt-jogl2-gluegen-natives-linux-amd64.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.gluegen</groupId>
+											<artifactId>gluegen-rt</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-linux-i586</classifier>
+											<destFileName>ab3d-rt-jogl2-gluegen-natives-linux-i586.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.gluegen</groupId>
+											<artifactId>gluegen-rt</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-macosx-universal</classifier>
+											<destFileName>ab3d-rt-jogl2-gluegen-natives-macosx-universal.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.gluegen</groupId>
+											<artifactId>gluegen-rt</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-windows-amd64</classifier>
+											<destFileName>ab3d-rt-jogl2-gluegen-natives-windows-amd64.jar</destFileName>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.jogamp.gluegen</groupId>
+											<artifactId>gluegen-rt</artifactId>
+											<version>2.2.4</version>
+											<classifier>natives-windows-i586</classifier>
+											<destFileName>ab3d-rt-jogl2-gluegen-natives-windows-i586.jar</destFileName>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<jar destfile="${project.build.directory}/ab3d-rt-jogl2.jar">
+											<zipfileset src="${project.build.directory}/${project.build.finalName}.${project.packaging}"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-gluegen.jar"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-jogl.jar"/>
+											<manifest>
+												<attribute name="Permissions" value="all-permissions"/>
+												<attribute name="Codebase" value="*"/>
+											</manifest>
+										</jar>
+										<jar destfile="${project.build.directory}/ab3d-rt-jogl2-natives-linux-amd64.jar">
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-gluegen-natives-linux-amd64.jar"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-jogl-natives-linux-amd64.jar"/>
+											<manifest>
+												<attribute name="Permissions" value="all-permissions"/>
+												<attribute name="Codebase" value="*"/>
+											</manifest>
+										</jar>
+										<jar destfile="${project.build.directory}/ab3d-rt-jogl2-natives-linux-i586.jar">
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-gluegen-natives-linux-i586.jar"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-jogl-natives-linux-i586.jar"/>
+											<manifest>
+												<attribute name="Permissions" value="all-permissions"/>
+												<attribute name="Codebase" value="*"/>
+											</manifest>
+										</jar>
+										<jar destfile="${project.build.directory}/ab3d-rt-jogl2-natives-macosx-universal.jar">
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-gluegen-natives-macosx-universal.jar"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-jogl-natives-macosx-universal.jar"/>
+											<manifest>
+												<attribute name="Permissions" value="all-permissions"/>
+												<attribute name="Codebase" value="*"/>
+											</manifest>
+										</jar>
+										<jar destfile="${project.build.directory}/ab3d-rt-jogl2-natives-windows-amd64.jar">
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-gluegen-natives-windows-amd64.jar"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-jogl-natives-windows-amd64.jar"/>
+											<manifest>
+												<attribute name="Permissions" value="all-permissions"/>
+												<attribute name="Codebase" value="*"/>
+											</manifest>
+										</jar>
+										<jar destfile="${project.build.directory}/ab3d-rt-jogl2-natives-windows-i586.jar">
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-gluegen-natives-windows-i586.jar"/>
+											<zipfileset src="${project.build.directory}/dependency/ab3d-rt-jogl2-jogl-natives-windows-i586.jar"/>
+											<manifest>
+												<attribute name="Permissions" value="all-permissions"/>
+												<attribute name="Codebase" value="*"/>
+											</manifest>
+										</jar>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>3.0.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>attach-artifact</goal>
+								</goals>
+								<configuration>
+									<artifacts>
+										<artifact>
+											<file>${project.build.directory}/ab3d-rt-jogl2.jar</file>
+											<type>jar</type>
+											<classifier>webstart</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/ab3d-rt-jogl2-natives-linux-amd64.jar</file>
+											<type>jar</type>
+											<classifier>natives-linux-amd64</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/ab3d-rt-jogl2-natives-linux-i586.jar</file>
+											<type>jar</type>
+											<classifier>natives-linux-i586</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/ab3d-rt-jogl2-natives-macosx-universal.jar</file>
+											<type>jar</type>
+											<classifier>natives-macosx-universal</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/ab3d-rt-jogl2-natives-windows-amd64.jar</file>
+											<type>jar</type>
+											<classifier>natives-windows-amd64</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/ab3d-rt-jogl2-natives-windows-i586.jar</file>
+											<type>jar</type>
+											<classifier>natives-windows-i586</classifier>
+										</artifact>
+									</artifacts>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.github.batkinson.plugins</groupId>
+						<artifactId>maven-pack200-plugin</artifactId>
+						<version>1.0.1</version>
+						<executions>
+							<execution>
+								<id>normalize-jars</id>
+								<phase>package</phase>
+								<goals>
+									<goal>pack</goal>
+								</goals>
+								<configuration>
+									<normalizeOnly>true</normalizeOnly>
+									<includeClassifiers>
+										<includeClassifier>bundle</includeClassifier>
+										<includeClassifier>natives-linux-amd64</includeClassifier>
+										<includeClassifier>natives-linux-i586</includeClassifier>
+										<includeClassifier>natives-macosx-universal</includeClassifier>
+										<includeClassifier>natives-windows-amd64</includeClassifier>
+										<includeClassifier>natives-windows-i586</includeClassifier>
+									</includeClassifiers>
+									<keepFileOrder>true</keepFileOrder>
+									<stripCodeAttributes/>
+									<deflateHint>true</deflateHint>
+								</configuration>
+							</execution>
+							<execution>
+								<id>pack-jars</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>pack</goal>
+								</goals>
+								<configuration>
+									<normalizeOnly>false</normalizeOnly>
+									<includeClassifiers>
+										<includeClassifier>bundle</includeClassifier>
+										<includeClassifier>natives-linux-amd64</includeClassifier>
+										<includeClassifier>natives-linux-i586</includeClassifier>
+										<includeClassifier>natives-macosx-universal</includeClassifier>
+										<includeClassifier>natives-windows-amd64</includeClassifier>
+										<includeClassifier>natives-windows-i586</includeClassifier>
+									</includeClassifiers>
+									<keepFileOrder>true</keepFileOrder>
+									<stripCodeAttributes/>
+									<attachPackedArtifacts>true</attachPackedArtifacts>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jarsigner-plugin</artifactId>
+						<version>1.4</version>
+						<executions>
+							<execution>
+								<id>sign</id>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
