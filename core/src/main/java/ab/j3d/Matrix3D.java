@@ -1,7 +1,7 @@
-/* $Id$
+/*
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,10 +25,11 @@ import java.util.*;
 import java.util.regex.*;
 
 import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
- * This class is used to represent a 3D transformation matrix (although
- * it may also be used for 2D transformations).
+ * This class is used to represent a 3D transformation matrix (although it may
+ * also be used for 2D transformations).
  *
  * <p>
  * The matrix is organized as follows:
@@ -39,31 +40,54 @@ import ab.j3d.geom.*;
  * | 0  0  0  1  |
  * </pre>
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "StandardVariableNames", "FieldNamingConvention" } )
 public class Matrix3D
 {
-	/** X quotient for X component. */ public final double xx;
-	/** Y quotient for X component. */ public final double xy;
-	/** Z quotient for X component. */ public final double xz;
-	/** Translation of X component. */ public final double xo;
-	/** X quotient for Y component. */ public final double yx;
-	/** Y quotient for Y component. */ public final double yy;
-	/** Z quotient for Y component. */ public final double yz;
-	/** Translation of Y component. */ public final double yo;
-	/** X quotient for Z component. */ public final double zx;
-	/** Y quotient for Z component. */ public final double zy;
-	/** Z quotient for Z component. */ public final double zz;
-	/** Translation of Z component. */ public final double zo;
+	/** X quotient for X component. */
+	public final double xx;
+
+	/** Y quotient for X component. */
+	public final double xy;
+
+	/** Z quotient for X component. */
+	public final double xz;
+
+	/** Translation of X component. */
+	public final double xo;
+
+	/** X quotient for Y component. */
+	public final double yx;
+
+	/** Y quotient for Y component. */
+	public final double yy;
+
+	/** Z quotient for Y component. */
+	public final double yz;
+
+	/** Translation of Y component. */
+	public final double yo;
+
+	/** X quotient for Z component. */
+	public final double zx;
+
+	/** Y quotient for Z component. */
+	public final double zy;
+
+	/** Z quotient for Z component. */
+	public final double zz;
+
+	/** Translation of Z component. */
+	public final double zo;
 
 	/**
 	 * Identity matrix.
 	 */
 	public static final Matrix3D IDENTITY = new Matrix3D(
-		1.0, 0.0, 0.0, 0.0,
-		0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0 );
+	1.0, 0.0, 0.0, 0.0,
+	0.0, 1.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0 );
 
 	/**
 	 * Number format with one fraction digit.
@@ -87,18 +111,18 @@ public class Matrix3D
 	/**
 	 * Construct a new matrix.
 	 *
-	 * @param   nxx     X quotient for X component.
-	 * @param   nxy     Y quotient for X component.
-	 * @param   nxz     Z quotient for X component.
-	 * @param   nxo     Translation of X component.
-	 * @param   nyx     X quotient for Y component.
-	 * @param   nyy     Y quotient for Y component.
-	 * @param   nyz     Z quotient for Y component.
-	 * @param   nyo     Translation of Y component.
-	 * @param   nzx     X quotient for Z component.
-	 * @param   nzy     Y quotient for Z component.
-	 * @param   nzz     Z quotient for Z component.
-	 * @param   nzo     Translation of Z component.
+	 * @param nxx X quotient for X component.
+	 * @param nxy Y quotient for X component.
+	 * @param nxz Z quotient for X component.
+	 * @param nxo Translation of X component.
+	 * @param nyx X quotient for Y component.
+	 * @param nyy Y quotient for Y component.
+	 * @param nyz Z quotient for Y component.
+	 * @param nyo Translation of Y component.
+	 * @param nzx X quotient for Z component.
+	 * @param nzy Y quotient for Z component.
+	 * @param nzz Z quotient for Z component.
+	 * @param nzo Translation of Z component.
 	 */
 	public Matrix3D( final double nxx, final double nxy, final double nxz, final double nxo,
 	                 final double nyx, final double nyy, final double nyz, final double nyo,
@@ -121,32 +145,146 @@ public class Matrix3D
 	}
 
 	/**
-	 * Get <code>Matrix3D</code> property with the specified name from a
-	 * {@link Properties} object.
+	 * Get cosine of the given angle in decimal degrees.
 	 *
-	 * @param   properties  Properties to get matrix from.
-	 * @param   name        Property name.
+	 * This method makes an effort to run optimized/rounded results for common
+	 * angles in 45 degree intervals.
 	 *
-	 * @return  <code>Matrix3D</code> object;
-	 *          <code>null</code> if property value is absent/invalid.
+	 * @param deg Angle in decimal degrees.
+	 *
+	 * @return Cosine of angle.
 	 */
-	public static Matrix3D getProperty( final Properties properties, final String name )
+	private static double degcos( final double deg )
+	{
+		final double result;
+
+		final int i = (int)deg;
+		//noinspection Duplicates
+		switch ( ( i == deg )  ? ( i % 360 ) : -1 )
+		{
+			case 0:
+				result = 1;
+				break;
+
+//			case 45:
+//			case 315:
+//			case -45:
+//			case -315:
+//				result = SQRT05;
+//				break;
+
+			case 90:
+			case 270:
+			case -90:
+			case -270:
+				result = 0;
+				break;
+
+//			case 135:
+//			case 225:
+//			case -135:
+//			case -225:
+//				result = -SQRT05;
+//				break;
+
+			case 180:
+			case -180:
+				result = -1;
+				break;
+
+			default:
+				result = Math.cos( Math.toRadians( deg ) );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get sine of the given angle in decimal degrees.
+	 *
+	 * This method makes an effort to run optimized/rounded results for common
+	 * angles in 45 degree intervals.
+	 *
+	 * @param deg Angle in decimal degrees.
+	 *
+	 * @return Sine of angle.
+	 */
+	private static double degsin( final double deg )
+	{
+		final double result;
+
+		final int i = (int)deg;
+		//noinspection Duplicates
+		switch ( ( i == deg ) ? ( i % 360 ) : -1 )
+		{
+			case 0:
+			case 180:
+			case -180:
+				result = 0;
+				break;
+
+//			case 45:
+//			case 135:
+//			case -315:
+//			case -225:
+//				result = SQRT05;
+//				break;
+
+			case 90:
+			case -270:
+				result = 1;
+				break;
+
+//			case 225:
+//			case 315:
+//			case -45:
+//			case -135:
+//				result = -SQRT05;
+//				break;
+
+			case 270:
+			case -90:
+				result = -1;
+				break;
+
+			default:
+				result = Math.sin( Math.toRadians( deg ) );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get {@code Matrix3D} property with the specified name from a {@link
+	 * Properties} object.
+	 *
+	 * @param properties Properties to get matrix from.
+	 * @param name       Property name.
+	 *
+	 * @return {@code Matrix3D} object; {@code null} if property value is
+	 * absent/invalid.
+	 */
+	@Contract( "null,_ -> null" )
+	@Nullable
+	public static Matrix3D getProperty( @Nullable final Properties properties, @NotNull final String name )
 	{
 		return getProperty( properties, name, null );
 	}
 
 	/**
-	 * Get <code>Matrix3D</code> property with the specified name from a
-	 * {@link Properties} object.
+	 * Get {@code Matrix3D} property with the specified name from a {@link
+	 * Properties} object.
 	 *
-	 * @param   properties      Properties to get matrix from.
-	 * @param   name            Property name.
-	 * @param   defaultValue    Value to use if property value is absent/invalid.
+	 * @param properties   Properties to get matrix from.
+	 * @param name         Property name.
+	 * @param defaultValue Value to use if property value is absent/invalid.
 	 *
-	 * @return  <code>Matrix3D</code> object;
-	 *          <code>defaultValue</code> if property value is absent/invalid.
+	 * @return {@code Matrix3D} object; {@code defaultValue} if property value
+	 * is absent/invalid.
 	 */
-	public static Matrix3D getProperty( final Properties properties, final String name, final Matrix3D defaultValue )
+	@Contract( "null,_,_ -> null; _,_,!null -> !null" )
+	@Nullable
+	public static Matrix3D getProperty( @Nullable final Properties properties, @NotNull final String name, @Nullable final Matrix3D defaultValue )
 	{
 		Matrix3D result = defaultValue;
 
@@ -157,7 +295,7 @@ public class Matrix3D
 			{
 				result = fromString( stringValue );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				/* ignore errors => return default */
 			}
@@ -169,29 +307,31 @@ public class Matrix3D
 	/**
 	 * Compare this matrix to another matrix.
 	 *
-	 * @param   other   Matrix to compare with.
+	 * @param other Matrix to compare with.
 	 *
-	 * @return  <code>true</code> if the objects are almost equal;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if the objects are almost equal; {@code false} if
+	 * not.
 	 *
-	 * @see     GeometryTools#almostEqual
+	 * @see GeometryTools#almostEqual
 	 */
-	public boolean almostEquals( final Matrix3D other )
+	@Contract( "null -> false" )
+	public boolean almostEquals( @Nullable final Matrix3D other )
 	{
+		//noinspection ObjectEquality
 		return ( other != null )
-		    && ( ( other == this )
-		      || ( GeometryTools.almostEqual( xx, other.xx ) &&
-		           GeometryTools.almostEqual( xy, other.xy ) &&
-		           GeometryTools.almostEqual( xz, other.xz ) &&
-		           GeometryTools.almostEqual( xo, other.xo ) &&
-		           GeometryTools.almostEqual( yx, other.yx ) &&
-		           GeometryTools.almostEqual( yy, other.yy ) &&
-		           GeometryTools.almostEqual( yz, other.yz ) &&
-		           GeometryTools.almostEqual( yo, other.yo ) &&
-		           GeometryTools.almostEqual( zx, other.zx ) &&
-		           GeometryTools.almostEqual( zy, other.zy ) &&
-		           GeometryTools.almostEqual( zz, other.zz ) &&
-		           GeometryTools.almostEqual( zo, other.zo ) ) );
+		       && ( ( other == this )
+		            || ( GeometryTools.almostEqual( xx, other.xx ) &&
+		                 GeometryTools.almostEqual( xy, other.xy ) &&
+		                 GeometryTools.almostEqual( xz, other.xz ) &&
+		                 GeometryTools.almostEqual( xo, other.xo ) &&
+		                 GeometryTools.almostEqual( yx, other.yx ) &&
+		                 GeometryTools.almostEqual( yy, other.yy ) &&
+		                 GeometryTools.almostEqual( yz, other.yz ) &&
+		                 GeometryTools.almostEqual( yo, other.yo ) &&
+		                 GeometryTools.almostEqual( zx, other.zx ) &&
+		                 GeometryTools.almostEqual( zy, other.zy ) &&
+		                 GeometryTools.almostEqual( zz, other.zz ) &&
+		                 GeometryTools.almostEqual( zo, other.zo ) ) );
 	}
 
 	@Override
@@ -212,8 +352,8 @@ public class Matrix3D
 			final Matrix3D m = (Matrix3D)other;
 
 			result = ( xx == m.xx ) && ( xy == m.xy ) && ( xz == m.xz ) && ( xo == m.xo )
-			      && ( yx == m.yx ) && ( yy == m.yy ) && ( yz == m.yz ) && ( yo == m.yo )
-			      && ( zx == m.zx ) && ( zy == m.zy ) && ( zz == m.zz ) && ( zo == m.zo );
+			         && ( yx == m.yx ) && ( yy == m.yy ) && ( yz == m.yz ) && ( yo == m.yo )
+			         && ( zx == m.zx ) && ( zy == m.zy ) && ( zz == m.zz ) && ( zo == m.zo );
 		}
 
 		return result;
@@ -224,36 +364,49 @@ public class Matrix3D
 	{
 		long l;
 		int result;
-		l = Double.doubleToLongBits( xx ); result  = (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( xy ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( xz ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( xo ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( yx ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( yy ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( yz ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( yo ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( zx ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( zy ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( zz ); result ^= (int) ( l ^ l >>> 32 );
-		l = Double.doubleToLongBits( zo ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xx );
+		result = (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xy );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xz );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xo );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yx );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yy );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yz );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yo );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zx );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zy );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zz );
+		result ^= (int)( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zo );
+		result ^= (int)( l ^ l >>> 32 );
 		return result;
 	}
 
 	/**
-	 * Convert string representation of matrix back to <code>Matrix3D</code>
-	 * instance (see <code>toString()</code>).
+	 * Convert string representation of matrix back to {@code Matrix3D} instance
+	 * (see {@code toString()}).
 	 *
-	 * @param   value   String representation of object.
+	 * @param value String representation of object.
 	 *
-	 * @return  Matrix3D instance.
+	 * @return Matrix3D instance.
 	 *
-	 * @throws  NullPointerException if <code>value</code> is <code>null</code>.
-	 * @throws  IllegalArgumentException if the string format is unrecognized.
-	 * @throws  NumberFormatException if any of the numeric components are badly formatted.
-	 *
-	 * @see     #toString()
+	 * @throws NullPointerException if {@code value} is {@code null}.
+	 * @throws IllegalArgumentException if the string format is unrecognized.
+	 * @throws NumberFormatException if any of the numeric components are badly
+	 * formatted.
+	 * @see #toString()
 	 */
-	public static Matrix3D fromString( final String value )
+	@NotNull
+	public static Matrix3D fromString( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final String value )
 	{
 		final String[] tokens = COMMA.split( value, 0 );
 		if ( tokens.length != 12 )
@@ -266,10 +419,10 @@ public class Matrix3D
 		final double xz = Double.parseDouble( tokens[ 2 ] );
 		final double xo = Double.parseDouble( tokens[ 3 ] );
 
-		final double yx = Double.parseDouble( tokens[  4 ] );
-		final double yy = Double.parseDouble( tokens[  5 ] );
-		final double yz = Double.parseDouble( tokens[  6 ] );
-		final double yo = Double.parseDouble( tokens[  7 ] );
+		final double yx = Double.parseDouble( tokens[ 4 ] );
+		final double yy = Double.parseDouble( tokens[ 5 ] );
+		final double yz = Double.parseDouble( tokens[ 6 ] );
+		final double yo = Double.parseDouble( tokens[ 7 ] );
 
 		final double zx = Double.parseDouble( tokens[ 8 ] );
 		final double zy = Double.parseDouble( tokens[ 9 ] );
@@ -282,48 +435,45 @@ public class Matrix3D
 	}
 
 	/**
-	 * Get transformation matrix based on 6 parameters specifying rotation angles
-	 * and a translation vector. Starting with the identity matrix, rotation is
-	 * performed (Z,X,Y order), than the translation is set.
+	 * Get transformation matrix based on 6 parameters specifying rotation
+	 * angles and a translation vector. Starting with the identity matrix,
+	 * rotation is performed (Z,X,Y order), than the translation is set.
 	 *
-	 * @param   rx      Rotation angle around X axis (degrees, <strong>clockwise</strong>).
-	 * @param   ry      Rotation angle around Y axis (degrees, counter-clockwise).
-	 * @param   rz      Rotation angle around Z axis (degrees, counter-clockwise).
-	 * @param   tx      X component of translation vector.
-	 * @param   ty      Y component of translation vector.
-	 * @param   tz      Z component of translation vector.
+	 * @param rx Rotation angle around X axis (degrees, <strong>clockwise</strong>).
+	 * @param ry Rotation angle around Y axis (degrees, counter-clockwise).
+	 * @param rz Rotation angle around Z axis (degrees, counter-clockwise).
+	 * @param tx X component of translation vector.
+	 * @param ty Y component of translation vector.
+	 * @param tz Z component of translation vector.
 	 *
-	 * @return  Transformation matrix.
+	 * @return Transformation matrix.
 	 */
 	public static Matrix3D getTransform( final double rx, final double ry, final double rz, final double tx, final double ty, final double tz )
 	{
 		// FIXME: rx should be counter-clockwise!
-		final double radX = Math.toRadians( rx );
-		final double radY = Math.toRadians( ry );
-		final double radZ = Math.toRadians( rz );
 
-		final double ctX = Math.cos( radX );
-		final double stX = Math.sin( radX );
-		final double ctY = Math.cos( radY );
-		final double stY = Math.sin( radY );
-		final double ctZ = Math.cos( radZ );
-		final double stZ = Math.sin( radZ );
+		final double ctX = degcos( rx );
+		final double stX = degsin( rx );
+		final double ctY = degcos( ry );
+		final double stY = degsin( ry );
+		final double ctZ = degcos( rz );
+		final double stZ = degsin( rz );
 
 		return new Matrix3D(
-			/* xx */  ctZ * ctY - stZ * stX * stY,
-			/* xy */ -stZ * ctY - ctZ * stX * stY,
-			/* xz */  ctX * stY,
-			/* xo */  tx,
+		/* xx */  ctZ * ctY - stZ * stX * stY,
+		/* xy */ -stZ * ctY - ctZ * stX * stY,
+		/* xz */  ctX * stY,
+		/* xo */  tx,
 
-			/* yx */  stZ * ctX,
-			/* yy */  ctZ * ctX,
-			/* yz */        stX,
-			/* y0 */  ty,
+		/* yx */  stZ * ctX,
+		/* yy */  ctZ * ctX,
+		/* yz */        stX,
+		/* y0 */  ty,
 
-			/* zx */ -stZ * stX * ctY - ctZ * stY,
-			/* zy */ -ctZ * stX * ctY + stZ * stY,
-			/* zz */        ctX * ctY,
-			/* zo */  tz );
+		/* zx */ -stZ * stX * ctY - ctZ * stY,
+		/* zy */ -ctZ * stX * ctY + stZ * stY,
+		/* zz */        ctX * ctY,
+		/* zo */  tz );
 	}
 
 	/**
@@ -336,15 +486,16 @@ public class Matrix3D
 	 * up-vector is used when possible, the secondary up-vector is used when the
 	 * from-to vector is parallel to the primary up-vector.
 	 *
-	 * @param   from        Point to look from.
-	 * @param   to          Point to look at.
-	 * @param   upPrimary   Primary up-vector (must be normalized).
-	 * @param   upSecondary Secondary up-vector (must be normalized).
+	 * @param from        Point to look from.
+	 * @param to          Point to look at.
+	 * @param upPrimary   Primary up-vector (must be normalized).
+	 * @param upSecondary Secondary up-vector (must be normalized).
 	 *
-	 * @return  Transformation matrix.
+	 * @return Transformation matrix.
 	 *
-	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
-	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 * @throws NullPointerException if any of the arguments is {@code null}.
+	 * @throws IllegalArgumentException if the from and two points are too
+	 * close.
 	 */
 	public static Matrix3D getFromToTransform( final Vector3D from, final Vector3D to, final Vector3D upPrimary, final Vector3D upSecondary )
 	{
@@ -399,14 +550,14 @@ public class Matrix3D
 		/*
 		 * Create matrix.
 		 */
-		return new Matrix3D( xx, xy, xz, ( -from.x * xx -from.y * xy -from.z * xz ),
-		                     yx, yy, yz, ( -from.x * yx -from.y * yy -from.z * yz ),
-		                     zx, zy, zz, ( -from.x * zx -from.y * zy -from.z * zz ) );
+		return new Matrix3D( xx, xy, xz, ( -from.x * xx - from.y * xy - from.z * xz ),
+		                     yx, yy, yz, ( -from.x * yx - from.y * yy - from.z * yz ),
+		                     zx, zy, zz, ( -from.x * zx - from.y * zy - from.z * zz ) );
 	}
 
 	/**
-	 * Calculate transform for a plane that passes through <code>origin</code>
-	 * and has the specified <code>normal</code> vector.
+	 * Calculate transform for a plane that passes through {@code origin} and
+	 * has the specified {@code normal} vector.
 	 *
 	 * <p>
 	 * The main purpose for this method is creating a suitable 3D transformation
@@ -415,15 +566,15 @@ public class Matrix3D
 	 * tries to find reasonable defaults.
 	 *
 	 * <p>
-	 * A 0-vector multiplied with the resulting transform will match the
-	 * <code>origin</code>.
+	 * A 0-vector multiplied with the resulting transform will match the {@code
+	 * origin}.
 	 *
-	 * @param   origin          Origin of plane.
-	 * @param   normal          Normal of plane.
-	 * @param   rightHanded     3D-space is right- vs. left-handed.
+	 * @param origin      Origin of plane.
+	 * @param normal      Normal of plane.
+	 * @param rightHanded 3D-space is right- vs. left-handed.
 	 *
-	 * @return  Transformation matrix (translation set to 0-vector) to be used
-	 *          for extrusion of 2D shapes.
+	 * @return Transformation matrix (translation set to 0-vector) to be used
+	 * for extrusion of 2D shapes.
 	 */
 	public static Matrix3D getPlaneTransform( final Vector3D origin, final Vector3D normal, final boolean rightHanded )
 	{
@@ -431,8 +582,8 @@ public class Matrix3D
 	}
 
 	/**
-	 * Calculate transform for a plane that passes through <code>origin</code>
-	 * and has the specified <code>normal</code> vector.
+	 * Calculate transform for a plane that passes through {@code origin} and
+	 * has the specified {@code normal} vector.
 	 *
 	 * <p>
 	 * The main purpose for this method is creating a suitable 3D transformation
@@ -441,19 +592,19 @@ public class Matrix3D
 	 * tries to find reasonable defaults.
 	 *
 	 * <p>
-	 * A 0-vector multiplied with the resulting transform will match the
-	 * <code>origin</code>.
+	 * A 0-vector multiplied with the resulting transform will match the {@code
+	 * origin}.
 	 *
-	 * @param   originX         Origin X-coordinate of plane.
-	 * @param   originY         Origin X-coordinate of plane.
-	 * @param   originZ         Origin X-coordinate of plane.
-	 * @param   normalX         X-component of normal vector of plane.
-	 * @param   normalY         X-component of normal vector of plane.
-	 * @param   normalZ         X-component of normal vector of plane.
-	 * @param   rightHanded     3D-space is right- vs. left-handed.
+	 * @param originX     Origin X-coordinate of plane.
+	 * @param originY     Origin X-coordinate of plane.
+	 * @param originZ     Origin X-coordinate of plane.
+	 * @param normalX     X-component of normal vector of plane.
+	 * @param normalY     X-component of normal vector of plane.
+	 * @param normalZ     X-component of normal vector of plane.
+	 * @param rightHanded 3D-space is right- vs. left-handed.
 	 *
-	 * @return  Transformation matrix (translation set to 0-vector) to be used
-	 *          for extrusion of 2D shapes.
+	 * @return Transformation matrix (translation set to 0-vector) to be used
+	 * for extrusion of 2D shapes.
 	 */
 	public static Matrix3D getPlaneTransform( final double originX, final double originY, final double originZ, final double normalX, final double normalY, final double normalZ, final boolean rightHanded )
 	{
@@ -462,7 +613,7 @@ public class Matrix3D
 		 * Z-axis and the world's Z-axis. If the Z-axes are almost parallel,
 		 * then the world Y-axis is used.
 		 *
- 		 * This will keep the local X-axis on the X/Y-plane as much as possible.
+		 * This will keep the local X-axis on the X/Y-plane as much as possible.
 		 */
 		final double xAxisX;
 		final double xAxisY;
@@ -472,17 +623,17 @@ public class Matrix3D
 		{
 			final double hyp = Math.hypot( normalX, normalY );
 
-			xAxisX = rightHanded ? -normalY / hyp :  normalY / hyp;
-			xAxisY = rightHanded ?  normalX / hyp : -normalX / hyp;
+			xAxisX = rightHanded ? -normalY / hyp : normalY / hyp;
+			xAxisY = rightHanded ? normalX / hyp : -normalX / hyp;
 			xAxisZ = 0.0;
 		}
 		else
 		{
 			final double hyp = Math.hypot( normalX, normalZ );
 
-			xAxisX = rightHanded ?  normalZ / hyp : -normalZ / hyp;
+			xAxisX = rightHanded ? normalZ / hyp : -normalZ / hyp;
 			xAxisY = 0.0;
-			xAxisZ = rightHanded ? -normalX / hyp :  normalX / hyp;
+			xAxisZ = rightHanded ? -normalX / hyp : normalX / hyp;
 		}
 
 		/*
@@ -501,7 +652,7 @@ public class Matrix3D
 	 * Get rotation matrix. This eliminates scaling and translation properties
 	 * from the current transformation matrix.
 	 *
-	 * @return  Rotation material.
+	 * @return Rotation material.
 	 */
 	public Matrix3D getRotation()
 	{
@@ -520,14 +671,15 @@ public class Matrix3D
 	 * direction. The rotation angle is specified in radians.
 	 *
 	 * <p>
-	 * Also read <a href='http://www.cprogramming.com/tutorial/3d/rotation.html'>Rotation About an Arbitrary Axis</a>
-	 * (written by: Confuted, with a cameo by Silvercord (Charles Thibualt)).
+	 * Also read <a href='http://www.cprogramming.com/tutorial/3d/rotation.html'>Rotation
+	 * About an Arbitrary Axis</a> (written by: Confuted, with a cameo by
+	 * Silvercord (Charles Thibualt)).
 	 *
-	 * @param   pivot       Pivot point about which the rotation is performed.
-	 * @param   direction   Rotation axis direction (must be a unit vector).
-	 * @param   thetaRad    Rotate theta radians.
+	 * @param pivot     Pivot point about which the rotation is performed.
+	 * @param direction Rotation axis direction (must be a unit vector).
+	 * @param thetaRad  Rotate theta radians.
 	 *
-	 * @return  Transformation matrix with requested rotation.
+	 * @return Transformation matrix with requested rotation.
 	 */
 	public static Matrix3D getRotationTransform( final Vector3D pivot, final Vector3D direction, final double thetaRad )
 	{
@@ -540,26 +692,27 @@ public class Matrix3D
 	 * direction. The rotation angle is specified in radians.
 	 *
 	 * <p>
-	 * Read <a href='http://www.mlahanas.de/Math/orientation.htm'>We consider the problem of the coordinate transformation about a rotation axis.</a>
+	 * Read <a href='http://www.mlahanas.de/Math/orientation.htm'>We consider
+	 * the problem of the coordinate transformation about a rotation axis.</a>
 	 * (written by Michael Lahanas) for a simple explanation of the problem and
 	 * solution.
 	 *
-	 * @param   pivotX      Pivot point about which the rotation is performed.
-	 * @param   pivotY      Pivot point about which the rotation is performed.
-	 * @param   pivotZ      Pivot point about which the rotation is performed.
-	 * @param   directionX  Rotation axis direction (must be a unit vector).
-	 * @param   directionY  Rotation axis direction (must be a unit vector).
-	 * @param   directionZ  Rotation axis direction (must be a unit vector).
-	 * @param   thetaRad    Rotate theta radians.
+	 * @param pivotX     Pivot point about which the rotation is performed.
+	 * @param pivotY     Pivot point about which the rotation is performed.
+	 * @param pivotZ     Pivot point about which the rotation is performed.
+	 * @param directionX Rotation axis direction (must be a unit vector).
+	 * @param directionY Rotation axis direction (must be a unit vector).
+	 * @param directionZ Rotation axis direction (must be a unit vector).
+	 * @param thetaRad   Rotate theta radians.
 	 *
-	 * @return  Transformation matrix with requested rotation.
+	 * @return Transformation matrix with requested rotation.
 	 */
 	public static Matrix3D getRotationTransform( final double pivotX, final double pivotY, final double pivotZ, final double directionX, final double directionY, final double directionZ, final double thetaRad )
 	{
 		final double cos = Math.cos( thetaRad );
 		final double sin = Math.sin( thetaRad );
 
-		final double t  = ( 1.0 - cos );
+		final double t = ( 1.0 - cos );
 		final double tx = t * directionX;
 		final double ty = t * directionY;
 		final double tz = t * directionZ;
@@ -585,9 +738,9 @@ public class Matrix3D
 	 * Returns a transformation matrix that uniformly scales coordinates by the
 	 * given factor.
 	 *
-	 * @param   scale   Scaling factor.
+	 * @param scale Scaling factor.
 	 *
-	 * @return  Scaling matrix with the given factor.
+	 * @return Scaling matrix with the given factor.
 	 */
 	public static Matrix3D getScaleTransform( final double scale )
 	{
@@ -598,17 +751,17 @@ public class Matrix3D
 	 * Returns a transformation matrix that non-uniformly scales coordinates by
 	 * the factor given for each axis.
 	 *
-	 * @param   x   Scaling factor for the x-axis.
-	 * @param   y   Scaling factor for the y-axis.
-	 * @param   z   Scaling factor for the z-axis.
+	 * @param x Scaling factor for the x-axis.
+	 * @param y Scaling factor for the y-axis.
+	 * @param z Scaling factor for the z-axis.
 	 *
-	 * @return  Scaling matrix with the given factor.
+	 * @return Scaling matrix with the given factor.
 	 */
 	public static Matrix3D getScaleTransform( final double x, final double y, final double z )
 	{
-		return new Matrix3D(   x, 0.0, 0.0, 0.0,
-		                     0.0,   y, 0.0, 0.0,
-		                     0.0, 0.0,   z, 0.0 );
+		return new Matrix3D( x, 0.0, 0.0, 0.0,
+		                     0.0, y, 0.0, 0.0,
+		                     0.0, 0.0, z, 0.0 );
 	}
 
 	/**
@@ -625,7 +778,7 @@ public class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return  Inverse matrix.
+	 * @return Inverse matrix.
 	 */
 	public Matrix3D inverse()
 	{
@@ -635,7 +788,7 @@ public class Matrix3D
 	}
 
 	/**
-	 * Get <code>xo</code> of inverse transform.
+	 * Get {@code xo} of inverse transform.
 	 * <pre>
 	 *       | xx xy xz xo |
 	 *       | yx yy yz yo |
@@ -648,15 +801,15 @@ public class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return  Inverse matrix.
+	 * @return Inverse matrix.
 	 */
 	public double inverseXo()
 	{
-		return - xo * xx - yo * yx - zo * zx;
+		return -xo * xx - yo * yx - zo * zx;
 	}
 
 	/**
-	 * Get <code>yo</code> of inverse transform.
+	 * Get {@code yo} of inverse transform.
 	 * <pre>
 	 *       | xx xy xz xo |
 	 *       | yx yy yz yo |
@@ -669,15 +822,15 @@ public class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return  Inverse matrix.
+	 * @return Inverse matrix.
 	 */
 	public double inverseYo()
 	{
-		return - xo * xy - yo * yy - zo * zy;
+		return -xo * xy - yo * yy - zo * zy;
 	}
 
 	/**
-	 * Get <code>zo</code> of inverse transform.
+	 * Get {@code zo} of inverse transform.
 	 * <pre>
 	 *       | xx xy xz xo |
 	 *       | yx yy yz yo |
@@ -690,19 +843,19 @@ public class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return  Inverse matrix.
+	 * @return Inverse matrix.
 	 */
 	public double inverseZo()
 	{
-		return - xo * xz - yo * yz - zo * zz;
+		return -xo * xz - yo * yz - zo * zz;
 	}
 
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param   vector  Vector specifying the translation.
+	 * @param vector Vector specifying the translation.
 	 *
-	 * @return  new Matrix3D with translation
+	 * @return new Matrix3D with translation
 	 */
 	public Matrix3D minus( final Vector3D vector )
 	{
@@ -712,25 +865,25 @@ public class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param   x       X-coordinate of vector specifying the translation.
-	 * @param   y       Y-coordinate of vector specifying the translation.
-	 * @param   z       Z-coordinate of vector specifying the translation.
+	 * @param x X-coordinate of vector specifying the translation.
+	 * @param y Y-coordinate of vector specifying the translation.
+	 * @param z Z-coordinate of vector specifying the translation.
 	 *
-	 * @return  new Matrix3D with translation
+	 * @return new Matrix3D with translation
 	 */
 	public Matrix3D minus( final double x, final double y, final double z )
 	{
 		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) )
-		     ? this
-		     : setTranslation( xo - x, yo - y, zo - z );
+		       ? this
+		       : setTranslation( xo - x, yo - y, zo - z );
 	}
 
 	/**
 	 * Execute matrix multiplication between this and another matrix.
 	 *
-	 * @param   other   Matrix to multiply with.
+	 * @param other Matrix to multiply with.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public Matrix3D multiply( final Matrix3D other )
 	{
@@ -740,10 +893,10 @@ public class Matrix3D
 	/**
 	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param   m1  First matrix.
-	 * @param   m2  Second matrix.
+	 * @param m1 First matrix.
+	 * @param m2 Second matrix.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public static Matrix3D multiply( final Matrix3D m1, final Matrix3D m2 )
 	{
@@ -758,27 +911,27 @@ public class Matrix3D
 	/**
 	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param   xx1     X quotient for X component of first matrix.
-	 * @param   xy1     Y quotient for X component of first matrix.
-	 * @param   xz1     Z quotient for X component of first matrix.
-	 * @param   xo1     Translation of X component of first matrix.
-	 * @param   yx1     X quotient for Y component of first matrix.
-	 * @param   yy1     Y quotient for Y component of first matrix.
-	 * @param   yz1     Z quotient for Y component of first matrix.
-	 * @param   yo1     Translation of Y component of first matrix.
-	 * @param   zx1     X quotient for Z component of first matrix.
-	 * @param   zy1     Y quotient for Z component of first matrix.
-	 * @param   zz1     Z quotient for Z component of first matrix.
-	 * @param   zo1     Translation of Z component of first matrix.
-	 * @param   m2      Second matrix.
+	 * @param xx1 X quotient for X component of first matrix.
+	 * @param xy1 Y quotient for X component of first matrix.
+	 * @param xz1 Z quotient for X component of first matrix.
+	 * @param xo1 Translation of X component of first matrix.
+	 * @param yx1 X quotient for Y component of first matrix.
+	 * @param yy1 Y quotient for Y component of first matrix.
+	 * @param yz1 Z quotient for Y component of first matrix.
+	 * @param yo1 Translation of Y component of first matrix.
+	 * @param zx1 X quotient for Z component of first matrix.
+	 * @param zy1 Y quotient for Z component of first matrix.
+	 * @param zz1 Z quotient for Z component of first matrix.
+	 * @param zo1 Translation of Z component of first matrix.
+	 * @param m2  Second matrix.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public static Matrix3D multiply(
-		final double xx1, final double xy1, final double xz1, final double xo1,
-		final double yx1, final double yy1, final double yz1, final double yo1,
-		final double zx1, final double zy1, final double zz1, final double zo1,
-	    final Matrix3D m2 )
+	final double xx1, final double xy1, final double xz1, final double xo1,
+	final double yx1, final double yy1, final double yz1, final double yo1,
+	final double zx1, final double zy1, final double zz1, final double zo1,
+	final Matrix3D m2 )
 	{
 		return multiply( xx1, xy1, xz1, xo1,
 		                 yx1, yy1, yz1, yo1,
@@ -791,27 +944,27 @@ public class Matrix3D
 	/**
 	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param   m1      First matrix.
-	 * @param   xx2     X quotient for X component of second matrix.
-	 * @param   xy2     Y quotient for X component of second matrix.
-	 * @param   xz2     Z quotient for X component of second matrix.
-	 * @param   xo2     Translation of X component of second matrix.
-	 * @param   yx2     X quotient for Y component of second matrix.
-	 * @param   yy2     Y quotient for Y component of second matrix.
-	 * @param   yz2     Z quotient for Y component of second matrix.
-	 * @param   yo2     Translation of Y component of second matrix.
-	 * @param   zx2     X quotient for Z component of second matrix.
-	 * @param   zy2     Y quotient for Z component of second matrix.
-	 * @param   zz2     Z quotient for Z component of second matrix.
-	 * @param   zo2     Translation of Z component of second matrix.
+	 * @param m1  First matrix.
+	 * @param xx2 X quotient for X component of second matrix.
+	 * @param xy2 Y quotient for X component of second matrix.
+	 * @param xz2 Z quotient for X component of second matrix.
+	 * @param xo2 Translation of X component of second matrix.
+	 * @param yx2 X quotient for Y component of second matrix.
+	 * @param yy2 Y quotient for Y component of second matrix.
+	 * @param yz2 Z quotient for Y component of second matrix.
+	 * @param yo2 Translation of Y component of second matrix.
+	 * @param zx2 X quotient for Z component of second matrix.
+	 * @param zy2 Y quotient for Z component of second matrix.
+	 * @param zz2 Z quotient for Z component of second matrix.
+	 * @param zo2 Translation of Z component of second matrix.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public static Matrix3D multiply(
-	    final Matrix3D m1,
-		final double xx2, final double xy2, final double xz2, final double xo2,
-		final double yx2, final double yy2, final double yz2, final double yo2,
-		final double zx2, final double zy2, final double zz2, final double zo2 )
+	final Matrix3D m1,
+	final double xx2, final double xy2, final double xz2, final double xo2,
+	final double yx2, final double yy2, final double yz2, final double yo2,
+	final double zx2, final double zy2, final double zz2, final double zo2 )
 	{
 		return multiply( m1.xx, m1.xy, m1.xz, m1.xo,
 		                 m1.yx, m1.yy, m1.yz, m1.yo,
@@ -824,40 +977,40 @@ public class Matrix3D
 	/**
 	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param   xx1     X quotient for X component of first matrix.
-	 * @param   xy1     Y quotient for X component of first matrix.
-	 * @param   xz1     Z quotient for X component of first matrix.
-	 * @param   xo1     Translation of X component of first matrix.
-	 * @param   yx1     X quotient for Y component of first matrix.
-	 * @param   yy1     Y quotient for Y component of first matrix.
-	 * @param   yz1     Z quotient for Y component of first matrix.
-	 * @param   yo1     Translation of Y component of first matrix.
-	 * @param   zx1     X quotient for Z component of first matrix.
-	 * @param   zy1     Y quotient for Z component of first matrix.
-	 * @param   zz1     Z quotient for Z component of first matrix.
-	 * @param   zo1     Translation of Z component of first matrix.
-	 * @param   xx2     X quotient for X component of second matrix.
-	 * @param   xy2     Y quotient for X component of second matrix.
-	 * @param   xz2     Z quotient for X component of second matrix.
-	 * @param   xo2     Translation of X component of second matrix.
-	 * @param   yx2     X quotient for Y component of second matrix.
-	 * @param   yy2     Y quotient for Y component of second matrix.
-	 * @param   yz2     Z quotient for Y component of second matrix.
-	 * @param   yo2     Translation of Y component of second matrix.
-	 * @param   zx2     X quotient for Z component of second matrix.
-	 * @param   zy2     Y quotient for Z component of second matrix.
-	 * @param   zz2     Z quotient for Z component of second matrix.
-	 * @param   zo2     Translation of Z component of second matrix.
+	 * @param xx1 X quotient for X component of first matrix.
+	 * @param xy1 Y quotient for X component of first matrix.
+	 * @param xz1 Z quotient for X component of first matrix.
+	 * @param xo1 Translation of X component of first matrix.
+	 * @param yx1 X quotient for Y component of first matrix.
+	 * @param yy1 Y quotient for Y component of first matrix.
+	 * @param yz1 Z quotient for Y component of first matrix.
+	 * @param yo1 Translation of Y component of first matrix.
+	 * @param zx1 X quotient for Z component of first matrix.
+	 * @param zy1 Y quotient for Z component of first matrix.
+	 * @param zz1 Z quotient for Z component of first matrix.
+	 * @param zo1 Translation of Z component of first matrix.
+	 * @param xx2 X quotient for X component of second matrix.
+	 * @param xy2 Y quotient for X component of second matrix.
+	 * @param xz2 Z quotient for X component of second matrix.
+	 * @param xo2 Translation of X component of second matrix.
+	 * @param yx2 X quotient for Y component of second matrix.
+	 * @param yy2 Y quotient for Y component of second matrix.
+	 * @param yz2 Z quotient for Y component of second matrix.
+	 * @param yo2 Translation of Y component of second matrix.
+	 * @param zx2 X quotient for Z component of second matrix.
+	 * @param zy2 Y quotient for Z component of second matrix.
+	 * @param zz2 Z quotient for Z component of second matrix.
+	 * @param zo2 Translation of Z component of second matrix.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public static Matrix3D multiply(
-		final double xx1, final double xy1, final double xz1, final double xo1,
-		final double yx1, final double yy1, final double yz1, final double yo1,
-		final double zx1, final double zy1, final double zz1, final double zo1,
-		final double xx2, final double xy2, final double xz2, final double xo2,
-		final double yx2, final double yy2, final double yz2, final double yo2,
-		final double zx2, final double zy2, final double zz2, final double zo2 )
+	final double xx1, final double xy1, final double xz1, final double xo1,
+	final double yx1, final double yy1, final double yz1, final double yo1,
+	final double zx1, final double zy1, final double zz1, final double zo1,
+	final double xx2, final double xy2, final double xz2, final double xo2,
+	final double yx2, final double yy2, final double yz2, final double yo2,
+	final double zx2, final double zy2, final double zz2, final double zo2 )
 	{
 		return new Matrix3D( xx1 * xx2 + yx1 * xy2 + zx1 * xz2,
 		                     xy1 * xx2 + yy1 * xy2 + zy1 * xz2,
@@ -874,28 +1027,28 @@ public class Matrix3D
 	}
 
 	/**
-	 * Multiply this matrix with another matrix and return the result
-	 * of this multiplication.
+	 * Multiply this matrix with another matrix and return the result of this
+	 * multiplication.
 	 *
-	 * @param   otherXX     Matrix row 0, column 0 (x-factor for x).
-	 * @param   otherXY     Matrix row 0, column 1 (y-factor for x).
-	 * @param   otherXZ     Matrix row 0, column 2 (z-factor for x).
-	 * @param   otherXO     Matrix row 0, column 3 (offset   for x).
-	 * @param   otherYX     Matrix row 1, column 0 (x-factor for y).
-	 * @param   otherYY     Matrix row 1, column 1 (y-factor for y).
-	 * @param   otherYZ     Matrix row 1, column 2 (z-factor for y).
-	 * @param   otherYO     Matrix row 1, column 3 (offset   for y).
-	 * @param   otherZX     Matrix row 2, column 0 (x-factor for z).
-	 * @param   otherZY     Matrix row 2, column 1 (y-factor for z).
-	 * @param   otherZZ     Matrix row 2, column 2 (z-factor for z).
-	 * @param   otherZO     Matrix row 2, column 3 (offset   for z).
+	 * @param otherXX Matrix row 0, column 0 (x-factor for x).
+	 * @param otherXY Matrix row 0, column 1 (y-factor for x).
+	 * @param otherXZ Matrix row 0, column 2 (z-factor for x).
+	 * @param otherXO Matrix row 0, column 3 (offset   for x).
+	 * @param otherYX Matrix row 1, column 0 (x-factor for y).
+	 * @param otherYY Matrix row 1, column 1 (y-factor for y).
+	 * @param otherYZ Matrix row 1, column 2 (z-factor for y).
+	 * @param otherYO Matrix row 1, column 3 (offset   for y).
+	 * @param otherZX Matrix row 2, column 0 (x-factor for z).
+	 * @param otherZY Matrix row 2, column 1 (y-factor for z).
+	 * @param otherZZ Matrix row 2, column 2 (z-factor for z).
+	 * @param otherZO Matrix row 2, column 3 (offset   for z).
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public Matrix3D multiply(
-		final double otherXX, final double otherXY, final double otherXZ, final double otherXO,
-		final double otherYX, final double otherYY, final double otherYZ, final double otherYO,
-		final double otherZX, final double otherZY, final double otherZZ, final double otherZO )
+	final double otherXX, final double otherXY, final double otherXZ, final double otherXO,
+	final double otherYX, final double otherYY, final double otherYZ, final double otherYO,
+	final double otherZX, final double otherZY, final double otherZZ, final double otherZO )
 	{
 		return multiply( xx, xy, xz, xo,
 		                 yx, yy, yz, yo,
@@ -909,9 +1062,9 @@ public class Matrix3D
 	 * Execute matrix multiplication between this and the inverse of another
 	 * matrix.
 	 *
-	 * @param   other   Matrix whose inverse to multiply with.
+	 * @param other Matrix whose inverse to multiply with.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public Matrix3D multiplyInverse( final Matrix3D other )
 	{
@@ -926,9 +1079,9 @@ public class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param   vector  Vector specifying the translation.
+	 * @param vector Vector specifying the translation.
 	 *
-	 * @return  new Matrix3D with translation
+	 * @return new Matrix3D with translation
 	 */
 	public Matrix3D plus( final Vector3D vector )
 	{
@@ -938,17 +1091,17 @@ public class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param   x       X-coordinate of vector specifying the translation.
-	 * @param   y       Y-coordinate of vector specifying the translation.
-	 * @param   z       Z-coordinate of vector specifying the translation.
+	 * @param x X-coordinate of vector specifying the translation.
+	 * @param y Y-coordinate of vector specifying the translation.
+	 * @param z Z-coordinate of vector specifying the translation.
 	 *
-	 * @return  new Matrix3D with translation
+	 * @return new Matrix3D with translation
 	 */
 	public Matrix3D plus( final double x, final double y, final double z )
 	{
 		return ( x == 0.0 && y == 0.0 && z == 0.0 )
-		     ? this
-		     : setTranslation( xo + x, yo + y, zo + z );
+		       ? this
+		       : setTranslation( xo + x, yo + y, zo + z );
 	}
 
 	/**
@@ -963,14 +1116,15 @@ public class Matrix3D
 	 *    [   0    sin   cos  ]
 	 * </pre>
 	 *
-	 * @param   thetaRad    Rotate theta radians about the X-axis
+	 * @param thetaRad Rotate theta radians about the X-axis
 	 *
-	 * @return  Rotated matrix.
+	 * @return Rotated matrix.
 	 */
 	public Matrix3D rotateX( final double thetaRad )
 	{
 		final Matrix3D result;
 
+		//noinspection Duplicates
 		if ( GeometryTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
@@ -1000,9 +1154,9 @@ public class Matrix3D
 	 *    [ -sin    0    cos  ]
 	 * </pre>
 	 *
-	 * @param   thetaRad    Rotate theta radians about the Y-axis
+	 * @param thetaRad Rotate theta radians about the Y-axis
 	 *
-	 * @return  Rotated matrix.
+	 * @return Rotated matrix.
 	 */
 	public Matrix3D rotateY( final double thetaRad )
 	{
@@ -1017,7 +1171,7 @@ public class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = new Matrix3D(  cos * xx + zx * sin,  cos * xy + zy * sin,  cos * xz + zz * sin,  cos * xo + zo * sin,
+			result = new Matrix3D( cos * xx + zx * sin, cos * xy + zy * sin, cos * xz + zz * sin, cos * xo + zo * sin,
 			                       yx, yy, yz, yo,
 			                       -sin * xx + zx * cos, -sin * xy + zy * cos, -sin * xz + zz * cos, -sin * xo + zo * cos );
 		}
@@ -1037,14 +1191,15 @@ public class Matrix3D
 	 *    [   0     0     1   ]
 	 * </pre>
 	 *
-	 * @param   thetaRad    Rotate theta radians about the Z-axis
+	 * @param thetaRad Rotate theta radians about the Z-axis
 	 *
-	 * @return  Rotated matrix.
+	 * @return Rotated matrix.
 	 */
 	public Matrix3D rotateZ( final double thetaRad )
 	{
 		final Matrix3D result;
 
+		//noinspection Duplicates
 		if ( GeometryTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
@@ -1065,20 +1220,20 @@ public class Matrix3D
 	/**
 	 * Set all values in the matrix and return the resulting matrix.
 	 *
-	 * @param   nxx     X quotient for X component.
-	 * @param   nxy     Y quotient for X component.
-	 * @param   nxz     Z quotient for X component.
-	 * @param   nxo     Translation of X component.
-	 * @param   nyx     X quotient for Y component.
-	 * @param   nyy     Y quotient for Y component.
-	 * @param   nyz     Z quotient for Y component.
-	 * @param   nyo     Translation of Y component.
-	 * @param   nzx     X quotient for Z component.
-	 * @param   nzy     Y quotient for Z component.
-	 * @param   nzz     Z quotient for Z component.
-	 * @param   nzo     Translation of Z component.
+	 * @param nxx X quotient for X component.
+	 * @param nxy Y quotient for X component.
+	 * @param nxz Z quotient for X component.
+	 * @param nxo Translation of X component.
+	 * @param nyx X quotient for Y component.
+	 * @param nyy Y quotient for Y component.
+	 * @param nyz Z quotient for Y component.
+	 * @param nyo Translation of Y component.
+	 * @param nzx X quotient for Z component.
+	 * @param nzy Y quotient for Z component.
+	 * @param nzz Z quotient for Z component.
+	 * @param nzo Translation of Z component.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Matrix3D set( final double nxx, final double nxy, final double nxz, final double nxo,
 	                     final double nyx, final double nyy, final double nyz, final double nyo,
@@ -1109,9 +1264,9 @@ public class Matrix3D
 	/**
 	 * Uniformly scale this matrix by the given factor.
 	 *
-	 * @param   scale   Scaling factor.
+	 * @param scale Scaling factor.
 	 *
-	 * @return  This matrix scaled  with the given factor.
+	 * @return This matrix scaled  with the given factor.
 	 */
 	public Matrix3D scale( final double scale )
 	{
@@ -1121,11 +1276,11 @@ public class Matrix3D
 	/**
 	 * Scale this matrix by the given factors.
 	 *
-	 * @param   x   Scaling factor for the x-axis.
-	 * @param   y   Scaling factor for the y-axis.
-	 * @param   z   Scaling factor for the z-axis.
+	 * @param x Scaling factor for the x-axis.
+	 * @param y Scaling factor for the y-axis.
+	 * @param z Scaling factor for the z-axis.
 	 *
-	 * @return  This matrix scaled  with the given factors.
+	 * @return This matrix scaled  with the given factors.
 	 */
 	public Matrix3D scale( final double x, final double y, final double z )
 	{
@@ -1135,7 +1290,7 @@ public class Matrix3D
 	/**
 	 * Get translation vector from this transform.
 	 *
-	 * @return  Translation vector.
+	 * @return Translation vector.
 	 */
 	public Vector3D getTranslation()
 	{
@@ -1145,11 +1300,11 @@ public class Matrix3D
 	/**
 	 * Get translation matrix from the specified translation vector.
 	 *
-	 * @param   x   X-translation.
-	 * @param   y   Y-translation.
-	 * @param   z   Z-translation.
+	 * @param x X-translation.
+	 * @param y Y-translation.
+	 * @param z Z-translation.
 	 *
-	 * @return  Translation matrix.
+	 * @return Translation matrix.
 	 */
 	public static Matrix3D getTranslation( final double x, final double y, final double z )
 	{
@@ -1159,9 +1314,9 @@ public class Matrix3D
 	/**
 	 * Get translation matrix from the specified translation vector.
 	 *
-	 * @param   translation Translation vector.
+	 * @param translation Translation vector.
 	 *
-	 * @return  Translation matrix.
+	 * @return Translation matrix.
 	 */
 	public static Matrix3D getTranslation( final Vector3D translation )
 	{
@@ -1171,9 +1326,9 @@ public class Matrix3D
 	/**
 	 * Set translation of a transform to the specified vector.
 	 *
-	 * @param   vector  Vector to use.
+	 * @param vector Vector to use.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public Matrix3D setTranslation( final Vector3D vector )
 	{
@@ -1183,11 +1338,11 @@ public class Matrix3D
 	/**
 	 * Set translation of a transform to the specified vector.
 	 *
-	 * @param   x       X-value of vector.
-	 * @param   y       Y-value of vector.
-	 * @param   z       Z-value of vector.
+	 * @param x X-value of vector.
+	 * @param y Y-value of vector.
+	 * @param z Z-value of vector.
 	 *
-	 * @return  Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	public Matrix3D setTranslation( final double x, final double y, final double z )
 	{
@@ -1197,7 +1352,7 @@ public class Matrix3D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return  String representation of object.
+	 * @return String representation of object.
 	 */
 	@Override
 	public String toString()
@@ -1208,10 +1363,10 @@ public class Matrix3D
 	}
 
 	/**
-	 * Create human-readable representation of this <code>Matrix3D</code> object.
+	 * Create human-readable representation of this {@code Matrix3D} object.
 	 * This is aspecially useful for debugging purposes.
 	 *
-	 * @return  Human-readable representation of this <code>Matrix3D</code> object.
+	 * @return Human-readable representation of this {@code Matrix3D} object.
 	 */
 	public String toFriendlyString()
 	{
@@ -1222,9 +1377,9 @@ public class Matrix3D
 	 * Create human-readable representation of Matrix3D object. This is
 	 * aspecially useful for debugging purposes.
 	 *
-	 * @param   m   Matrix3D instance.
+	 * @param m Matrix3D instance.
 	 *
-	 * @return  Human-readable representation of Matrix3D object.
+	 * @return Human-readable representation of Matrix3D object.
 	 */
 	public static String toFriendlyString( final Matrix3D m )
 	{
@@ -1235,68 +1390,45 @@ public class Matrix3D
 	 * Create human-readable representation of Matrix3D object. This is
 	 * aspecially useful for debugging purposes.
 	 *
-	 * @param   m           Matrix3D instance.
-	 * @param   prefix      Prefix of returned string.
-	 * @param   infix       Infix inserted between matrix rows in returned string.
+	 * @param m      Matrix3D instance.
+	 * @param prefix Prefix of returned string.
+	 * @param infix  Infix inserted between matrix rows in returned string.
 	 *
-	 * @return  Human-readable representation of Matrix3D object.
+	 * @return Human-readable representation of Matrix3D object.
 	 */
 	public static String toFriendlyString( final Matrix3D m, final String prefix, final String infix )
 	{
 		final StringBuilder sb = new StringBuilder();
+		//noinspection IOResourceOpenedButNotSafelyClosed
 		final Formatter formatter = new Formatter( sb, null );
 		sb.append( prefix );
-		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.xx ), Double.valueOf( m.xy ), Double.valueOf( m.xz ), Double.valueOf( m.xo ) );
+		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", m.xx, m.xy, m.xz, m.xo );
 		sb.append( infix );
-		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.yx ), Double.valueOf( m.yy ), Double.valueOf( m.yz ), Double.valueOf( m.yo ) );
+		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", m.yx, m.yy, m.yz, m.yo );
 		sb.append( infix );
-		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.zx ), Double.valueOf( m.zy ), Double.valueOf( m.zz ), Double.valueOf( m.zo ) );
+		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", m.zx, m.zy, m.zz, m.zo );
 		return sb.toString();
 	}
 
 	/**
 	 * Create short human-readable representation of Matrix3D object.
 	 *
-	 * @return  Human-readable representation of Matrix3D object.
+	 * @return Human-readable representation of Matrix3D object.
 	 */
 	public String toShortFriendlyString()
 	{
-		final StringBuilder sb = new StringBuilder();
 		final NumberFormat nf = ONE_DECIMAL_FORMAT;
-		sb.append( "[[" );
-		sb.append( nf.format( xx ) );
-		sb.append( ',' );
-		sb.append( nf.format( xy ) );
-		sb.append( ',' );
-		sb.append( nf.format( xz ) );
-		sb.append( ',' );
-		sb.append( nf.format( xo ) );
-		sb.append( "],[" );
-		sb.append( nf.format( yx ) );
-		sb.append( ',' );
-		sb.append( nf.format( yy ) );
-		sb.append( ',' );
-		sb.append( nf.format( yz ) );
-		sb.append( ',' );
-		sb.append( nf.format( yo ) );
-		sb.append( "],[" );
-		sb.append( nf.format( zx ) );
-		sb.append( ',' );
-		sb.append( nf.format( zy ) );
-		sb.append( ',' );
-		sb.append( nf.format( zz ) );
-		sb.append( ',' );
-		sb.append( nf.format( zo ) );
-		sb.append( "]]" );
-		return sb.toString();
+		return "[[" + nf.format( xx ) + ',' + nf.format( xy ) + ',' + nf.format( xz ) + ',' + nf.format( xo ) +
+		       "],[" + nf.format( yx ) + ',' + nf.format( yy ) + ',' + nf.format( yz ) + ',' + nf.format( yo ) +
+		       "],[" + nf.format( zx ) + ',' + nf.format( zy ) + ',' + nf.format( zz ) + ',' + nf.format( zo ) + "]]";
 	}
 
 	/**
 	 * Transform a vector using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector3D transform( final Vector3D vector )
 	{
@@ -1308,11 +1440,11 @@ public class Matrix3D
 	/**
 	 * Transform a vector using this transform.
 	 *
-	 * @param   x       X-value of vector.
-	 * @param   y       Y-value of vector.
-	 * @param   z       Z-value of vector.
+	 * @param x X-value of vector.
+	 * @param y Y-value of vector.
+	 * @param z Z-value of vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector3D transform( final double x, final double y, final double z )
 	{
@@ -1325,20 +1457,22 @@ public class Matrix3D
 	 * This function transforms a set of points. Point coordinates are supplied
 	 * using double arrays containing a triplet for each point.
 	 *
-	 * @param   source      Source array.
-	 * @param   dest        Destination array (may be <code>null</code> or too small to create new).
-	 * @param   pointCount  Number of vertices.
+	 * @param source     Source array.
+	 * @param dest       Destination array (may be {@code null} or too small to
+	 *                   create new).
+	 * @param pointCount Number of vertices.
 	 *
-	 * @return  Array to which the transformed coordinates were written
-	 *          (may be different from the <code>dest</code> argument).
+	 * @return Array to which the transformed coordinates were written (may be
+	 * different from the {@code dest} argument).
 	 *
-	 * @see     #transform(double, double, double)
-	 * @see     #transform(Vector3D)
+	 * @see #transform(double, double, double)
+	 * @see #transform(Vector3D)
 	 */
 	public double[] transform( final double[] source, final double[] dest, final int pointCount )
 	{
 		double[] result = dest;
 
+		//noinspection ArrayEquality,ObjectEquality
 		if ( ( source != dest ) || ( this != IDENTITY ) )
 		{
 			final int resultLength = pointCount * 3;
@@ -1363,37 +1497,38 @@ public class Matrix3D
 			/*
 			 * Perform rotate, translate, or copy only if possible.
 			 */
-			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 ) &&
-			     ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 ) &&
-			     ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+			if ( ( lxx == 1 ) && ( lyy == 1 ) && ( lzz == 1 ) &&
+			     ( lxy == 0 ) && ( lyx == 0 ) && ( lzx == 0 ) &&
+			     ( lxz == 0 ) && ( lyz == 0 ) && ( lzy == 0 ) )
 			{
-				if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
+				if ( ( lxo == 0 ) && ( lyo == 0 ) && ( lzo == 0 ) )
 				{
-					System.arraycopy( source, 0, result, 0, resultLength );
+					//noinspection ArrayEquality
+					if ( source != result )
+					{
+						System.arraycopy( source, 0, result, 0, resultLength );
+					}
 				}
 				else
 				{
-					for ( int i = 0 ; i < resultLength ; i += 3 )
+					for ( int i = 0; i < resultLength; i += 3 )
 					{
-						result[ i     ] = source[ i     ] + lxo;
+						result[ i ] = source[ i ] + lxo;
 						result[ i + 1 ] = source[ i + 1 ] + lyo;
 						result[ i + 2 ] = source[ i + 2 ] + lzo;
 					}
 				}
 			}
-			else if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
-			{
-				rotate( source, result, pointCount );
-			}
 			else
 			{
-				for ( int i = 0 ; i < resultLength ; i += 3 )
+				//noinspection Duplicates
+				for ( int i = 0; i < resultLength; i += 3 )
 				{
 					final double x = source[ i ];
 					final double y = source[ i + 1 ];
 					final double z = source[ i + 2 ];
 
-					result[ i     ] = x * lxx + y * lxy + z * lxz + lxo;
+					result[ i ] = x * lxx + y * lxy + z * lxz + lxo;
 					result[ i + 1 ] = x * lyx + y * lyy + z * lyz + lyo;
 					result[ i + 2 ] = x * lzx + y * lzy + z * lzz + lzo;
 				}
@@ -1406,9 +1541,9 @@ public class Matrix3D
 	/**
 	 * Transform a vector to X-coordinate using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double transformX( final Vector3D vector )
 	{
@@ -1418,11 +1553,11 @@ public class Matrix3D
 	/**
 	 * Transform a vector to X-coordinate using this transform.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double transformX( final double x, final double y, final double z )
 	{
@@ -1432,9 +1567,9 @@ public class Matrix3D
 	/**
 	 * Transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
 	public double transformY( final Vector3D vector )
 	{
@@ -1444,11 +1579,11 @@ public class Matrix3D
 	/**
 	 * Transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
 	public double transformY( final double x, final double y, final double z )
 	{
@@ -1458,9 +1593,9 @@ public class Matrix3D
 	/**
 	 * Transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
 	public double transformZ( final Vector3D vector )
 	{
@@ -1470,11 +1605,11 @@ public class Matrix3D
 	/**
 	 * Transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
 	public double transformZ( final double x, final double y, final double z )
 	{
@@ -1484,9 +1619,9 @@ public class Matrix3D
 	/**
 	 * Transform a box using this transform.
 	 *
-	 * @param   box     Box to transform.
+	 * @param box Box to transform.
 	 *
-	 * @return  Resulting box.
+	 * @return Resulting box.
 	 */
 	public Bounds3D transform( final Bounds3D box )
 	{
@@ -1496,9 +1631,9 @@ public class Matrix3D
 	/**
 	 * Transform a vector using the inverse of this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector3D inverseTransform( final Vector3D vector )
 	{
@@ -1514,11 +1649,11 @@ public class Matrix3D
 	/**
 	 * Transform a vector using the inverse of this transform.
 	 *
-	 * @param   x       X-value of vector.
-	 * @param   y       Y-value of vector.
-	 * @param   z       Z-value of vector.
+	 * @param x X-value of vector.
+	 * @param y Y-value of vector.
+	 * @param z Z-value of vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector3D inverseTransform( final double x, final double y, final double z )
 	{
@@ -1534,9 +1669,9 @@ public class Matrix3D
 	/**
 	 * Inverse transform a vector to X-coordinate using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double inverseTransformX( final Vector3D vector )
 	{
@@ -1546,11 +1681,11 @@ public class Matrix3D
 	/**
 	 * Inverse transform a vector to X-coordinate using this transform.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double inverseTransformX( final double x, final double y, final double z )
 	{
@@ -1560,9 +1695,9 @@ public class Matrix3D
 	/**
 	 * Inverse transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
 	public double inverseTransformY( final Vector3D vector )
 	{
@@ -1572,11 +1707,11 @@ public class Matrix3D
 	/**
 	 * Inverse transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
 	public double inverseTransformY( final double x, final double y, final double z )
 	{
@@ -1586,9 +1721,9 @@ public class Matrix3D
 	/**
 	 * Inverse transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param vector Vector to transform.
 	 *
-	 * @return  Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
 	public double inverseTransformZ( final Vector3D vector )
 	{
@@ -1598,11 +1733,11 @@ public class Matrix3D
 	/**
 	 * Inverse transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
 	public double inverseTransformZ( final double x, final double y, final double z )
 	{
@@ -1613,9 +1748,9 @@ public class Matrix3D
 	 * Rotate a (directional) vector using this transform. This multiplies the
 	 * vector with this matrix, excluding the translational components.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Rotated vector.
+	 * @return Rotated vector.
 	 */
 	public Vector3D rotate( final Vector3D vector )
 	{
@@ -1626,11 +1761,11 @@ public class Matrix3D
 	 * Rotate a vector using this transform. This multiplies the vector with
 	 * this matrix, excluding the translational components.
 	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
 	 *
-	 * @return  Rotated vector.
+	 * @return Rotated vector.
 	 */
 	public Vector3D rotate( final double x, final double y, final double z )
 	{
@@ -1641,23 +1776,25 @@ public class Matrix3D
 
 	/**
 	 * This function performs just the rotational part of of the transform on a
-	 * set of vectors. Vectors are supplied using float arrays with a triplet for
-	 * each vector.
+	 * set of vectors. Vectors are supplied using float arrays with a triplet
+	 * for each vector.
 	 *
-	 * @param   source          Source array.
-	 * @param   dest            Destination array (may be <code>null</code> or too small to create new).
-	 * @param   vectorCount     Number of vertices.
+	 * @param source      Source array.
+	 * @param dest        Destination array (may be {@code null} or too small to
+	 *                    create new).
+	 * @param vectorCount Number of vertices.
 	 *
-	 * @return  Array to which the transformed coordinates were written
-	 *          (may be different from the <code>dest</code> argument).
+	 * @return Array to which the transformed coordinates were written (may be
+	 * different from the {@code dest} argument).
 	 *
-	 * @see     #transform(double, double, double)
-	 * @see     #transform(Vector3D)
+	 * @see #transform(double, double, double)
+	 * @see #transform(Vector3D)
 	 */
 	public double[] rotate( final double[] source, final double[] dest, final int vectorCount )
 	{
 		double[] result = dest;
 
+		//noinspection ArrayEquality,ObjectEquality
 		if ( ( source != dest ) || ( this != IDENTITY ) )
 		{
 			final int resultLength = vectorCount * 3;
@@ -1676,10 +1813,11 @@ public class Matrix3D
 			final double lzy = zy;
 			final double lzz = zz;
 
-			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 )
-			  && ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 )
-			  && ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+			if ( ( lxx == 1 ) && ( lyy == 1 ) && ( lzz == 1 ) &&
+			     ( lxy == 0 ) && ( lyx == 0 ) && ( lzx == 0 ) &&
+			     ( lxz == 0 ) && ( lyz == 0 ) && ( lzy == 0 ) )
 			{
+				//noinspection ArrayEquality
 				if ( source != result )
 				{
 					System.arraycopy( source, 0, result, 0, resultLength );
@@ -1687,13 +1825,14 @@ public class Matrix3D
 			}
 			else
 			{
-				for ( int resultIndex = 0 ; resultIndex < resultLength ; resultIndex += 3 )
+				//noinspection Duplicates
+				for ( int resultIndex = 0; resultIndex < resultLength; resultIndex += 3 )
 				{
 					final double x = source[ resultIndex ];
 					final double y = source[ resultIndex + 1 ];
 					final double z = source[ resultIndex + 2 ];
 
-					result[ resultIndex     ] = x * lxx + y * lxy + z * lxz;
+					result[ resultIndex ] = x * lxx + y * lxy + z * lxz;
 					result[ resultIndex + 1 ] = x * lyx + y * lyy + z * lyz;
 					result[ resultIndex + 2 ] = x * lzx + y * lzy + z * lzz;
 				}
@@ -1706,9 +1845,9 @@ public class Matrix3D
 	/**
 	 * Rotate a vector to X-coordinate using this rotate.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double rotateX( final Vector3D vector )
 	{
@@ -1718,11 +1857,11 @@ public class Matrix3D
 	/**
 	 * Rotate a vector to X-coordinate using this rotate.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double rotateX( final double x, final double y, final double z )
 	{
@@ -1732,9 +1871,9 @@ public class Matrix3D
 	/**
 	 * Rotate a vector to Y-coordinate using this rotate.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
 	public double rotateY( final Vector3D vector )
 	{
@@ -1744,11 +1883,11 @@ public class Matrix3D
 	/**
 	 * Rotate a vector to Y-coordinate using this rotate.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
 	public double rotateY( final double x, final double y, final double z )
 	{
@@ -1758,9 +1897,9 @@ public class Matrix3D
 	/**
 	 * Rotate a vector to Z-coordinate using this rotate.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
 	public double rotateZ( final Vector3D vector )
 	{
@@ -1770,11 +1909,11 @@ public class Matrix3D
 	/**
 	 * Rotate a vector to Z-coordinate using this rotate.
 	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 *
-	 * @return  Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
 	public double rotateZ( final double x, final double y, final double z )
 	{
@@ -1786,9 +1925,9 @@ public class Matrix3D
 	 * multiplies the vector with the inverse of this matrix, excluding the
 	 * translational components.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Rotated vector.
+	 * @return Rotated vector.
 	 */
 	public Vector3D inverseRotate( final Vector3D vector )
 	{
@@ -1806,11 +1945,11 @@ public class Matrix3D
 	 * vector with the inverse of this matrix, excluding the translational
 	 * components.
 	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
 	 *
-	 * @return  Rotated vector.
+	 * @return Rotated vector.
 	 */
 	public Vector3D inverseRotate( final double x, final double y, final double z )
 	{
@@ -1823,9 +1962,9 @@ public class Matrix3D
 	 * Calculates the X-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double inverseRotateX( final Vector3D vector )
 	{
@@ -1836,11 +1975,11 @@ public class Matrix3D
 	 * Calculates the X-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
 	 *
-	 * @return  Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
 	public double inverseRotateX( final double x, final double y, final double z )
 	{
@@ -1851,9 +1990,9 @@ public class Matrix3D
 	 * Calculates the Y-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Resulting Y-coordinate.
+	 * @return Resulting Y-coordinate.
 	 */
 	public double inverseRotateY( final Vector3D vector )
 	{
@@ -1864,11 +2003,11 @@ public class Matrix3D
 	 * Calculates the Y-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
 	 *
-	 * @return  Resulting Y-coordinate.
+	 * @return Resulting Y-coordinate.
 	 */
 	public double inverseRotateY( final double x, final double y, final double z )
 	{
@@ -1879,9 +2018,9 @@ public class Matrix3D
 	 * Calculates the Z-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param vector Directional vector to rotate.
 	 *
-	 * @return  Resulting Z-coordinate.
+	 * @return Resulting Z-coordinate.
 	 */
 	public double inverseRotateZ( final Vector3D vector )
 	{
@@ -1892,11 +2031,11 @@ public class Matrix3D
 	 * Calculates the Z-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
 	 *
-	 * @return  Resulting Z-coordinate.
+	 * @return Resulting Z-coordinate.
 	 */
 	public double inverseRotateZ( final double x, final double y, final double z )
 	{
@@ -1907,7 +2046,7 @@ public class Matrix3D
 	 * Returns whether the coordinate system represented by the matrix follows
 	 * the right-hand rule.
 	 *
-	 * @return  <code>true</code> if the coordinate system is righthanded.
+	 * @return {@code true} if the coordinate system is righthanded.
 	 */
 	public boolean isRighthanded()
 	{
@@ -1923,9 +2062,10 @@ public class Matrix3D
 	/**
 	 * Returns the determinant of the matrix.
 	 *
-	 * @return  Determinant of the matrix.
+	 * @return Determinant of the matrix.
 	 *
-	 * @see     <a href="http://en.wikipedia.org/wiki/Determinant">Determinant (Wikipedia)</a>
+	 * @see <a href="http://en.wikipedia.org/wiki/Determinant">Determinant
+	 * (Wikipedia)</a>
 	 */
 	public double determinant()
 	{

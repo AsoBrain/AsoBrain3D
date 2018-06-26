@@ -1,7 +1,7 @@
-/* $Id$
+/*
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,8 +26,7 @@ import junit.framework.*;
 /**
  * JUnit unit tool class to help with testing {@link Matrix3D} objects.
  *
- * @author  H.B.J. te Lintelo
- * @version $Revision$ $Date$
+ * @author H.B.J. te Lintelo
  */
 public class Matrix3DTester
 {
@@ -57,61 +56,6 @@ public class Matrix3DTester
 	 * Standard matrix usable for tests. This defines the identity matrix.
 	 */
 	public static final Matrix3D IDENTITY = Matrix3D.IDENTITY;
-
-	/**
-	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
-	 * over the Y-axis.
-	 */
-	public static final Matrix3D FLIPPED_OVER_X_AXIS = new Matrix3D(
-		 1.0 ,  0.0 ,  0.0 , 0.0 ,
-		 0.0 , -1.0 ,  0.0 , 0.0 ,
-		 0.0 ,  0.0 , -1.0 , 0.0 );
-
-	/**
-	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
-	 * over the Y-axis.
-	 */
-	public static final Matrix3D FLIPPED_OVER_Y_AXIS = new Matrix3D(
-		-1.0 ,  0.0 ,  0.0 , 0.0 ,
-		 0.0 ,  1.0 ,  0.0 , 0.0 ,
-		 0.0 ,  0.0 , -1.0 , 0.0 );
-
-	/**
-	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
-	 * over the Z-axis.
-	 */
-	public static final Matrix3D FLIPPED_OVER_Z_AXIS = new Matrix3D(
-		-1.0 ,  0.0 ,  0.0 , 0.0 ,
-		 0.0 , -1.0 ,  0.0 , 0.0 ,
-		 0.0 ,  0.0 ,  1.0 , 0.0 );
-
-
-	/**
-	 * Array with possible base transforms for tests.
-	 * <p />
-	 * These transforms can be used to test different orientations. Each axis is
-	 * set in steps of 45 degrees. Also, various translations are applied.
-	 */
-	public static final Matrix3D[] ROTATED_TEST_MATRICES;
-	static
-	{
-		final Matrix3D[] matrices = new Matrix3D[ 8 * 8 * 8 ];
-
-		int index = 0;
-		for ( double rx = 0.0 ; rx < 360.0 ; rx += 45.0 )
-		{
-			for ( double ry = 0.0 ; ry < 360.0 ; ry += 45.0 )
-			{
-				for ( double rz = 0.0 ; rz < 360.0 ; rz += 45.0 )
-				{
-					matrices[ index++ ] = Matrix3D.getTransform( rx ,ry , rz , rx * ry , ry * rz , rz * rx );
-				}
-			}
-		}
-
-		Assert.assertEquals( "Initialization error." , matrices.length , index );
-		ROTATED_TEST_MATRICES = matrices;
-	}
 
 	/**
 	 * Utility class is not supposed to be instantiated.

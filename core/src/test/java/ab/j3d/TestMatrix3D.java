@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,15 +18,17 @@
  */
 package ab.j3d;
 
-import junit.framework.*;
+import ab.j3d.junit.*;
+import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  * This tests the {@link Matrix3D} class.
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "JavaDoc", "FieldNamingConvention" } )
 public class TestMatrix3D
-extends TestCase
 {
 	/**
 	 * Name of this class.
@@ -45,6 +47,7 @@ extends TestCase
 	 * never been spotted before. <br /> <b>Fix:</b><br /> Fixed xo/yo/zo test
 	 * in Matrix3D.equals() method. </li> </ul>
 	 */
+	@Test
 	public void testEquals()
 	{
 		System.out.println( CLASS_NAME + ".testEquals()" );
@@ -100,6 +103,7 @@ extends TestCase
 	 *
 	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testGetFromToTransform()
 	throws Exception
 	{
@@ -128,11 +132,11 @@ extends TestCase
 
 		final Test[] extremeTests =
 		{
-			/* Test #1  */ new Test( null, null, NullPointerException.class ),
-			/* Test #2  */ new Test( null, Vector3D.ZERO, NullPointerException.class ),
-			/* Test #3  */ new Test( Vector3D.ZERO, null, NullPointerException.class ),
-			/* Test #4  */ new Test( Vector3D.ZERO, Vector3D.ZERO, IllegalArgumentException.class ),
-			};
+		/* Test #1  */ new Test( null, null, NullPointerException.class ),
+		/* Test #2  */ new Test( null, Vector3D.ZERO, NullPointerException.class ),
+		/* Test #3  */ new Test( Vector3D.ZERO, null, NullPointerException.class ),
+		/* Test #4  */ new Test( Vector3D.ZERO, Vector3D.ZERO, IllegalArgumentException.class ),
+		};
 
 		/*
 		 * Define tests for orthogonal views.
@@ -169,20 +173,20 @@ extends TestCase
 
 		final Test[] orthogonalTests =
 		{
-			/* Test #5  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, leftView ),
-			/* Test #6  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_X_AXIS, rightView ),
-			/* Test #7  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, frontView ),
-			/* Test #8  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Y_AXIS, rearView ),
-			/* Test #9  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, bottomView ),
-			/* Test #10 */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Z_AXIS, topView ),
+		/* Test #5  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, leftView ),
+		/* Test #6  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_X_AXIS, rightView ),
+		/* Test #7  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, frontView ),
+		/* Test #8  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Y_AXIS, rearView ),
+		/* Test #9  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, bottomView ),
+		/* Test #10 */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Z_AXIS, topView ),
 
-			/* Test #11 */ new Test( Vector3D.NEGATIVE_X_AXIS, Vector3D.ZERO, leftView.plus( 0.0, 0.0, -1.0 ) ),
-			/* Test #12 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, rightView.plus( 0.0, 0.0, -1.0 ) ),
-			/* Test #13 */ new Test( Vector3D.NEGATIVE_Y_AXIS, Vector3D.ZERO, frontView.plus( 0.0, 0.0, -1.0 ) ),
-			/* Test #14 */ new Test( Vector3D.POSITIVE_Y_AXIS, Vector3D.ZERO, rearView.plus( 0.0, 0.0, -1.0 ) ),
-			/* Test #15 */ new Test( Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO, bottomView.plus( 0.0, 0.0, -1.0 ) ),
-			/* Test #16 */ new Test( Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO, topView.plus( 0.0, 0.0, -1.0 ) ),
-			};
+		/* Test #11 */ new Test( Vector3D.NEGATIVE_X_AXIS, Vector3D.ZERO, leftView.plus( 0.0, 0.0, -1.0 ) ),
+		/* Test #12 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, rightView.plus( 0.0, 0.0, -1.0 ) ),
+		/* Test #13 */ new Test( Vector3D.NEGATIVE_Y_AXIS, Vector3D.ZERO, frontView.plus( 0.0, 0.0, -1.0 ) ),
+		/* Test #14 */ new Test( Vector3D.POSITIVE_Y_AXIS, Vector3D.ZERO, rearView.plus( 0.0, 0.0, -1.0 ) ),
+		/* Test #15 */ new Test( Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO, bottomView.plus( 0.0, 0.0, -1.0 ) ),
+		/* Test #16 */ new Test( Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO, topView.plus( 0.0, 0.0, -1.0 ) ),
+		};
 
 		/*
 		 * Define tests for diagonal views.
@@ -205,12 +209,12 @@ extends TestCase
 
 		final Test[] diagonalTests =
 		{
-			/* Test #17 */ new Test( new Vector3D( 0.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateX( -deg135 ).plus( 0.0, 0.0, -sqrt2 ) ),
-			/* Test #18 */ new Test( new Vector3D( -1.0, 0.0, 1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY( deg45 ).rotateZ( deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
-			/* Test #19 */ new Test( new Vector3D( 1.0, 0.0, 1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY( -deg45 ).rotateZ( -deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
-			/* Test #20 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ( -deg90 ).rotateX( -deg90 ).plus( 0.0, 0.0, -1.0 ) ),
-			/* Test #21 */ new Test( new Vector3D( -1.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ( deg45 ).rotateX( -deg125_2 ).plus( 0.0, 0.0, -sqrt3 ) ),
-			};
+		/* Test #17 */ new Test( new Vector3D( 0.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateX( -deg135 ).plus( 0.0, 0.0, -sqrt2 ) ),
+		/* Test #18 */ new Test( new Vector3D( -1.0, 0.0, 1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY( deg45 ).rotateZ( deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
+		/* Test #19 */ new Test( new Vector3D( 1.0, 0.0, 1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY( -deg45 ).rotateZ( -deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
+		/* Test #20 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ( -deg90 ).rotateX( -deg90 ).plus( 0.0, 0.0, -1.0 ) ),
+		/* Test #21 */ new Test( new Vector3D( -1.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ( deg45 ).rotateX( -deg125_2 ).plus( 0.0, 0.0, -sqrt3 ) ),
+		};
 
 		/*
 		 * Execute tests.
@@ -263,12 +267,12 @@ extends TestCase
 	 *
 	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testGetRotationTransform()
 	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testGetRotationTransform()" );
 
-		@SuppressWarnings( "JavaDoc" )
 		class Test
 		{
 			final Vector3D pivot;
@@ -294,13 +298,13 @@ extends TestCase
 
 		final Test[] tests =
 		{
-			/* Test #1 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, 0.0, Matrix3D.IDENTITY ),
-			/* Test #2 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, 1.0, Matrix3D.IDENTITY.rotateX( 1.0 ) ),
-			/* Test #3 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, 0.0, Matrix3D.IDENTITY ),
-			/* Test #4 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, 1.0, Matrix3D.IDENTITY.rotateY( 1.0 ) ),
-			/* Test #5 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, 0.0, Matrix3D.IDENTITY ),
-			/* Test #6 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, 1.0, Matrix3D.IDENTITY.rotateZ( 1.0 ) ),
-			};
+		/* Test #1 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, 0.0, Matrix3D.IDENTITY ),
+		/* Test #2 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, 1.0, Matrix3D.IDENTITY.rotateX( 1.0 ) ),
+		/* Test #3 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, 0.0, Matrix3D.IDENTITY ),
+		/* Test #4 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, 1.0, Matrix3D.IDENTITY.rotateY( 1.0 ) ),
+		/* Test #5 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, 0.0, Matrix3D.IDENTITY ),
+		/* Test #6 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, 1.0, Matrix3D.IDENTITY.rotateZ( 1.0 ) ),
+		};
 
 		/*
 		 * Execute tests.
@@ -345,11 +349,9 @@ extends TestCase
 
 	/**
 	 * Test the {@link Matrix3D#rotateX} method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testRotateX()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testRotateX()" );
 
@@ -410,11 +412,9 @@ extends TestCase
 
 	/**
 	 * Test the {@link Matrix3D#rotateY} method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testRotateY()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testRotateY()" );
 
@@ -475,11 +475,9 @@ extends TestCase
 
 	/**
 	 * Test the {@link Matrix3D#rotateZ} method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testRotateZ()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testRotateZ()" );
 
@@ -536,5 +534,63 @@ extends TestCase
 				      + " but was:" + actual.toFriendlyString() );
 			}
 		}
+	}
+
+	/**
+	 * Test the {@link Matrix3D#getTransform} method.
+	 */
+	@Test
+	public void testGetTransform()
+	{
+		System.out.println( CLASS_NAME + ".testGetTransform()" );
+
+		/*
+		 * Test matrix contents for simple rotations.
+		 */
+		System.out.println( " - Test individual rotation angles" );
+		for ( int angle = -720; angle < 720.0; angle += 15 )
+		{
+			final double rad = Math.toRadians( angle );
+			final double cos = Math.cos( rad );
+			final double sin = Math.sin( rad );
+
+			{
+				final Matrix3D expected = new Matrix3D( 1, 0, 0, 0,
+				                                        0, cos, sin, 0,
+				                                        0, -sin, cos, 0 );
+				final Matrix3D actual = Matrix3D.getTransform( angle, 0, 0, 0, 0, 0 );
+				Matrix3DTester.assertEquals( "getTransform( " + angle + ", 0, 0, 0, 0, 0 )", expected, actual, 0.001 );
+			}
+
+			{
+				final Matrix3D expected = new Matrix3D( cos, 0, sin, 0,
+				                                        0, 1, 0, 0,
+				                                        -sin, 0, cos, 0 );
+				final Matrix3D actual = Matrix3D.getTransform( 0, angle, 0, 0, 0, 0 );
+				Matrix3DTester.assertEquals( "getTransform( 0, " + angle + ", 0, 0, 0, 0 )", expected, actual, 0.001 );
+			}
+
+			{
+				final Matrix3D expected = new Matrix3D( cos, -sin, 0, 0,
+				                                        sin, cos, 0, 0,
+				                                        0, 0, 1, 0 );
+				final Matrix3D actual = Matrix3D.getTransform( 0, 0, angle, 0, 0, 0 );
+				Matrix3DTester.assertEquals( "getTransform( 0, 0, " + angle + ", 0, 0, 0 )", expected, actual, 0.001 );
+			}
+		}
+
+		System.out.println( " - Test (optimized) standard orientations" );
+		Matrix3DTester.assertEquals( "getTransform( 0, 0, 0, 1, 2, 3 )", new Matrix3D( 1, 0, 0, 1, 0, 1, 0, 2, 0, 0, 1, 3 ), Matrix3D.getTransform( 0, 0, 0, 1, 2, 3 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 90, 0, 0, 4, 5, 6 )", new Matrix3D( 1, 0, 0, 4, 0, 0, 1, 5, 0, -1, 0, 6 ), Matrix3D.getTransform( 90, 0, 0, 4, 5, 6 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 180, 0, 0, 7, 8, 9 )", new Matrix3D( 1, 0, 0, 7, 0, -1, 0, 8, 0, 0, -1, 9 ), Matrix3D.getTransform( 180, 0, 0, 7, 8, 9 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 270, 0, 0, 10, 11, 12 )", new Matrix3D( 1, 0, 0, 10, 0, 0, -1, 11, 0, 1, 0, 12 ), Matrix3D.getTransform( 270, 0, 0, 10, 11, 12 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 90, 0, 13, 14, 15 )", new Matrix3D( 0, 0, 1, 13, 0, 1, 0, 14, -1, 0, 0, 15 ), Matrix3D.getTransform( 0, 90, 0, 13, 14, 15 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 180, 0, 16, 17, 18)", new Matrix3D( -1, 0, 0, 16, 0, 1, 0, 17, 0, 0, -1, 18 ), Matrix3D.getTransform( 0, 180, 0, 16, 17, 18 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 270, 0, 19, 20, 21 )", new Matrix3D( 0, 0, -1, 19, 0, 1, 0, 20, 1, 0, 0, 21 ), Matrix3D.getTransform( 0, 270, 0, 19, 20, 21 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 0, 90, 22, 23, 24 )", new Matrix3D( 0, -1, 0, 22, 1, 0, 0, 23, 0, 0, 1, 24 ), Matrix3D.getTransform( 0, 0, 90, 22, 23, 24 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 0, 180, 25, 26, 27 )", new Matrix3D( -1, 0, 0, 25, 0, -1, 0, 26, 0, 0, 1, 27 ), Matrix3D.getTransform( 0, 0, 180, 25, 26, 27 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 0, 270, 28, 29, 30 )", new Matrix3D( 0, 1, 0, 28, -1, 0, 0, 29, 0, 0, 1, 30 ), Matrix3D.getTransform( 0, 0, 270, 28, 29, 30 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 90, 90, 0, 31, 32, 33 )", new Matrix3D( 1, 0, 0, 31, 0, 0, 1, 32, 0, -1, 0, 33 ), Matrix3D.getTransform( 90, 0, 0, 31, 32, 33 ), 0.0 );
+		Matrix3DTester.assertEquals( "getTransform( 0, 90, 270, 34, 35, 36 )", new Matrix3D( 1, 0, 0, 34, 0, 0, 1, 35, 0, -1, 0, 36 ), Matrix3D.getTransform( 90, 0, 0, 34, 35, 36 ), 0.0 );
 	}
 }
