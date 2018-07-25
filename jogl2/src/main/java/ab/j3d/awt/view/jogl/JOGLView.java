@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2014 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -144,6 +144,7 @@ implements GLEventListener
 		glCanvas.setSharedAutoDrawable( joglEngine.getSharedAutoDrawable( profile, capabilities ) );
 		glCanvas.setMinimumSize( new Dimension( 0, 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
+		glCanvas.addHierarchyListener( new DisposeListener() );
 		_glCanvas = glCanvas;
 
 		final ViewControlInput controlInput = new ViewControlInput( this );
@@ -157,6 +158,7 @@ implements GLEventListener
 
 		final TextureCacheListener textureCacheListener = new TextureCacheListener()
 		{
+			@Override
 			public void textureChanged( @NotNull final TextureCache textureCache, @NotNull final TextureProxy textureProxy )
 			{
 				startRenderer();
@@ -489,6 +491,7 @@ implements GLEventListener
 	 *
 	 * @param glAutoDrawable Target for performing OpenGL rendering.
 	 */
+	@Override
 	public void init( final GLAutoDrawable glAutoDrawable )
 	{
 		_capabilities = new JOGLCapabilities( _glCanvas.getContext() );
@@ -506,11 +509,13 @@ implements GLEventListener
 		}
 	}
 
+	@Override
 	public void dispose( final GLAutoDrawable glAutoDrawable )
 	{
 		disposeContext();
 	}
 
+	@Override
 	public void reshape( final GLAutoDrawable glAutoDrawable, final int x, final int y, final int width, final int height )
 	{
 		try
@@ -526,6 +531,7 @@ implements GLEventListener
 		}
 	}
 
+	@Override
 	public final void display( final GLAutoDrawable glAutoDrawable )
 	{
 		fireBeforeFrameEvent();
@@ -687,6 +693,7 @@ implements GLEventListener
 		 */
 		private Component _root = null;
 
+		@Override
 		public void hierarchyChanged( final HierarchyEvent e )
 		{
 			if ( ( e.getChangeFlags() & (long)HierarchyEvent.PARENT_CHANGED ) == (long)HierarchyEvent.PARENT_CHANGED )
@@ -748,14 +755,17 @@ implements GLEventListener
 	private class RenderStatisticsOverlay
 	implements ViewOverlay
 	{
+		@Override
 		public void addView( final View3D view )
 		{
 		}
 
+		@Override
 		public void removeView( final View3D view )
 		{
 		}
 
+		@Override
 		public void paintOverlay( final View3D view, final Graphics2D g )
 		{
 			final JOGLRenderer renderer = _renderer;
