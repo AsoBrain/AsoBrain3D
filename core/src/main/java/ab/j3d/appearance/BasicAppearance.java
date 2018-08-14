@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ public class BasicAppearance
 	/**
 	 * Name of the appearance.
 	 */
+	@Nullable
 	private String _name = null;
 
 	/**
@@ -129,7 +130,7 @@ public class BasicAppearance
 	 */
 	public BasicAppearance()
 	{
-		this( null );
+		this( (String)null );
 	}
 
 	/**
@@ -140,6 +141,27 @@ public class BasicAppearance
 	public BasicAppearance( @Nullable final String name )
 	{
 		_name = name;
+	}
+
+	/**
+	 * Constructs a copy of new appearance.
+	 *
+	 * @param original Appearance to copy.
+	 */
+	public BasicAppearance( @NotNull final Appearance original )
+	{
+		_name = original.getName();
+		_ambientColor = original.getAmbientColor();
+		_diffuseColor = original.getDiffuseColor();
+		_specularColor = original.getSpecularColor();
+		_shininess = original.getShininess();
+		_emissiveColor = original.getEmissiveColor();
+		_colorMap = original.getColorMap();
+		_bumpMap = original.getBumpMap();
+		_reflectionMap = original.getReflectionMap();
+		_reflectionMin = original.getReflectionMin();
+		_reflectionMax = original.getReflectionMax();
+		_reflectionColor = original.getReflectionColor();
 	}
 
 	@Override
@@ -154,6 +176,7 @@ public class BasicAppearance
 		_name = name;
 	}
 
+	@Override
 	public Color4 getAmbientColor()
 	{
 		return _ambientColor;
@@ -193,6 +216,7 @@ public class BasicAppearance
 		_ambientColor = color;
 	}
 
+	@Override
 	public Color4 getDiffuseColor()
 	{
 		return _diffuseColor;
@@ -233,6 +257,7 @@ public class BasicAppearance
 		_diffuseColor = color;
 	}
 
+	@Override
 	public Color4 getSpecularColor()
 	{
 		return _specularColor;
@@ -268,6 +293,7 @@ public class BasicAppearance
 		_specularColor = color;
 	}
 
+	@Override
 	public int getShininess()
 	{
 		return _shininess;
@@ -283,6 +309,7 @@ public class BasicAppearance
 		_shininess = shininess;
 	}
 
+	@Override
 	public Color4 getEmissiveColor()
 	{
 		return _emissiveColor;
@@ -316,6 +343,7 @@ public class BasicAppearance
 		_emissiveColor = color;
 	}
 
+	@Override
 	@Nullable
 	public TextureMap getColorMap()
 	{
@@ -332,6 +360,7 @@ public class BasicAppearance
 		_colorMap = map;
 	}
 
+	@Override
 	@Nullable
 	public TextureMap getBumpMap()
 	{
@@ -348,6 +377,7 @@ public class BasicAppearance
 		_bumpMap = map;
 	}
 
+	@Override
 	@Nullable
 	public CubeMap getReflectionMap()
 	{
@@ -365,6 +395,7 @@ public class BasicAppearance
 	}
 
 
+	@Override
 	public float getReflectionMin()
 	{
 		return _reflectionMin;
@@ -380,6 +411,7 @@ public class BasicAppearance
 		_reflectionMin = reflectivity;
 	}
 
+	@Override
 	public float getReflectionMax()
 	{
 		return _reflectionMax;
@@ -395,6 +427,7 @@ public class BasicAppearance
 		_reflectionMax = reflectivity;
 	}
 
+	@Override
 	public Color4 getReflectionColor()
 	{
 		return _reflectionColor;
