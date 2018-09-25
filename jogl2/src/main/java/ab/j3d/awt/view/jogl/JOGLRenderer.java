@@ -953,7 +953,7 @@ public class JOGLRenderer
 		CubeMap environmentMap = _environmentMap;
 		if ( environmentMap == null )
 		{
-			environmentMap = new CubeMap( "maps/reflect-sky-bw.jpg" );
+			environmentMap = new CubeMap( "maps/reflect-sky-bw" );
 			_environmentMap = environmentMap;
 		}
 
