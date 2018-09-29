@@ -6,7 +6,7 @@
 
 	<groupId>com.asobrain.ab3d</groupId>
 	<artifactId>ab3d</artifactId>
-	<version>1.6-SNAPSHOT</version>
+	<version>1.6</version>
 	<description>Straightforward engine-independent 3D Java library.</description>
 	<url>https://github.com/AsoBrain/AsoBrain3D</url>
 
@@ -43,34 +43,34 @@
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-core</artifactId>
-				<version>1.6-SNAPSHOT</version>
+				<version>1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-core</artifactId>
 				<type>test-jar</type>
-				<version>1.6-SNAPSHOT</version>
+				<version>1.6</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-jogl1</artifactId>
-				<version>1.6-SNAPSHOT</version>
+				<version>1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-jogl2</artifactId>
-				<version>1.6-SNAPSHOT</version>
+				<version>1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-examples</artifactId>
-				<version>1.6-SNAPSHOT</version>
+				<version>1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-demos</artifactId>
-				<version>1.6-SNAPSHOT</version>
+				<version>1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jetbrains</groupId>
