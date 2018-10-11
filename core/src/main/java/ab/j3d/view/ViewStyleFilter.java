@@ -1,7 +1,7 @@
-/* $Id$
+/*
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,44 +21,19 @@
 package ab.j3d.view;
 
 import ab.j3d.*;
-import ab.j3d.model.*;
 
 /**
  * Provides the default rendering style attributes for a view.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
  */
 public class ViewStyleFilter
 	implements RenderStyleFilter
 {
-	/**
-	 * Last seen node.
-	 */
-	private ContentNode _node;
-
-	/**
-	 * Construct filter.
-	 */
-	public ViewStyleFilter()
-	{
-		_node = null;
-	}
-
+	@Override
 	public RenderStyle applyFilter( final RenderStyle style , final Object context )
 	{
-		RenderStyle result = style;
-
-		if ( context instanceof View3D )
-		{
-			result = createStyle( ((View3D)context).getRenderingPolicy() );
-		}
-		else if ( context instanceof ContentNode )
-		{
-			_node = (ContentNode)context;
-		}
-
-		return result;
+		return ( context instanceof View3D ) ? createStyle( ( (View3D)context ).getRenderingPolicy() ) : style;
 	}
 
 	/**

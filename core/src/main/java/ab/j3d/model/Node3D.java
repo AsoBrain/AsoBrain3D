@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2017 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,16 +24,17 @@ import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This class defines a node in a 3D scene graph. It can be used directly as
- * a collection or merge point. Actual scene graph functionality is implemented
- * by sub-classes.
+ * This class defines a node in a 3D scene graph. It can be used directly as a
+ * collection or merge point. Actual scene graph functionality is implemented by
+ * sub-classes.
  * <p>
  * This class implements basic functionality for graph manipulation and
  * traversal.
  *
- * @author  Sjoerd Bouwman
- * @author  Peter S. Heijnen
+ * @author Sjoerd Bouwman
+ * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "unused", "WeakerAccess" } )
 public class Node3D
 {
 	/**
@@ -43,14 +44,12 @@ public class Node3D
 	private final List<Node3D> _children;
 
 	/**
-	 * Tag of this node.
-	 * <p />
-	 * A tag is an application-assigned object that is typically used to link
-	 * application objects to scene graph objects. It is not used in any way
-	 * by the AsoBrain 3D Toolkit classes.
+	 * Tag of this node. <p /> A tag is an application-assigned object that is
+	 * typically used to link application objects to scene graph objects. It is
+	 * not used in any way by the AsoBrain 3D Toolkit classes.
 	 *
-	 * @see     #getTag
-	 * @see     #setTag
+	 * @see #getTag
+	 * @see #setTag
 	 */
 	@Nullable
 	private Object _tag;
@@ -72,15 +71,14 @@ public class Node3D
 	}
 
 	/**
-	 * Get tag that was set by {@link #setTag}.
-	 * <p />
-	 * A tag is an application-assigned object that is typically used to link
-	 * application objects to scene graph objects. It is not used in any way
-	 * by the AsoBrain 3D Toolkit classes.
+	 * Get tag that was set by {@link #setTag}. <p /> A tag is an
+	 * application-assigned object that is typically used to link application
+	 * objects to scene graph objects. It is not used in any way by the AsoBrain
+	 * 3D Toolkit classes.
 	 *
-	 * @return  Tag that was set by setTag().
+	 * @return Tag that was set by setTag().
 	 *
-	 * @see     #setTag
+	 * @see #setTag
 	 */
 	@Nullable
 	public Object getTag()
@@ -90,15 +88,13 @@ public class Node3D
 	}
 
 	/**
-	 * Set tag of this node.
-	 * <p />
-	 * A tag is an application-assigned object that is typically used to link
-	 * application objects to scene graph objects. It is not used in any way
-	 * by the AsoBrain 3D Toolkit classes.
+	 * Set tag of this node. <p /> A tag is an application-assigned object that
+	 * is typically used to link application objects to scene graph objects. It
+	 * is not used in any way by the AsoBrain 3D Toolkit classes.
 	 *
-	 * @param   tag     Tag of node.
+	 * @param tag Tag of node.
 	 *
-	 * @see     #getTag
+	 * @see #getTag
 	 */
 	public void setTag( @Nullable final Object tag )
 	{
@@ -131,101 +127,141 @@ public class Node3D
 	}
 
 	/**
-	 * Returns the specified number property as an integer.
+	 * Returns the specified boolean property.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
 	 *
 	 * @return Property value.
 	 */
-	public Integer getProperty( @NotNull final String name, final Integer defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public Boolean getProperty( @NotNull final String name, @Nullable final Boolean defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof Number ? ( (Number)value ).intValue() : defaultValue;
+		return ( value instanceof Boolean ) ? (Boolean)value :
+		       ( value instanceof Number ) ? ( ( ( (Number)value ).intValue() > 0 ) ? Boolean.TRUE : Boolean.FALSE ) :
+		       defaultValue;
+	}
+
+	/**
+	 * Returns the specified number property as an integer.
+	 *
+	 * @param name         Property to get.
+	 * @param defaultValue Return value if the property is not set.
+	 *
+	 * @return Property value.
+	 */
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public Integer getProperty( @NotNull final String name, @Nullable final Integer defaultValue )
+	{
+		final Object value = getProperty( name );
+		return ( value instanceof Number ) ? ( value instanceof Integer ) ? (Integer)value : Integer.valueOf( ( (Number)value ).intValue() ) :
+		       ( value instanceof String ) ? Integer.valueOf( ( (String)value ).trim() ) :
+		       defaultValue;
 	}
 
 	/**
 	 * Returns the specified number property as a double.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
 	 *
 	 * @return Property value.
 	 */
-	public Double getProperty( @NotNull final String name, final Double defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public Double getProperty( @NotNull final String name, @Nullable final Double defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof Number ? ( (Number)value ).doubleValue() : defaultValue;
+		return ( value instanceof Number ) ? ( value instanceof Double ) ? (Double)value : Double.valueOf( ( (Number)value ).intValue() ) :
+		       ( value instanceof String ) ? Double.valueOf( ( (String)value ).trim() ) :
+		       defaultValue;
 	}
 
 	/**
 	 * Returns the specified string property.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
 	 *
 	 * @return Property value.
 	 */
-	public String getProperty( @NotNull final String name, final String defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public String getProperty( @NotNull final String name, @Nullable final String defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof String ? (String)value : defaultValue;
+		return ( value != null ) ? value.toString() : defaultValue;
 	}
 
 	/**
 	 * Returns the specified vector property.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
 	 *
 	 * @return Property value.
 	 */
-	public Vector3D getProperty( @NotNull final String name, final Vector3D defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public Vector3D getProperty( @NotNull final String name, @Nullable final Vector3D defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof Vector3D ? (Vector3D)value : defaultValue;
+		return ( value instanceof Vector3D ) ? (Vector3D)value : defaultValue;
 	}
 
 	/**
 	 * Returns the specified matrix property.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
 	 *
 	 * @return Property value.
 	 */
-	public Matrix3D getProperty( @NotNull final String name, final Matrix3D defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public Matrix3D getProperty( @NotNull final String name, @Nullable final Matrix3D defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof Matrix3D ? (Matrix3D)value : defaultValue;
+		return ( value instanceof Matrix3D ) ? (Matrix3D)value : defaultValue;
 	}
 
 	/**
-	 * Returns the specified boolean property.
+	 * Returns the specified bounds property.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
 	 *
 	 * @return Property value.
 	 */
-	public Boolean getProperty( @NotNull final String name, final Boolean defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public Bounds3D getProperty( @NotNull final String name, @Nullable final Bounds3D defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof Boolean ? (Boolean)value : defaultValue;
+		return ( value instanceof Bounds3D ) ? (Bounds3D)value : defaultValue;
 	}
 
 	/**
 	 * Returns the specified collection property.
 	 *
-	 * @param name Property to get.
+	 * @param name         Property to get.
 	 * @param defaultValue Return value if the property is not set.
+	 * @param <T>          Element type (should be one of the other supported
+	 *                     types: {@link Boolean}, {@link Integer}, {@link
+	 *                     Double}, {@link String}, {@link Bounds3D}, {@link
+	 *                     Matrix3D}, {@link Vector3D}).
 	 *
 	 * @return Property value.
 	 */
-	public Collection<?> getProperty( @NotNull final String name, final Collection<?> defaultValue )
+	@Contract( "_, !null -> !null" )
+	@Nullable
+	public <T> Collection<T> getProperty( @NotNull final String name, @Nullable final Collection<T> defaultValue )
 	{
 		final Object value = getProperty( name );
-		return value instanceof Collection ? (Collection)value : defaultValue;
+		return ( value instanceof Collection ) ? (Collection<T>)value : defaultValue;
 	}
 
 	/**
@@ -388,13 +424,12 @@ public class Node3D
 	/**
 	 * Get child node with the specified index.
 	 *
-	 * @param   index   Index of child node.
+	 * @param index Index of child node.
 	 *
-	 * @return  Child node with specified index.
+	 * @return Child node with specified index.
 	 *
-	 * @throws  IndexOutOfBoundsException if the index is out of range.
-	 *
-	 * @see     #getChildCount
+	 * @throws IndexOutOfBoundsException if the index is out of range.
+	 * @see #getChildCount
 	 */
 	public Node3D getChild( final int index )
 	{
@@ -404,10 +439,10 @@ public class Node3D
 	/**
 	 * Get number of child nodes of this node.
 	 *
-	 * @return  Number of child nodes (0 => none => leaf node).
+	 * @return Number of child nodes (0 => none => leaf node).
 	 *
-	 * @see     #getChild
-	 * @see     #isLeaf
+	 * @see #getChild
+	 * @see #isLeaf
 	 */
 	public int getChildCount()
 	{
@@ -417,7 +452,7 @@ public class Node3D
 	/**
 	 * Returns the collection of children of this node.
 	 *
-	 * @return  Children of this node.
+	 * @return Children of this node.
 	 */
 	public List<Node3D> getChildren()
 	{
@@ -425,13 +460,13 @@ public class Node3D
 	}
 
 	/**
-	 * This method returns <code>true</code> if this node is a leaf node
-	 * (it has no children).
+	 * This method returns {@code true} if this node is a leaf node (it has no
+	 * children).
 	 *
-	 * @return  <code>true</code> if this node is a leaf node,
-	 *          <code>false</code> otherwise.
+	 * @return {@code true} if this node is a leaf node, {@code false}
+	 * otherwise.
 	 *
-	 * @see     #getChildCount
+	 * @see #getChildCount
 	 */
 	public boolean isLeaf()
 	{
@@ -441,9 +476,9 @@ public class Node3D
 	/**
 	 * Add a child node to this node.
 	 *
-	 * @param   node    Node to add as a child.
+	 * @param node Node to add as a child.
 	 *
-	 * @see     #removeChild
+	 * @see #removeChild
 	 */
 	public void addChild( @NotNull final Node3D node )
 	{
@@ -461,7 +496,7 @@ public class Node3D
 	/**
 	 * Add child nodes to this node.
 	 *
-	 * @param   nodes   Nodes to add as a child.
+	 * @param nodes Nodes to add as a child.
 	 */
 	public void addChildren( @NotNull final Node3D... nodes )
 	{
@@ -482,7 +517,7 @@ public class Node3D
 	/**
 	 * Add child nodes to this node.
 	 *
-	 * @param   nodes   Nodes to add as a child.
+	 * @param nodes Nodes to add as a child.
 	 */
 	public void addChildren( @NotNull final Collection<? extends Node3D> nodes )
 	{
@@ -497,7 +532,7 @@ public class Node3D
 	/**
 	 * Add child nodes to this node.
 	 *
-	 * @param   nodes   Nodes to add as a child.
+	 * @param nodes Nodes to add as a child.
 	 */
 	public void addChildren( @NotNull final Iterable<? extends Node3D> nodes )
 	{
@@ -518,9 +553,9 @@ public class Node3D
 	/**
 	 * Remove a child node from this node.
 	 *
-	 * @param   node    Child node to remove.
+	 * @param node Child node to remove.
 	 *
-	 * @see     #addChild
+	 * @see #addChild
 	 */
 	public void removeChild( @NotNull final Node3D node )
 	{
@@ -535,7 +570,7 @@ public class Node3D
 	/**
 	 * Remove all child nodes from this node.
 	 *
-	 * @see     #removeChild
+	 * @see #removeChild
 	 */
 	public void removeAllChildren()
 	{
@@ -549,10 +584,10 @@ public class Node3D
 	/**
 	 * Calculate combined bounds all objects starting at this node.
 	 *
-	 * @param   transform   Transformation to apply to this node.
+	 * @param transform Transformation to apply to this node.
 	 *
-	 * @return  Calculated bounds;
-	 *          <code>null</code> if bounds could not be determined.
+	 * @return Calculated bounds; {@code null} if bounds could not be
+	 * determined.
 	 */
 	@Nullable
 	public Bounds3D calculateBounds( final Matrix3D transform )
