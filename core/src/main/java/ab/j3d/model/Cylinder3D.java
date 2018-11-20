@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2017 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ import org.jetbrains.annotations.*;
  * radius, and extends up to a given height along the positive Z-axis.
  *
  * @author Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
  */
 public class Cylinder3D
 extends Object3D
@@ -176,7 +175,7 @@ extends Object3D
 			/*
 			 * Bottom face (if it exists).
 			 */
-			if ( bottomAppearance != null )
+			if ( bottomAppearance != null || ( ( sideAppearance == null ) && ( topAppearance == null ) ) )
 			{
 				final FaceGroup faceGroup = getFaceGroup( bottomAppearance, false, false );
 				final Vector3D faceNormal = flipNormals ? Vector3D.POSITIVE_Z_AXIS : Vector3D.NEGATIVE_Z_AXIS;
@@ -241,7 +240,7 @@ extends Object3D
 			/*
 			 * Top face (if it exists).
 			 */
-			if ( topAppearance != null )
+			if ( topAppearance != null || ( ( sideAppearance == null ) && ( bottomAppearance == null ) ) )
 			{
 				final FaceGroup faceGroup = getFaceGroup( topAppearance, false, false );
 				final Vector3D faceNormal = flipNormals ? Vector3D.NEGATIVE_Z_AXIS : Vector3D.POSITIVE_Z_AXIS;

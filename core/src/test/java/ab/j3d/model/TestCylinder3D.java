@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2017 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,10 +42,8 @@ extends TestCase
 	/**
 	 * Test constructor for cylinder object.
 	 *
-	 * @throws Exception if the test fails.
 	 */
 	public void testConstructor()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testConstructor" );
 		final BasicAppearance appearance = new BasicAppearance();
@@ -78,13 +76,13 @@ extends TestCase
 		System.out.println( CLASS_NAME + ".testNormals()" );
 
 		System.out.println( " - Regular normals" );
-		final Cylinder3D regularCylinder = new Cylinder3D( 1.0, 2.0, 4, null, null, true, null, null, null, null, false );
+		final Cylinder3D regularCylinder = new Cylinder3D( 1.0, 2.0, 4, BasicAppearances.WHITE, null, true, null, null, null, null, false );
 		final Vector3D[] regularNormals = { Vector3D.POSITIVE_Y_AXIS, Vector3D.POSITIVE_X_AXIS, Vector3D.NEGATIVE_Y_AXIS, Vector3D.NEGATIVE_X_AXIS };
 		SceneIntegrityChecker.ensureIntegrity( regularCylinder );
 		assertNormals( "regular cylinder", regularNormals, regularCylinder );
 
 		System.out.println( " - Flipped normals" );
-		final Cylinder3D flippedCylinder = new Cylinder3D( 1.0, 2.0, 4, null, null, true, null, null, null, null, true );
+		final Cylinder3D flippedCylinder = new Cylinder3D( 1.0, 2.0, 4, BasicAppearances.WHITE, null, true, null, null, null, null, true );
 		final Vector3D[] flippedNormals = { Vector3D.NEGATIVE_Y_AXIS, Vector3D.POSITIVE_X_AXIS, Vector3D.POSITIVE_Y_AXIS, Vector3D.NEGATIVE_X_AXIS };
 		SceneIntegrityChecker.ensureIntegrity( flippedCylinder );
 		assertNormals( "flipped cylinder", flippedNormals, flippedCylinder );
