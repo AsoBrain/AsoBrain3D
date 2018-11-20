@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -107,6 +107,13 @@ public class ObjWriter
 	private boolean _writeObjectsAsGroups = false;
 
 	/**
+	 * Whether to write vertex normals when they are equal to the implicit
+	 * normal of a face. Always writing face normals may offer improved
+	 * compatibility, but also produces larger output.
+	 */
+	private boolean _writeFaceNormals = false;
+
+	/**
 	 * Constructs a new instance.
 	 *
 	 * @param textureLibrary Texture library used to include textures in the
@@ -190,6 +197,16 @@ public class ObjWriter
 	public void setWriteObjectsAsGroups( final boolean writeObjectsAsGroups )
 	{
 		_writeObjectsAsGroups = writeObjectsAsGroups;
+	}
+
+	public boolean isWriteFaceNormals()
+	{
+		return _writeFaceNormals;
+	}
+
+	public void setWriteFaceNormals( final boolean writeFaceNormals )
+	{
+		_writeFaceNormals = writeFaceNormals;
 	}
 
 	/**
@@ -375,6 +392,7 @@ public class ObjWriter
 	{
 		Node3DTreeWalker.walk( new Node3DVisitor()
 		{
+			@Override
 			public boolean visitNode( @NotNull final Node3DPath path )
 			{
 				final Node3D node = path.getNode();
@@ -860,20 +878,27 @@ public class ObjWriter
 					final int vertexCount = face.getVertexCount();
 
 					boolean hasTextureVertex = false;
-					boolean hasVertexNormal = false;
-
 					for ( int i = 0; i < vertexCount; i++ )
 					{
 						final Vertex3D vertex = face.getVertex( i );
 						if ( !Double.isNaN( vertex.colorMapU ) && !Double.isNaN( vertex.colorMapV ) )
 						{
 							hasTextureVertex = true;
+							break;
 						}
+					}
 
-						final Vector3D vertexNormal = face.getVertexNormal( i );
-						if ( vertexNormal.isNonZero() && !vertexNormal.almostEquals( faceNormal ) )
+					boolean hasVertexNormal = isWriteFaceNormals();
+					if ( !hasVertexNormal )
+					{
+						for ( int i = 0; i < vertexCount; i++ )
 						{
-							hasVertexNormal = true;
+							final Vector3D vertexNormal = face.getVertexNormal( i );
+							if ( vertexNormal.isNonZero() && !vertexNormal.almostEquals( faceNormal ) )
+							{
+								hasVertexNormal = true;
+								break;
+							}
 						}
 					}
 
