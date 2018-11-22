@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -138,7 +138,7 @@ describe( 'Matrix3D', function()
 		{
 			this.from = from;
 			this.to   = to;
-			if ( result == Error || result && result.prototype instanceof Error )
+			if ( result === Error || result && result.prototype instanceof Error )
 			{
 				this.error = result;
 			}
@@ -242,7 +242,7 @@ describe( 'Matrix3D', function()
 		 * Execute tests.
 		 */
 		let allTests = extremeTests.concat( orthogonalTests, diagonalTests );
-		allTests.forEach( createTestRunner( ( test ) =>
+		allTests.forEach( createTestRunner( test =>
 		{
 			let upPrimary = Vector3D.POSITIVE_Z_AXIS;
 			let upSecondary = Vector3D.POSITIVE_Y_AXIS;
@@ -294,7 +294,7 @@ describe( 'Matrix3D', function()
 		/*
 		 * Execute tests.
 		 */
-		tests.forEach( createTestRunner( ( test ) => Matrix3D.getRotationTransform( test.pivot, test.direction, test.thetaRad ) ) );
+		tests.forEach( createTestRunner( test => Matrix3D.getRotationTransform( test.pivot, test.direction, test.thetaRad ) ) );
 	} );
 
 	/**
@@ -340,7 +340,7 @@ describe( 'Matrix3D', function()
 			{ deg: 90.0, vector: new Vector3D( 0.0, 0.0, 1.0 ), expected: new Vector3D( 0.0, -1.0, 0.0 ) }
 		];
 
-		vectorTests.forEach( ( test ) =>
+		vectorTests.forEach( test =>
 		{
 			let matrix = Matrix3D.IDENTITY.rotateX( toRadians( test.deg ) );
 			let actual = matrix.transform( test.vector );
@@ -398,7 +398,7 @@ describe( 'Matrix3D', function()
 			{ deg: 90.0, vector: new Vector3D( 0.0, 0.0, 1.0 ), expected: new Vector3D( 1.0,  0.0,  0.0 ) }
 		];
 
-		vectorTests.forEach( ( test ) =>
+		vectorTests.forEach( test =>
 		{
 			let matrix = Matrix3D.IDENTITY.rotateY( toRadians( test.deg ) );
 			let actual = matrix.transform( test.vector );
@@ -456,7 +456,7 @@ describe( 'Matrix3D', function()
 			{ deg: 90.0, vector: new Vector3D( 0.0, 0.0, 1.0 ), expected: new Vector3D(  0.0,  0.0,  1.0 ) }
 		];
 
-		vectorTests.forEach( ( test ) =>
+		vectorTests.forEach( test =>
 		{
 			let matrix = Matrix3D.IDENTITY.rotateZ( toRadians( test.deg ) );
 			let actual = matrix.transform( test.vector );

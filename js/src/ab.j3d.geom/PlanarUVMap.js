@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 1999-2016 Peter S. Heijnen
  * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -126,14 +126,14 @@ export default class PlanarUVMap
 	{
 		let result;
 
-		if ( other == this )
+		if ( other === this )
 		{
 			result = true;
 		}
 		else if ( other instanceof PlanarUVMap )
 		{
-			result = ( this._scaleU == other._scaleU ) &&
-			         ( this._scaleV == other._scaleV ) &&
+			result = ( this._scaleU === other._scaleU ) &&
+			         ( this._scaleV === other._scaleV ) &&
 			         this._plane2wcs.equals( other._plane2wcs );
 		}
 		else

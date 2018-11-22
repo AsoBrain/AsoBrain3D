@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -134,20 +134,20 @@ export default class Bounds3DBuilder
 	 */
 	addBounds( transform, x1, y1, z1, x2, y2, z2 )
 	{
-		if ( arguments.length == 1 )
+		if ( arguments.length === 1 )
 		{
 			const bounds = arguments[ 0 ];
 			this.addPoint( bounds.v1 );
 			this.addPoint( bounds.v2 );
 		}
-		else if ( arguments.length == 6 )
+		else if ( arguments.length === 6 )
 		{
 			this.addPoint( arguments[ 0 ], arguments[ 1 ], arguments[ 2 ] );
 			this.addPoint( arguments[ 3 ], arguments[ 4 ], arguments[ 5 ] );
 		}
 		else
 		{
-			if ( arguments.length == 2 )
+			if ( arguments.length === 2 )
 			{
 				const bounds = arguments[ 1 ];
 				x1 = bounds.v1.x;
@@ -157,7 +157,7 @@ export default class Bounds3DBuilder
 				y2 = bounds.v2.y;
 				z2 = bounds.v2.z;
 			}
-			else if ( arguments.length != 7 )
+			else if ( arguments.length !== 7 )
 			{
 				throw new TypeError( "invalid number of arguments: " + arguments );
 			}
@@ -183,14 +183,14 @@ export default class Bounds3DBuilder
 	 */
 	addPoint( transform, x, y, z )
 	{
-		if ( arguments.length == 1 )
+		if ( arguments.length === 1 )
 		{
 			const point = arguments[ 0 ];
 			x = point.x;
 			y = point.y;
 			z = point.z;
 		}
-		else if ( arguments.length == 3 )
+		else if ( arguments.length === 3 )
 		{
 			x = arguments[ 0 ];
 			y = arguments[ 1 ];
@@ -198,14 +198,14 @@ export default class Bounds3DBuilder
 		}
 		else
 		{
-			if ( arguments.length == 2 )
+			if ( arguments.length === 2 )
 			{
 				const point = arguments[ 1 ];
 				x = point.x;
 				y = point.y;
 				z = point.z;
 			}
-			else if ( arguments.length != 4 )
+			else if ( arguments.length !== 4 )
 			{
 				throw new TypeError( "invalid number of arguments: " + arguments );
 			}

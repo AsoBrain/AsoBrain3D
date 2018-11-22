@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 2006-2016 Peter S. Heijnen
+ * Copyright (C) 2006-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,11 +16,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-"use strict";
-var chai = require( 'chai' );
-const assert = chai.assert;
+import { assert } from 'chai';
 
-const Vector3D = require( '../../lib/ab.j3d/Vector3D' ).default;
+import Vector3D from '../../lib/ab.j3d/Vector3D';
 
 /**
  * This class tests the {@link Vector3D} class.

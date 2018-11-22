@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -162,7 +162,7 @@ export default class Bounds3D
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
-		return ( ( v1.x == v2.x ) || ( v1.y == v2.y ) || ( v1.z == v2.z ) );
+		return ( ( v1.x === v2.x ) || ( v1.y === v2.y ) || ( v1.z === v2.z ) );
 	}
 
 	/**
@@ -206,7 +206,7 @@ export default class Bounds3D
 	 */
 	equals( other )
 	{
-		return ( this == other ) || ( other && this.v1.equals( other.v1 ) && this.v2.equals( other.v2 ) );
+		return ( this === other ) || ( other && this.v1.equals( other.v1 ) && this.v2.equals( other.v2 ) );
 	}
 
 	/**
@@ -248,7 +248,7 @@ export default class Bounds3D
 	{
 		let result;
 
-		if ( epsilon === undefined || epsilon == 0 )
+		if ( epsilon === undefined || epsilon === 0 )
 		{
 			result = ( Math.min( bounds1.v1.x, bounds1.v2.x ) < Math.max( bounds2.v1.x, bounds2.v2.x ) ) &&
 					 ( Math.min( bounds2.v1.x, bounds2.v2.x ) < Math.max( bounds1.v1.x, bounds1.v2.x ) ) &&
@@ -498,11 +498,11 @@ export default class Bounds3D
 		 * Try to reuse the existing boxes. If not possible, create
 		 * a new one.
 		 */
-		if ( ( box1.v1 == v1 ) && ( box1.v2 == v2 ) )
+		if ( ( box1.v1 === v1 ) && ( box1.v2 === v2 ) )
 		{
 			result = box1;
 		}
-		else if ( ( box2.v1 == v1 ) && ( box2.v2 == v2 ) )
+		else if ( ( box2.v1 === v1 ) && ( box2.v2 === v2 ) )
 		{
 			result = box2;
 		}

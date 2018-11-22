@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 1999-2016 Peter S. Heijnen
  * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 import ArrayTools from '@numdata/oss/lib/com.numdata.oss/ArrayTools';
 
 import Matrix3D from '../ab.j3d/Matrix3D';
@@ -182,7 +181,7 @@ export default class BoxUVMap
 	{
 		let result;
 
-		if ( other == this )
+		if ( other === this )
 		{
 			result = true;
 		}

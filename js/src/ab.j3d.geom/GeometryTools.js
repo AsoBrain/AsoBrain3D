@@ -119,7 +119,7 @@ export default class GeometryTools
 	 * Queries using Oriented Boxes</A> by Stefan Gottschalk.
 	 *
 	 * @param {!Bounds3D} box1 Oriented bounding box #1.
-	 * @param {!Materix3D} from2to1 Transformation from box #2 to box #1.
+	 * @param {!Matrix3D} from2to1 Transformation from box #2 to box #1.
 	 * @param {!Bounds3D} box2 Oriented bounding box #2.
 	 *
 	 * @return {boolean} {@code true} if the bounding boxes intersect; {@code false}

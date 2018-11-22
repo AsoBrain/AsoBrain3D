@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2017 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -185,20 +185,21 @@ export default class Matrix3D
 	 */
 	almostEquals( other )
 	{
-		return ( other != null )
-		    && ( ( other == this )
-		      || ( GeometryTools.almostEqual( this.xx, other.xx ) &&
-		           GeometryTools.almostEqual( this.xy, other.xy ) &&
-		           GeometryTools.almostEqual( this.xz, other.xz ) &&
-		           GeometryTools.almostEqual( this.xo, other.xo ) &&
-		           GeometryTools.almostEqual( this.yx, other.yx ) &&
-		           GeometryTools.almostEqual( this.yy, other.yy ) &&
-		           GeometryTools.almostEqual( this.yz, other.yz ) &&
-		           GeometryTools.almostEqual( this.yo, other.yo ) &&
-		           GeometryTools.almostEqual( this.zx, other.zx ) &&
-		           GeometryTools.almostEqual( this.zy, other.zy ) &&
-		           GeometryTools.almostEqual( this.zz, other.zz ) &&
-		           GeometryTools.almostEqual( this.zo, other.zo ) ) );
+		return other && (
+			( other === this ) ||
+			( GeometryTools.almostEqual( this.xx, other.xx ) &&
+			  GeometryTools.almostEqual( this.xy, other.xy ) &&
+			  GeometryTools.almostEqual( this.xz, other.xz ) &&
+			  GeometryTools.almostEqual( this.xo, other.xo ) &&
+			  GeometryTools.almostEqual( this.yx, other.yx ) &&
+			  GeometryTools.almostEqual( this.yy, other.yy ) &&
+			  GeometryTools.almostEqual( this.yz, other.yz ) &&
+			  GeometryTools.almostEqual( this.yo, other.yo ) &&
+			  GeometryTools.almostEqual( this.zx, other.zx ) &&
+			  GeometryTools.almostEqual( this.zy, other.zy ) &&
+			  GeometryTools.almostEqual( this.zz, other.zz ) &&
+			  GeometryTools.almostEqual( this.zo, other.zo ) )
+		);
 	}
 
 	/**
@@ -210,11 +211,11 @@ export default class Matrix3D
 	 */
 	equals( other )
 	{
-		return ( other == this ) ||
+		return ( other === this ) ||
 			   ( other &&
-				 ( this.xx == other.xx ) && ( this.xy == other.xy ) && ( this.xz == other.xz ) && ( this.xo == other.xo ) &&
-				 ( this.yx == other.yx ) && ( this.yy == other.yy ) && ( this.yz == other.yz ) && ( this.yo == other.yo ) &&
-				 ( this.zx == other.zx ) && ( this.zy == other.zy ) && ( this.zz == other.zz ) && ( this.zo == other.zo ) );
+				 ( this.xx === other.xx ) && ( this.xy === other.xy ) && ( this.xz === other.xz ) && ( this.xo === other.xo ) &&
+				 ( this.yx === other.yx ) && ( this.yy === other.yy ) && ( this.yz === other.yz ) && ( this.yo === other.yo ) &&
+				 ( this.zx === other.zx ) && ( this.zy === other.zy ) && ( this.zz === other.zz ) && ( this.zo === other.zo ) );
 	}
 
 	/**
@@ -528,7 +529,7 @@ export default class Matrix3D
 	 */
 	static getScaleTransform( x, y, z )
 	{
-		if ( arguments.length == 1 )
+		if ( arguments.length === 1 )
 		{
 			//noinspection JSSuspiciousNameCombination
 			y = x;
@@ -642,7 +643,7 @@ export default class Matrix3D
 			({x, y, z} = x);
 		}
 
-		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? this : this.setTranslation( new Vector3D( this.xo - x, this.yo - y, this.zo - z ) );
+		return ( ( x === 0.0 ) && ( y === 0.0 ) && ( z === 0.0 ) ) ? this : this.setTranslation( new Vector3D( this.xo - x, this.yo - y, this.zo - z ) );
 	}
 
 	/**
@@ -753,7 +754,7 @@ export default class Matrix3D
 			({x, y, z} = x);
 		}
 
-		return ( x == 0.0 && y == 0.0 && z == 0.0 ) ? this : this.setTranslation( new Vector3D( this.xo + x, this.yo + y, this.zo + z ) );
+		return ( x === 0.0 && y === 0.0 && z === 0.0 ) ? this : this.setTranslation( new Vector3D( this.xo + x, this.yo + y, this.zo + z ) );
 	}
 
 	/**
@@ -904,9 +905,9 @@ export default class Matrix3D
 		let lzz = isNaN( nzz ) ? this.zz : nzz;
 		let lzo = isNaN( nzo ) ? this.zo : nzo;
 
-		return ( lxx == this.xx && lxy == this.xy && lxz == this.xz && lxo == this.xo &&
-		         lyx == this.yx && lyy == this.yy && lyz == this.yz && lyo == this.yo &&
-		         lzx == this.zx && lzy == this.zy && lzz == this.zz && lzo == this.zo )
+		return ( lxx === this.xx && lxy === this.xy && lxz === this.xz && lxo === this.xo &&
+		         lyx === this.yx && lyy === this.yy && lyz === this.yz && lyo === this.yo &&
+		         lzx === this.zx && lzy === this.zy && lzz === this.zz && lzo === this.zo )
 		       ? this
 		       : new Matrix3D( lxx, lxy, lxz, lxo,
 		                       lyx, lyy, lyz, lyo,
@@ -959,7 +960,7 @@ export default class Matrix3D
 			({x, y, z} = x);
 		}
 
-		if ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) )
+		if ( ( x === 0.0 ) && ( y === 0.0 ) && ( z === 0.0 ) )
 		{
 			return Matrix3D.IDENTITY;
 		}
@@ -1068,10 +1069,10 @@ export default class Matrix3D
 	{
 		let result = dest;
 
-		if ( ( source != dest ) || ( this != Matrix3D.IDENTITY ) )
+		if ( ( source !== dest ) || ( this !== Matrix3D.IDENTITY ) )
 		{
 			let resultLength = pointCount * 3;
-			if ( ( result == null ) || ( resultLength > result.length ) )
+			if ( !result || ( resultLength > result.length ) )
 			{
 				result = [];
 				result.length = resultLength;
@@ -1093,11 +1094,11 @@ export default class Matrix3D
 			/*
 			 * Perform rotate, translate, or copy only if possible.
 			 */
-			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 ) &&
-			     ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 ) &&
-			     ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+			if ( ( lxx === 1.0 ) && ( lxy === 0.0 ) && ( lxz === 0.0 ) &&
+			     ( lyx === 0.0 ) && ( lyy === 1.0 ) && ( lyz === 0.0 ) &&
+			     ( lzx === 0.0 ) && ( lzy === 0.0 ) && ( lzz === 1.0 ) )
 			{
-				if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
+				if ( ( lxo === 0.0 ) && ( lyo === 0.0 ) && ( lzo === 0.0 ) )
 				{
 					for ( let i = 0; i < resultLength; i++ )
 					{
@@ -1114,7 +1115,7 @@ export default class Matrix3D
 					}
 				}
 			}
-			else if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
+			else if ( ( lxo === 0.0 ) && ( lyo === 0.0 ) && ( lzo === 0.0 ) )
 			{
 				this.rotateArray( source, result, pointCount );
 			}
@@ -1315,10 +1316,10 @@ export default class Matrix3D
 	{
 		let result = dest;
 
-		if ( ( source != dest ) || ( this != Matrix3D.IDENTITY ) )
+		if ( ( source !== dest ) || ( this !== Matrix3D.IDENTITY ) )
 		{
 			let resultLength = vectorCount * 3;
-			if ( ( result == null ) || ( resultLength > result.length ) )
+			if ( !result || ( resultLength > result.length ) )
 			{
 				result = [];
 				result.length = resultLength;
@@ -1334,11 +1335,11 @@ export default class Matrix3D
 			let lzy = this.zy;
 			let lzz = this.zz;
 
-			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 )
-			  && ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 )
-			  && ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+			if ( ( lxx === 1.0 ) && ( lxy === 0.0 ) && ( lxz === 0.0 )
+			  && ( lyx === 0.0 ) && ( lyy === 1.0 ) && ( lyz === 0.0 )
+			  && ( lzx === 0.0 ) && ( lzy === 0.0 ) && ( lzz === 1.0 ) )
 			{
-				if ( source != result )
+				if ( source !== result )
 				{
 					for ( let resultIndex = 0; resultIndex < resultLength; resultIndex++ )
 					{

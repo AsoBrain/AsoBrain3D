@@ -160,7 +160,7 @@ export default class Vector3D
 	static cosAngle( v1, v2 )
 	{
 		let l = v1.length() * v2.length();
-		return ( l == 0 ) ? 0 : Vector3D.dot( v1, v2 ) / l;
+		return ( l === 0 ) ? 0 : Vector3D.dot( v1, v2 ) / l;
 	}
 
 	/**
@@ -317,7 +317,7 @@ export default class Vector3D
 	 */
 	almostEquals( other )
 	{
-		return other == this ||
+		return other === this ||
 			   GeometryTools.almostEqual( this.x, other.x ) &&
 			   GeometryTools.almostEqual( this.y, other.y ) &&
 			   GeometryTools.almostEqual( this.z, other.z );
@@ -332,7 +332,7 @@ export default class Vector3D
 	 */
 	equals( other )
 	{
-		return ( this == other ) || ( other && ( this.x == other.x ) && ( this.y == other.y ) && ( this.z == other.z ) );
+		return ( this === other ) || ( other && ( this.x === other.x ) && ( this.y === other.y ) && ( this.z === other.z ) );
 	}
 
 	/**
@@ -355,7 +355,7 @@ export default class Vector3D
 	 */
 	isNonZero()
 	{
-		return ( ( this.x != 0 ) || ( this.y != 0 ) || ( this.z != 0 ) ) && ( this.x == this.x ) && ( this.y == this.y ) && ( this.z == this.z );
+		return ( ( this.x !== 0 ) || ( this.y !== 0 ) || ( this.z !== 0 ) ) && ( this.x === this.x ) && ( this.y === this.y ) && ( this.z === this.z );
 	}
 
 	/**
@@ -401,7 +401,7 @@ export default class Vector3D
 	normalize()
 	{
 		let l = this.length();
-		return ( ( l == 0 ) || ( l == 1 ) ) ? this : this.set( this.x / l, this.y / l, this.z / l );
+		return ( ( l === 0 ) || ( l === 1 ) ) ? this : this.set( this.x / l, this.y / l, this.z / l );
 	}
 
 	/**
@@ -499,7 +499,7 @@ export default class Vector3D
 		let ySquared = y * y;
 		let zSquared = z * z;
 
-		if ( ( xSquared == 0 ) && ( ySquared == 0 ) && ( zSquared == 0 ) )
+		if ( ( xSquared === 0 ) && ( ySquared === 0 ) && ( zSquared === 0 ) )
 		{
 			result = Vector3D.ZERO;
 		}
@@ -558,7 +558,7 @@ export default class Vector3D
 	{
 		let result;
 
-		if ( radius == 0 )
+		if ( radius === 0 )
 		{
 			result = Vector3D.ZERO;
 		}
