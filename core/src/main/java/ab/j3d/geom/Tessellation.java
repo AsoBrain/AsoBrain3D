@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.geom;
 
@@ -28,8 +26,7 @@ import org.jetbrains.annotations.*;
 /**
  * Represents a tessellation.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class Tessellation
 {
@@ -93,5 +90,33 @@ public class Tessellation
 	public void setOutlines( @NotNull final List<int[]> outlines )
 	{
 		_outlines = outlines;
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		boolean result = false;
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof Tessellation )
+		{
+			final Tessellation other = (Tessellation)obj;
+			result = _primitives.equals( other._primitives ) &&
+			         _outlines.size() == other._outlines.size();
+			if ( result )
+			{
+				for ( int i = 0; i < _outlines.size(); i++ )
+				{
+					if ( !Arrays.equals( _outlines.get( i ), other._outlines.get( i ) ) )
+					{
+						result = false;
+						break;
+					}
+				}
+			}
+		}
+		return result;
 	}
 }

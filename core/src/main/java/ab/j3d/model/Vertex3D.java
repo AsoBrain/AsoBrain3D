@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -28,11 +26,10 @@ import org.jetbrains.annotations.*;
 /**
  * Defines a vertex of a 3D object.
  *
- * @see     Object3D
- * @see     Face3D
+ * @see Object3D
+ * @see Face3D
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class Vertex3D
 {
@@ -164,7 +161,10 @@ public class Vertex3D
 		else if ( object instanceof Vertex3D )
 		{
 			final Vertex3D other = (Vertex3D)object;
-			result = ( ( vertexCoordinateIndex == other.vertexCoordinateIndex ) && ( colorMapU == other.colorMapU ) && ( colorMapV == other.colorMapV ) && point.equals( other.point ) );
+			result = ( ( vertexCoordinateIndex == other.vertexCoordinateIndex ) &&
+			           ( colorMapU == colorMapU ? ( colorMapU == other.colorMapU ) : other.colorMapU != other.colorMapU ) &&
+			           ( colorMapV == colorMapV ? ( colorMapV == other.colorMapV ) : other.colorMapV != other.colorMapV ) &&
+			           point.equals( other.point ) );
 		}
 		else
 		{

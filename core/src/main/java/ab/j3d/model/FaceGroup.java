@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2017 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -141,5 +141,28 @@ public class FaceGroup
 	public void setTwoSided( final boolean twoSided )
 	{
 		_twoSided = twoSided;
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof FaceGroup )
+		{
+			final FaceGroup other = (FaceGroup)obj;
+			result = _smooth == other._smooth &&
+			         _twoSided == other._twoSided &&
+			         _appearance.equals( other._appearance ) &&
+			         _faces.equals( other._faces );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
 	}
 }

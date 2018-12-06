@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -971,5 +971,32 @@ extends Node3D
 			result = 31 * result + _appearance.hashCode();
 			return result;
 		}
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof Object3D )
+		{
+			final Object3D other = (Object3D)obj;
+			result = _vertices.equals( other._vertices ) &&
+			         _faceGroups.equals( other._faceGroups );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _vertices.hashCode();
 	}
 }

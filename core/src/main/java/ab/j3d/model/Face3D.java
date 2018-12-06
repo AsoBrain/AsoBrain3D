@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -29,8 +27,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class defines a 3D face of a 3D object.
  *
- * @author  G.B.M. Rupert
- * @version $Revision$ ($Date$, $Author$)
+ * @author G.B.M. Rupert
  */
 public class Face3D
 	implements Plane3D
@@ -461,6 +458,33 @@ public class Face3D
 			}
 		}
 
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _vertices.hashCode();
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof Face3D )
+		{
+			final Face3D other = (Face3D)obj;
+			result = _vertices.equals( other._vertices ) &&
+			         ( ( _tessellation == null ) ? ( other._tessellation == null ) : ( ( other._tessellation != null ) && _tessellation.equals( other._tessellation ) ) );
+		}
+		else
+		{
+			result = false;
+		}
 		return result;
 	}
 }

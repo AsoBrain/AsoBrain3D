@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2018 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.geom;
 
@@ -27,8 +25,7 @@ import java.util.*;
  * Vertices 0, 1, 2 define the first triangle; vertices 0, 2, 3 define the
  * second triangle; then 0, 3, 4, etc.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class TriangleFan
 	implements TessellationPrimitive
@@ -112,5 +109,31 @@ public class TriangleFan
 	public String toString()
 	{
 		return super.toString() + "{vertices=" + Arrays.toString( _vertices ) + '}';
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Arrays.hashCode( _vertices );
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof TriangleFan )
+		{
+			final TriangleFan other = (TriangleFan)obj;
+			result = Arrays.equals( _vertices, other._vertices );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
 	}
 }
