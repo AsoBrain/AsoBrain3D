@@ -973,30 +973,18 @@ extends Node3D
 		}
 	}
 
-	@Override
-	public boolean equals( final Object obj )
+	/**
+	 * Returns whether the given object has the same geometry as this object.
+	 * This is a strict check: order of vertices, faces and outlines, and
+	 * tessellation of faces must all be equal.
+	 *
+	 * @param other Object to compare with.
+	 *
+	 * @return {@code true} if the objects have the same geometry.
+	 */
+	public boolean sameGeometryAs( @NotNull final Object3D other )
 	{
-		final boolean result;
-		if ( obj == this )
-		{
-			result = true;
-		}
-		else if ( obj instanceof Object3D )
-		{
-			final Object3D other = (Object3D)obj;
-			result = _vertices.equals( other._vertices ) &&
-			         _faceGroups.equals( other._faceGroups );
-		}
-		else
-		{
-			result = false;
-		}
-		return result;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return _vertices.hashCode();
+		return _vertices.equals( other._vertices ) &&
+		       _faceGroups.equals( other._faceGroups );
 	}
 }
