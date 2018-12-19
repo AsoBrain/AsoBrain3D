@@ -36,6 +36,7 @@ public class Vertex3D
 	/**
 	 * Coordinates of vertex.
 	 */
+	@NotNull
 	public Vector3D point;
 
 	/**
@@ -56,6 +57,7 @@ public class Vertex3D
 	/**
 	 * Vertex normal ({@code null} if undetermined).
 	 */
+	@Nullable
 	Vector3D normal;
 
 	/**
@@ -66,7 +68,7 @@ public class Vertex3D
 	 * @param   colorMapU               Color map U coordinate.
 	 * @param   colorMapV               Color map V coordinate.
 	 */
-	public Vertex3D( final Vector3D point, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
+	public Vertex3D( @NotNull final Vector3D point, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
 	{
 		this.point = point;
 		this.vertexCoordinateIndex = vertexCoordinateIndex;
@@ -84,7 +86,7 @@ public class Vertex3D
 	 * @param   colorMapU               Color map U coordinate.
 	 * @param   colorMapV               Color map V coordinate.
 	 */
-	public Vertex3D( final Vector3D point, final Vector3D normal, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
+	public Vertex3D( @NotNull final Vector3D point, @Nullable final Vector3D normal, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
 	{
 		this.point = point;
 		this.vertexCoordinateIndex = vertexCoordinateIndex;
@@ -164,7 +166,8 @@ public class Vertex3D
 			result = ( ( vertexCoordinateIndex == other.vertexCoordinateIndex ) &&
 			           ( colorMapU == colorMapU ? ( colorMapU == other.colorMapU ) : other.colorMapU != other.colorMapU ) &&
 			           ( colorMapV == colorMapV ? ( colorMapV == other.colorMapV ) : other.colorMapV != other.colorMapV ) &&
-			           point.equals( other.point ) );
+			           point.equals( other.point ) &&
+			           ( normal == null ? other.normal == null : other.normal != null && normal.equals( other.normal ) ) );
 		}
 		else
 		{
