@@ -144,6 +144,12 @@ public class FaceGroup
 	}
 
 	@Override
+	public int hashCode()
+	{
+		return _appearance.hashCode() ^ _faces.hashCode();
+	}
+
+	@Override
 	public boolean equals( final Object obj )
 	{
 		final boolean result;
