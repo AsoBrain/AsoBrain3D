@@ -33,20 +33,21 @@ public class FaceGroup
 	/**
 	 * Faces in this group.
 	 */
+	@NotNull
 	private final List<Face3D> _faces;
 
 	/**
 	 * Smooth rendering flag for faces in this group. Smooth faces are used to
-	 * approximate smooth/curved/rounded parts of objects.
-	 * <p />
-	 * This flag is typically used to adjust the shading algorithm, e.g. by
-	 * interpolating vertex normals across the surface (Phong shading).
+	 * approximate smooth/curved/rounded parts of objects. <p /> This flag is
+	 * typically used to adjust the shading algorithm, e.g. by interpolating
+	 * vertex normals across the surface (Phong shading).
 	 */
 	private boolean _smooth;
 
 	/**
-	 * Apparance of faces in this group.
+	 * Appearance of faces in this group.
 	 */
+	@Nullable
 	private Appearance _appearance;
 
 	/**
@@ -87,6 +88,7 @@ public class FaceGroup
 		_twoSided = twoSided;
 	}
 
+	@NotNull
 	public List<Face3D> getFaces()
 	{
 		return Collections.unmodifiableList( _faces );
@@ -97,7 +99,7 @@ public class FaceGroup
 	 *
 	 * @param face Face to add.
 	 */
-	public void addFace( final Face3D face )
+	public void addFace( @NotNull final Face3D face )
 	{
 		_faces.add( face );
 	}
@@ -107,7 +109,7 @@ public class FaceGroup
 	 *
 	 * @param face Face to remove.
 	 */
-	public void removeFace( final Face3D face )
+	public void removeFace( @NotNull final Face3D face )
 	{
 		_faces.remove( face );
 	}
@@ -146,7 +148,7 @@ public class FaceGroup
 	@Override
 	public int hashCode()
 	{
-		return _appearance.hashCode() ^ _faces.hashCode();
+		return ( ( _appearance != null ) ? _appearance.hashCode() * 31 : 0 ) + _faces.hashCode();
 	}
 
 	@Override
@@ -162,7 +164,7 @@ public class FaceGroup
 			final FaceGroup other = (FaceGroup)obj;
 			result = _smooth == other._smooth &&
 			         _twoSided == other._twoSided &&
-			         _appearance.equals( other._appearance ) &&
+			         ( ( _appearance != null ) ? _appearance.equals( other._appearance ) : ( other._appearance == null ) ) &&
 			         _faces.equals( other._faces );
 		}
 		else
