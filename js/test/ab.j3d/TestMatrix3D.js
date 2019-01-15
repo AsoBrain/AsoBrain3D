@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
  */
 import { assert, AssertionError } from 'chai';
 
-import toRadians from '@numdata/oss/lib/com.numdata.oss/toRadians';
+import { toRadians } from '@numdata/oss';
 
 import Matrix3D from '../../lib/ab.j3d/Matrix3D';
 import Vector3D from '../../lib/ab.j3d/Vector3D';
