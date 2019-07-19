@@ -44,6 +44,28 @@ import org.jetbrains.annotations.*;
 public class FrustumDemo
 {
 	/**
+	 * Run application.
+	 *
+	 * @param args Command-line arguments.
+	 *
+	 * @throws Exception if the application crashes.
+	 */
+	public static void main( final String[] args )
+	throws Exception
+	{
+		SwingUtilities.invokeAndWait( new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				final FrustumDemo demo = new FrustumDemo();
+				Ab3dExample.createFrame( demo.getClass().getSimpleName(), 800, 600, demo.init( "luscious" ) );
+				demo.start();
+			}
+		} );
+	}
+
+	/**
 	 * The scene.
 	 */
 	protected Scene _scene;

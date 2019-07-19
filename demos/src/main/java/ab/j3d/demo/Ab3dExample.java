@@ -19,35 +19,39 @@
 package ab.j3d.demo;
 
 import java.awt.*;
+import javax.swing.*;
 
 import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.java2d.*;
 import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Utility class for AsoBrain 3D demo applications.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
+@SuppressWarnings( "WeakerAccess" )
 public class Ab3dExample
 {
 	/**
 	 * Create render engine for this example. An engine can be specified using
 	 * the 'engineName' applet parameter. Possible values:
 	 * <dl>
-	 *  <dt>default (also if invalid name is specified)</dt>
-	 *  <dd>JOGL renderer with default configuration options.</dd>
-	 *  <dt>safe</dt>
-	 *  <dd>JOGL renderer with all optional features disabled ('safe mode').</dd>
-	 *  <dt>luscious</dt>
-	 *  <dd>JOGL renderer with all features enabled.</dd>
-	 *  <dt>2d</dt>
-	 *  <dd>Java 2D renderer (-very- limited).</dd>
+	 * <dt>default (also if invalid name is specified)</dt>
+	 * <dd>JOGL renderer with default configuration options.</dd>
+	 * <dt>safe</dt>
+	 * <dd>JOGL renderer with all optional features disabled ('safe
+	 * mode').</dd>
+	 * <dt>luscious</dt>
+	 * <dd>JOGL renderer with all features enabled.</dd>
+	 * <dt>2d</dt>
+	 * <dd>Java 2D renderer (-very- limited).</dd>
 	 * </dl>
 	 *
-	 * @param   engineName  Name of engine to create.
+	 * @param engineName Name of engine to create.
 	 *
-	 * @return  Render engine.
+	 * @return Render engine.
 	 */
 	public static RenderEngine createRenderEngine( final String engineName )
 	{
@@ -75,5 +79,45 @@ public class Ab3dExample
 		}
 
 		return engine;
+	}
+
+	/**
+	 * Create application frame.
+	 *
+	 * @param title   Frame title.
+	 * @param width   Frame width.
+	 * @param height  Frame height.
+	 * @param content Application content.
+	 *
+	 * @return {@link JFrame} (visible).
+	 */
+	@SuppressWarnings( "UnusedReturnValue" )
+	@NotNull
+	public static JFrame createFrame( @NotNull final String title, int width, int height, @NotNull final Component content )
+	{
+		final JFrame frame = new JFrame( title );
+		frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+		if ( content instanceof Container )
+		{
+			frame.setContentPane( (Container)content );
+		}
+		else
+		{
+			final JPanel contentPane = new JPanel( new BorderLayout() );
+			contentPane.add( content, BorderLayout.CENTER );
+			frame.setContentPane( contentPane );
+		}
+		frame.setSize( width, height );
+
+		final Toolkit toolkit = frame.getToolkit();
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		final Rectangle screenBounds = graphicsConfiguration.getBounds();
+		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+		frame.setLocation( screenBounds.x + ( screenBounds.width + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+		                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+
+		frame.setVisible( true );
+
+		return frame;
 	}
 }

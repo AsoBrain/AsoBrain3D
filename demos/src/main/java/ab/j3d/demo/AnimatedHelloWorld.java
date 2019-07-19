@@ -23,6 +23,7 @@ package ab.j3d.demo;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
+import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -36,11 +37,33 @@ import org.jetbrains.annotations.*;
 /**
  * An extended 'Hello world' example with a simple animation going.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class AnimatedHelloWorld
 {
+	/**
+	 * Run application.
+	 *
+	 * @param args Command-line arguments.
+	 *
+	 * @throws Exception if the application crashes.
+	 */
+	public static void main( final String[] args )
+	throws Exception
+	{
+		SwingUtilities.invokeAndWait( new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				final AnimatedHelloWorld demo = new AnimatedHelloWorld();
+				Ab3dExample.createFrame( demo.getClass().getSimpleName(), 800, 600, demo.init( "default" ) );
+				demo.start();
+
+			}
+		} );
+	}
+
 	/**
 	 * The scene.
 	 */
@@ -49,11 +72,11 @@ public class AnimatedHelloWorld
 	/**
 	 * Initialize application.
 	 *
-	 * @param   engineName  Name of engine to use.
+	 * @param engineName Name of engine to use.
 	 *
-	 * @return  Component containing example.
+	 * @return Component containing example.
 	 *
-	 * @see     {@link Ab3dExample#createRenderEngine(String)}
+	 * @see Ab3dExample#createRenderEngine(String)
 	 */
 	public Component init( final String engineName )
 	{
@@ -73,7 +96,7 @@ public class AnimatedHelloWorld
 	/**
 	 * Create scene to show.
 	 *
-	 * @return  {@link Scene} to show.
+	 * @return {@link Scene} to show.
 	 */
 	protected Scene createScene()
 	{
@@ -125,7 +148,7 @@ public class AnimatedHelloWorld
 	/**
 	 * Add animated belt of primities to the scene.
 	 *
-	 * @param   scene   Scene to add content to.
+	 * @param scene Scene to add content to.
 	 */
 	private static void addPrimitivesBelt( final Scene scene )
 	{
@@ -149,7 +172,7 @@ public class AnimatedHelloWorld
 		coneRotator.addChild( cone );
 		scene.addContentNode( "cone", Matrix3D.IDENTITY, coneRotator );
 
-		final Shape shapeToExtrude = new Arc2D.Double( -1.0, -1.0, 2.0, 2.0, 80.0, 280.0, Arc2D.PIE);
+		final Shape shapeToExtrude = new Arc2D.Double( -1.0, -1.0, 2.0, 2.0, 80.0, 280.0, Arc2D.PIE );
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		final Tessellator shapeTessellator = ShapeTools.createTessellator( shapeToExtrude, 0.025 );
@@ -169,7 +192,7 @@ public class AnimatedHelloWorld
 	/**
 	 * Create a mesh with two 'AB' characters.
 	 *
-	 * @return  {@link Object3D} containing 'AB' mesh.
+	 * @return {@link Object3D} containing 'AB' mesh.
 	 */
 	private static Object3D createAbMesh()
 	{
@@ -181,17 +204,17 @@ public class AnimatedHelloWorld
 		freeShape.lineTo( -0.6, -0.6 );
 		freeShape.lineTo( -0.4, -0.6 );
 		freeShape.lineTo( -0.3, -1.0 );
-		freeShape.lineTo(  0.0, -1.0 );
-		freeShape.lineTo( -0.4,  1.0 );
-		freeShape.lineTo( -0.6,  1.0 );
+		freeShape.lineTo( 0.0, -1.0 );
+		freeShape.lineTo( -0.4, 1.0 );
+		freeShape.lineTo( -0.6, 1.0 );
 		freeShape.closePath();
 
 		// B
-		freeShape.moveTo(  0.0, -1.0 );
-		freeShape.lineTo(  0.3, -1.0 );
+		freeShape.moveTo( 0.0, -1.0 );
+		freeShape.lineTo( 0.3, -1.0 );
 		freeShape.curveTo( 1.0, -1.0, 1.0, 0.0, 0.3, 0.0 );
 		freeShape.curveTo( 1.0, 0.0, 1.0, 1.0, 0.3, 1.0 );
-		freeShape.lineTo(  0.0, 1.0 );
+		freeShape.lineTo( 0.0, 1.0 );
 		freeShape.closePath();
 
 		final Object3DBuilder builder = new Object3DBuilder();
@@ -205,7 +228,7 @@ public class AnimatedHelloWorld
 	 * This rotates an object around itself and along a big circle.
 	 */
 	private static class Rotator
-		extends Transform3D
+	extends Transform3D
 	{
 		/**
 		 * Orbit radius.
@@ -240,7 +263,7 @@ public class AnimatedHelloWorld
 		/**
 		 * Construct rotator.
 		 *
-		 * @param   orbitStartAngle     Start azimuth angle on orbital sphere.
+		 * @param orbitStartAngle Start azimuth angle on orbital sphere.
 		 */
 		private Rotator( final double orbitStartAngle )
 		{
@@ -258,7 +281,7 @@ public class AnimatedHelloWorld
 		@Override
 		public Matrix3D getTransform()
 		{
-			final double time = (double) System.currentTimeMillis();
+			final double time = (double)System.currentTimeMillis();
 			final double orbitAngleZ = _orbitStartAngle + time * _orbitRotationSpeedZ;
 			final double orbitAngleX = time * _orbitRotationSpeedX;
 			final double rotationAngleX = time * _roationSpeedX;

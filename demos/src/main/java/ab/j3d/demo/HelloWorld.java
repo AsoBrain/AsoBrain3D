@@ -21,6 +21,7 @@
 package ab.j3d.demo;
 
 import java.awt.*;
+import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -38,6 +39,28 @@ import ab.j3d.view.*;
  */
 public class HelloWorld
 {
+	/**
+	 * Run application.
+	 *
+	 * @param args Command-line arguments.
+	 *
+	 * @throws Exception if the application crashes.
+	 */
+	public static void main( final String[] args )
+	throws Exception
+	{
+		SwingUtilities.invokeAndWait( new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				final HelloWorld demo = new HelloWorld();
+				Ab3dExample.createFrame( demo.getClass().getSimpleName(), 800, 600, demo.init( "default" ) );
+//				Ab3dExample.createFrame( demo.getClass().getSimpleName(), 800, 600, demo.init( "luscious" ) );
+			}
+		} );
+	}
+
 	/**
 	 * Initialize application.
 	 *
