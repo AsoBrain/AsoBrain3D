@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,18 +20,18 @@ package ab.j3d.awt.view.jogl;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.util.List;
-import javax.media.nativewindow.*;
-import javax.media.opengl.*;
-import javax.media.opengl.awt.*;
-import javax.media.opengl.fixedfunc.*;
-import javax.media.opengl.glu.*;
+import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import com.jogamp.nativewindow.*;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.*;
+import com.jogamp.opengl.fixedfunc.*;
+import com.jogamp.opengl.glu.*;
 import org.jetbrains.annotations.*;
 
 /**

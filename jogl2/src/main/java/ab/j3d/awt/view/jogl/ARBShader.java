@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,9 @@
 package ab.j3d.awt.view.jogl;
 
 import java.nio.charset.*;
-import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
+
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.*;
 
 /**
  * Represents an OpenGL Shading Language (GLSL) shader object. This
@@ -45,7 +46,7 @@ implements Shader
 	/**
 	 * Shader object.
 	 */
-	protected final int _shader;
+	private final long _shader;
 
 	/**
 	 * Constructs a new shader of the given type.
@@ -63,7 +64,7 @@ implements Shader
 		final GL gl = GLU.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
 
-		final int shader;
+		final long shader;
 
 		switch ( shaderType )
 		{
@@ -82,11 +83,12 @@ implements Shader
 		_shader = shader;
 	}
 
-	public int getShaderObject()
+	public long getShaderObject()
 	{
 		return _shader;
 	}
 
+	@Override
 	public void setSource( final String... source )
 	{
 		final int[] length = new int[ source.length ];
@@ -98,7 +100,7 @@ implements Shader
 		final GL gl = GLU.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
 
-		final int shader = _shader;
+		final long shader = _shader;
 		gl2.glShaderSourceARB( shader, source.length, source, length, 0 );
 		_source = source.clone();
 
@@ -114,7 +116,7 @@ implements Shader
 	{
 		final GL gl = GLU.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
-		final int shader = _shader;
+		final long shader = _shader;
 
 		gl2.glCompileShaderARB( shader );
 
@@ -156,6 +158,7 @@ implements Shader
 		}
 	}
 
+	@Override
 	public void dispose()
 	{
 		final GL gl = GLU.getCurrentGL();

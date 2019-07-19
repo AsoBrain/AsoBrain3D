@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,12 @@ import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
-import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
 import javax.swing.*;
 
 import ab.j3d.appearance.*;
 import ab.j3d.awt.view.*;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.*;
 import com.jogamp.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,9 +26,9 @@ import java.awt.image.renderable.*;
 import java.nio.*;
 import java.text.*;
 import java.util.*;
-import javax.media.opengl.*;
-import javax.media.opengl.fixedfunc.*;
 
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.fixedfunc.*;
 import com.jogamp.opengl.util.awt.*;
 
 /**

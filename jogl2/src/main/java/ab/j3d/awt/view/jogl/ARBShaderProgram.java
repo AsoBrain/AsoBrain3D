@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,10 @@
 package ab.j3d.awt.view.jogl;
 
 import java.nio.charset.*;
-import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
 
 import ab.j3d.*;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -44,7 +44,7 @@ public class ARBShaderProgram
 	/**
 	 * Shader program object.
 	 */
-	private final int _program;
+	private final long _program;
 
 	/**
 	 * Whether the program is linked.
@@ -67,8 +67,12 @@ public class ARBShaderProgram
 		_program = gl2.glCreateProgramObjectARB();
 	}
 
-	@Override
-	public int getProgramObject()
+	/**
+	 * Returns the underlying program object.
+	 *
+	 * @return  Program object.
+	 */
+	public long getProgramObject()
 	{
 		return _program;
 	}
@@ -76,18 +80,30 @@ public class ARBShaderProgram
 	@Override
 	public void attach( final Shader shader )
 	{
+		if ( !( shader instanceof ARBShader ) )
+		{
+			throw new IllegalArgumentException( "Incompatible shader: " + shader );
+		}
+		final ARBShader arbShader = (ARBShader)shader;
+
 		final GL gl = GLU.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
-		gl2.glAttachShader( _program , shader.getShaderObject() );
+		gl2.glAttachObjectARB( _program , arbShader.getShaderObject() );
 		_linked = false;
 	}
 
 	@Override
 	public void detach( final Shader shader )
 	{
+		if ( !( shader instanceof ARBShader ) )
+		{
+			throw new IllegalArgumentException( "Incompatible shader: " + shader );
+		}
+		final ARBShader arbShader = (ARBShader)shader;
+
 		final GL gl = GLU.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
-		gl2.glDetachObjectARB( _program, shader.getShaderObject() );
+		gl2.glDetachObjectARB( _program, arbShader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -98,7 +114,7 @@ public class ARBShaderProgram
 		{
 			final GL gl = GLU.getCurrentGL();
 			final GL2 gl2 = gl.getGL2();
-			final int program = _program;
+			final long program = _program;
 
 			/*
 			 * Link the program.
@@ -123,7 +139,7 @@ public class ARBShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		final GL2 gl2 = gl.getGL2();
-		final int program = _program;
+		final long program = _program;
 
 		gl2.glValidateProgramARB( program );
 

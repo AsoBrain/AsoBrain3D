@@ -21,12 +21,12 @@
 		<dependency>
 			<groupId>org.jogamp.gluegen</groupId>
 			<artifactId>gluegen-rt-main</artifactId>
-			<version>2.2.4</version>
+			<version>${jogamp.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jogamp.jogl</groupId>
 			<artifactId>jogl-all-main</artifactId>
-			<version>2.2.4</version>
+			<version>${jogamp.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jetbrains</groupId>
@@ -68,82 +68,82 @@
 										<artifactItem>
 											<groupId>org.jogamp.jogl</groupId>
 											<artifactId>jogl-all</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<destFileName>ab3d-rt-jogl2-jogl.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.jogl</groupId>
 											<artifactId>jogl-all</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-linux-amd64</classifier>
 											<destFileName>ab3d-rt-jogl2-jogl-natives-linux-amd64.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.jogl</groupId>
 											<artifactId>jogl-all</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-linux-i586</classifier>
 											<destFileName>ab3d-rt-jogl2-jogl-natives-linux-i586.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.jogl</groupId>
 											<artifactId>jogl-all</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-macosx-universal</classifier>
 											<destFileName>ab3d-rt-jogl2-jogl-natives-macosx-universal.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.jogl</groupId>
 											<artifactId>jogl-all</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-windows-amd64</classifier>
 											<destFileName>ab3d-rt-jogl2-jogl-natives-windows-amd64.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.jogl</groupId>
 											<artifactId>jogl-all</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-windows-i586</classifier>
 											<destFileName>ab3d-rt-jogl2-jogl-natives-windows-i586.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.gluegen</groupId>
 											<artifactId>gluegen-rt</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<destFileName>ab3d-rt-jogl2-gluegen.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.gluegen</groupId>
 											<artifactId>gluegen-rt</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-linux-amd64</classifier>
 											<destFileName>ab3d-rt-jogl2-gluegen-natives-linux-amd64.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.gluegen</groupId>
 											<artifactId>gluegen-rt</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-linux-i586</classifier>
 											<destFileName>ab3d-rt-jogl2-gluegen-natives-linux-i586.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.gluegen</groupId>
 											<artifactId>gluegen-rt</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-macosx-universal</classifier>
 											<destFileName>ab3d-rt-jogl2-gluegen-natives-macosx-universal.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.gluegen</groupId>
 											<artifactId>gluegen-rt</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-windows-amd64</classifier>
 											<destFileName>ab3d-rt-jogl2-gluegen-natives-windows-amd64.jar</destFileName>
 										</artifactItem>
 										<artifactItem>
 											<groupId>org.jogamp.gluegen</groupId>
 											<artifactId>gluegen-rt</artifactId>
-											<version>2.2.4</version>
+											<version>${jogamp.version}</version>
 											<classifier>natives-windows-i586</classifier>
 											<destFileName>ab3d-rt-jogl2-gluegen-natives-windows-i586.jar</destFileName>
 										</artifactItem>
@@ -331,4 +331,7 @@
 			</build>
 		</profile>
 	</profiles>
+	<properties>
+		<jogamp.version>2.3.2</jogamp.version>
+	</properties>
 </project>

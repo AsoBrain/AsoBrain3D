@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,14 +21,14 @@ package ab.j3d.awt.view.jogl;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
-import javax.media.opengl.*;
-import javax.media.opengl.fixedfunc.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.fixedfunc.*;
 import com.jogamp.opengl.util.gl2.*;
 import com.jogamp.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
@@ -427,6 +427,7 @@ public class JOGLRenderer
 	 */
 	private static final Node3DVisitor SHADOW_CASTING_LIGHT_VISITOR = new Node3DVisitor()
 	{
+		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();
@@ -478,6 +479,7 @@ public class JOGLRenderer
 
 		final boolean hasLights = !scene.walk( new Node3DVisitor()
 		{
+			@Override
 			public boolean visitNode( @NotNull final Node3DPath path )
 			{
 				return !( path.getNode() instanceof Light3D );
@@ -510,7 +512,7 @@ public class JOGLRenderer
 	 * @param background   Background to be rendered.
 	 * @param grid         Grid to be rendered (when enabled).
 	 */
-	public void renderSceneMultiPass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
+	private void renderSceneMultiPass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
 		final GL gl = _gl;
 		final GLStateHelper state = _state;
@@ -732,7 +734,7 @@ public class JOGLRenderer
 	 * @param background   Background to be rendered.
 	 * @param grid         Grid to be rendered (when enabled).
 	 */
-	public void renderSceneSinglePass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
+	private void renderSceneSinglePass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
 		// TODO: Support single-pass shadow mapping.
 
@@ -783,6 +785,7 @@ public class JOGLRenderer
 			 */
 			final int _maxlights = getMaxLights();
 
+			@Override
 			public boolean visitNode( @NotNull final Node3DPath path )
 			{
 				final boolean result;
@@ -976,9 +979,9 @@ public class JOGLRenderer
 			cubeMapTexture.bind( gl );
 			cubeMapTexture.enable( gl );
 
-			gl2.glTexGeni( GL2.GL_S, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
-			gl2.glTexGeni( GL2.GL_T, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
-			gl2.glTexGeni( GL2.GL_R, GL2ES1.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
+			gl2.glTexGeni( GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
+			gl2.glTexGeni( GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
+			gl2.glTexGeni( GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_OBJECT_LINEAR );
 			gl2.glTexGenfv( GL2.GL_S, GL2.GL_OBJECT_PLANE, new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, 0 );
 			gl2.glTexGenfv( GL2.GL_T, GL2.GL_OBJECT_PLANE, new float[] { 0.0f, 1.0f, 0.0f, 1.0f }, 0 );
 			gl2.glTexGenfv( GL2.GL_R, GL2.GL_OBJECT_PLANE, new float[] { 0.0f, 0.0f, 1.0f, 1.0f }, 0 );
@@ -1010,7 +1013,7 @@ public class JOGLRenderer
 	 * @param styleFilters Render style filters to be applied.
 	 * @param sceneStyle   Base render style for the entire scene.
 	 */
-	public void renderContentNodes( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
+	private void renderContentNodes( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
 
@@ -1065,6 +1068,7 @@ public class JOGLRenderer
 			final Node3DTreeWalker treeWalker = new LevelOfDetailTreeWalker();
 			treeWalker.walkNode( new Node3DVisitor()
 			{
+				@Override
 				public boolean visitNode( @NotNull final Node3DPath path )
 				{
 					final Node3D node = path.getNode();
@@ -1343,7 +1347,7 @@ public class JOGLRenderer
 	 * @param paths       Node paths to the object.
 	 * @param objectStyle Render style applied to the object.
 	 */
-	protected void renderObject( final Object3D object, final List<Node3DPath> paths, final RenderStyle objectStyle )
+	private void renderObject( final Object3D object, final List<Node3DPath> paths, final RenderStyle objectStyle )
 	{
 		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
 		final boolean anyFillEnabled = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
@@ -1487,9 +1491,9 @@ public class JOGLRenderer
 							/*
 							 * Generate reflection map UV coordinates.
 							 */
-							gl2.glTexGeni( GL2.GL_S, GL2ES1.GL_TEXTURE_GEN_MODE, GL2ES1.GL_REFLECTION_MAP );
-							gl2.glTexGeni( GL2.GL_T, GL2ES1.GL_TEXTURE_GEN_MODE, GL2ES1.GL_REFLECTION_MAP );
-							gl2.glTexGeni( GL2.GL_R, GL2ES1.GL_TEXTURE_GEN_MODE, GL2ES1.GL_REFLECTION_MAP );
+							gl2.glTexGeni( GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_REFLECTION_MAP );
+							gl2.glTexGeni( GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_REFLECTION_MAP );
+							gl2.glTexGeni( GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_REFLECTION_MAP );
 							state.setEnabled( GL2.GL_TEXTURE_GEN_S, true );
 							state.setEnabled( GL2.GL_TEXTURE_GEN_T, true );
 							state.setEnabled( GL2.GL_TEXTURE_GEN_R, true );
@@ -1515,15 +1519,12 @@ public class JOGLRenderer
 						colorMap.bind( gl );
 					}
 
-					if ( shaderManager != null )
-					{
-						shaderManager.setLightingEnabled( true );
-						shaderManager.setTextureEnabled( colorMap != null );
-						final Color4 reflectionColor = appearance.getReflectionColor();
-						final float reflectionMin = ( reflectionTexture == null ) ? 0.0f : appearance.getReflectionMin();
-						final float reflectionMax = ( reflectionTexture == null ) ? 0.0f : appearance.getReflectionMax();
-						shaderManager.setReflectivity( reflectionMin, reflectionMax, reflectionColor.getRedFloat(), reflectionColor.getGreenFloat(), reflectionColor.getBlueFloat() );
-					}
+					shaderManager.setLightingEnabled( true );
+					shaderManager.setTextureEnabled( colorMap != null );
+					final Color4 reflectionColor = appearance.getReflectionColor();
+					final float reflectionMin = ( reflectionTexture == null ) ? 0.0f : appearance.getReflectionMin();
+					final float reflectionMax = ( reflectionTexture == null ) ? 0.0f : appearance.getReflectionMax();
+					shaderManager.setReflectivity( reflectionMin, reflectionMax, reflectionColor.getRedFloat(), reflectionColor.getGreenFloat(), reflectionColor.getBlueFloat() );
 
 					/*
 					 * Render faces.

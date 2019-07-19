@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,11 @@
 package ab.j3d.awt.view.jogl;
 
 import java.util.*;
-import javax.media.opengl.*;
-import javax.media.opengl.fixedfunc.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.fixedfunc.*;
 
 /**
  * Handles OpenGL state changes and caches OpenGL state to improve performance.
