@@ -43,34 +43,34 @@
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-core</artifactId>
-				<version>1.10-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-core</artifactId>
 				<type>test-jar</type>
-				<version>1.10-SNAPSHOT</version>
+				<version>${project.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-jogl1</artifactId>
-				<version>1.10-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-jogl2</artifactId>
-				<version>1.10-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-examples</artifactId>
-				<version>1.10-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
 				<artifactId>ab3d-demos</artifactId>
-				<version>1.10-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jetbrains</groupId>
