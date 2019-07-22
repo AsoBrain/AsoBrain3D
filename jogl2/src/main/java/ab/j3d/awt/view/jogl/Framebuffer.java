@@ -141,4 +141,10 @@ public class Framebuffer
 				throw new GLException( "Unknown framebuffer status: " + status );
 		}
 	}
+
+	@Override
+	public String toString()
+	{
+		return "framebuffer " + _framebuffer;
+	}
 }

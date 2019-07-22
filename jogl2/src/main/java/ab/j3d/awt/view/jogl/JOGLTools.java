@@ -297,6 +297,7 @@ public class JOGLTools
 		gl2.glEnd();
 
 		gl.glDisable( GL.GL_TEXTURE_2D );
+		gl.glBindTexture( GL.GL_TEXTURE_2D, 0 );
 
 		gl2.glMatrixMode( GLMatrixFunc.GL_PROJECTION );
 		gl2.glPopMatrix();

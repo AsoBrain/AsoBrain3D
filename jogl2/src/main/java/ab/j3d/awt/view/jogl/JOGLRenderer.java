@@ -143,7 +143,9 @@ public class JOGLRenderer
 	 * Serves as a fake accumulation buffer. Avoiding a real accumulation buffer
 	 * (glAccum) allows for FSAA to work.
 	 */
-	private int _accumulationTexture;
+	private int _accumulationTexture1;
+
+	private int _accumulationTexture2;
 
 	/**
 	 * Whether color should be rendered for shadow maps, instead of only depth.
@@ -171,6 +173,14 @@ public class JOGLRenderer
 	 * Projector to be used for view frustum culling.
 	 */
 	private View3D _view;
+
+	private Framebuffer _accumulationBuffer1;
+
+	private Framebuffer _accumulationBuffer2;
+
+	private Renderbuffer _depthRenderbuffer1;
+
+	private Renderbuffer _depthRenderbuffer2;
 
 	/**
 	 * Specifies which objects should be rendered during the current rendering pass
@@ -238,7 +248,8 @@ public class JOGLRenderer
 
 		_shadowMap = null;
 		_shadowPass = false;
-		_accumulationTexture = -1;
+		_accumulationTexture1 = -1;
+		_accumulationTexture2 = -1;
 
 		_statistics = null;
 
@@ -514,6 +525,9 @@ public class JOGLRenderer
 	 */
 	private void renderSceneMultiPass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
+		System.out.println( "------------------------------" );
+		System.out.println( "JOGLRenderer.renderSceneMultiPass()" );
+		System.out.println( "------------------------------" );
 		final GL gl = _gl;
 		final GLStateHelper state = _state;
 
@@ -543,38 +557,48 @@ public class JOGLRenderer
 		final int width = viewport[ 2 ];
 		final int height = viewport[ 3 ];
 
-		int accumulationTexture = _accumulationTexture;
-		boolean createAccumulationTexture = ( accumulationTexture == -1 );
+		System.out.println( " - width = " + width );
+		System.out.println( " - height = " + height );
 
-		if ( !createAccumulationTexture )
+		Framebuffer accumulationBuffer1 = _accumulationBuffer1;
+		if ( accumulationBuffer1 == null )
 		{
-			final int[] textureWidthHeight = new int[ 2 ];
-			gl2.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL2GL3.GL_TEXTURE_WIDTH, textureWidthHeight, 0 );
-			gl2.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL2GL3.GL_TEXTURE_HEIGHT, textureWidthHeight, 1 );
-			createAccumulationTexture = ( ( textureWidthHeight[ 0 ] != width ) || ( textureWidthHeight[ 1 ] != height ) );
+			accumulationBuffer1 = new Framebuffer();
+			_accumulationBuffer1 = accumulationBuffer1;
 		}
+		accumulationBuffer1.bind();
+		final int accumulationTexture1 = _accumulationTexture1 = updateFramebufferTexture( gl, width, height, _accumulationTexture1 );
+		gl.glFramebufferTexture2D( GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, accumulationTexture1, 0 );
 
-		if ( createAccumulationTexture )
+		Renderbuffer depthRenderbuffer1 = _depthRenderbuffer1;
+		if ( depthRenderbuffer1 == null )
 		{
-			final int[] textures = new int[ 1 ];
-
-			if ( accumulationTexture != -1 )
-			{
-				textures[ 0 ] = accumulationTexture;
-				gl.glDeleteTextures( 1, textures, 0 );
-			}
-
-			gl.glGenTextures( textures.length, textures, 0 );
-			accumulationTexture = textures[ 0 ];
-
-			gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
-			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_INT, null );
-			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
-			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
-			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE );
-			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE );
-			_accumulationTexture = accumulationTexture;
+			depthRenderbuffer1 = new Renderbuffer();
+			_depthRenderbuffer1 = depthRenderbuffer1;
 		}
+		depthRenderbuffer1.storage( width, height );
+		gl.glFramebufferRenderbuffer( GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_RENDERBUFFER, depthRenderbuffer1.getRenderbuffer() );
+		accumulationBuffer1.check();
+
+		Framebuffer accumulationBuffer2 = _accumulationBuffer2;
+		if ( accumulationBuffer2 == null )
+		{
+			accumulationBuffer2 = new Framebuffer();
+			_accumulationBuffer2 = accumulationBuffer2;
+		}
+		accumulationBuffer2.bind();
+		final int accumulationTexture2 = _accumulationTexture2 = updateFramebufferTexture( gl, width, height, _accumulationTexture2 );
+		gl.glFramebufferTexture2D( GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, accumulationTexture2, 0 );
+
+		Renderbuffer depthRenderbuffer2 = _depthRenderbuffer2;
+		if ( depthRenderbuffer2 == null )
+		{
+			depthRenderbuffer2 = new Renderbuffer();
+			_depthRenderbuffer2 = depthRenderbuffer2;
+		}
+		depthRenderbuffer2.storage( width, height );
+		gl.glFramebufferRenderbuffer( GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_RENDERBUFFER, depthRenderbuffer2.getRenderbuffer() );
+		accumulationBuffer2.check();
 
 		/*
 		 * Render scene per light.
@@ -589,9 +613,14 @@ public class JOGLRenderer
 
 		shaderManager.setMultiPassLightingEnabled( true );
 
+		printDebugInfo( gl );
 		for ( int i = 0; i < lightPaths.size(); i++ )
 		{
-			_renderUnlit = ( i == 0 );
+			System.out.println( "### pass " + i );
+			final boolean firstPass = i == 0;
+			final boolean lastPass = i == lightPaths.size() - 1;
+
+			_renderUnlit = firstPass;
 
 			final Node3DPath path = lightPaths.get( i );
 			final Light3D light = (Light3D)path.getNode();
@@ -615,6 +644,9 @@ public class JOGLRenderer
 				shadowMap.setLight( light, lightTransform );
 				shadowMap.begin( gl, scene );
 
+				System.out.print( " - Render shadow map to: " );
+				printDebugInfo( gl );
+
 				// Render to depth texture.
 				_shadowPass = true;
 				renderContentNodes( scene.getContentNodes(), styleFilters, sceneStyle );
@@ -626,6 +658,19 @@ public class JOGLRenderer
 			/*
 			 * Render from camera.
 			 */
+
+			if ( lastPass )
+			{
+				Framebuffer.unbind();
+				System.out.print( " - Render last pass to: " );
+				printDebugInfo( gl );
+			}
+			else
+			{
+				( i % 2 == 0 ? accumulationBuffer1 : accumulationBuffer2 ).bind();
+				System.out.print( " - Render intermediate pass to: " );
+				printDebugInfo( gl );
+			}
 
 			if ( castingShadows )
 			{
@@ -643,7 +688,7 @@ public class JOGLRenderer
 			 * Render background during first pass. Use a black background for
 			 * the remaining passes, needed for additive blending.
 			 */
-			if ( i == 0 )
+			if ( firstPass )
 			{
 				state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
 				renderBackground( background );
@@ -676,22 +721,25 @@ public class JOGLRenderer
 			/*
 			 * Add previous rendering passes.
 			 */
-			if ( i > 0 )
+			if ( !firstPass )
 			{
+				final int previousPass = ( i - 1 ) % 2 == 0 ? accumulationTexture1 : accumulationTexture2;
+				System.out.println( " - Copy previous render from: " + previousPass );
 				state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
-				gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
+				gl.glBindTexture( GL.GL_TEXTURE_2D, previousPass );
 				state.setBlendFunc( GL.GL_ONE, GL.GL_ONE );
 				state.setEnabled( GL.GL_BLEND, true );
-				JOGLTools.renderToScreen( gl, accumulationTexture, -1.0f, -1.0f, 1.0f, 1.0f );
+				JOGLTools.renderToScreen( gl, previousPass, -1.0f, -1.0f, 1.0f, 1.0f );
 				state.setEnabled( GL.GL_BLEND, false );
 				state.setBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, true );
 			}
 
 			/*
 			 * Render grid in final passes, such that it will properly occlude
 			 * the objects behind it.
 			 */
-			if ( i == lightPaths.size() - 1 )
+			if ( lastPass )
 			{
 				if ( grid.isEnabled() )
 				{
@@ -712,17 +760,66 @@ public class JOGLRenderer
 				JOGLTools.renderToScreen( gl, shadowMap.getColorTexture(), 0.5f, -1.0f, 1.0f, -0.5f );
 			}
 
-			if ( i < lightPaths.size() - 1 )
+			if ( lastPass )
 			{
-				/*
-				 * Copy to texture.
-				 */
-				gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
-				gl.glCopyTexSubImage2D( GL.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height );
+				System.out.println( " - Debug render to screen" );
+				Framebuffer.unbind();
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, false );
+				JOGLTools.renderToScreen( gl, accumulationTexture1, -0.9f, 0.1f, -0.1f, 0.9f );
+				JOGLTools.renderToScreen( gl, accumulationTexture2, 0.1f, 0.1f, 0.9f, 0.9f );
+				state.setEnabled( GLLightingFunc.GL_LIGHTING, true );
 			}
 		}
 
 		_multiPassReflectionsDisabled = false;
+	}
+
+	private int updateFramebufferTexture( final GL gl, final int width, final int height, final int texture )
+	{
+		final GL2 gl2 = gl.getGL2();
+
+		boolean createAccumulationTexture = ( texture == -1 );
+		if ( !createAccumulationTexture )
+		{
+			gl.glBindTexture( GL.GL_TEXTURE_2D, texture );
+			final int[] textureWidthHeight = new int[ 2 ];
+			gl2.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL2GL3.GL_TEXTURE_WIDTH, textureWidthHeight, 0 );
+			gl2.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL2GL3.GL_TEXTURE_HEIGHT, textureWidthHeight, 1 );
+			createAccumulationTexture = ( ( textureWidthHeight[ 0 ] != width ) || ( textureWidthHeight[ 1 ] != height ) );
+		}
+
+		int result = texture;
+		if ( createAccumulationTexture )
+		{
+			final int[] textures = new int[ 1 ];
+
+			if ( texture != -1 )
+			{
+				textures[ 0 ] = texture;
+				gl.glDeleteTextures( 1, textures, 0 );
+			}
+
+			gl.glGenTextures( textures.length, textures, 0 );
+			result = textures[ 0 ];
+
+			gl.glBindTexture( GL.GL_TEXTURE_2D, result );
+			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_INT, null );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE );
+		}
+
+		return result;
+	}
+
+	private void printDebugInfo( final GL gl )
+	{
+		final int[] data = new int[ 3 ];
+		gl.glGetIntegerv( GL.GL_READ_FRAMEBUFFER_BINDING, data, 0 );
+		gl.glGetIntegerv( GL.GL_DRAW_FRAMEBUFFER_BINDING, data, 1 );
+		gl.glGetIntegerv( GL.GL_FRAMEBUFFER_BINDING, data, 2 );
+		System.out.println( "frame buffer binding: read=" + data[ 0 ] + ", draw=" + data[ 1 ] + ", both=" + data[ 2 ] );
 	}
 
 	/**

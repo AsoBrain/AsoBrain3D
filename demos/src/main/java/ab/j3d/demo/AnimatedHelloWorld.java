@@ -57,7 +57,7 @@ public class AnimatedHelloWorld
 			public void run()
 			{
 				final AnimatedHelloWorld demo = new AnimatedHelloWorld();
-				Ab3dExample.createFrame( demo.getClass().getSimpleName(), 800, 600, demo.init( "default" ) );
+				Ab3dExample.createFrame( demo.getClass().getSimpleName(), 800, 600, demo.init( "luscious" ) );
 				demo.start();
 
 			}
@@ -112,12 +112,19 @@ public class AnimatedHelloWorld
 
 		scene.setAmbient( 0.4f, 0.4f, 0.4f );
 
-		final SpotLight3D spotLight1 = new SpotLight3D( Vector3D.normalize( -3.0, 5.0, -3.0 ), 10.0f );
-		spotLight1.setIntensity( 3.0f );
-		spotLight1.setAttenuation( 1.0f, 0.0f, 0.0f );
-		spotLight1.setConcentration( 1.0f );
-		spotLight1.setCastingShadows( true );
-		scene.addContentNode( "spotLight1", Matrix3D.getTranslation( 4.0, -5.0, 3.0 ), spotLight1 );
+		final SpotLight3D spotLight1a = new SpotLight3D( Vector3D.normalize( -3.0, 5.0, -3.0 ), 10.0f );
+		spotLight1a.setIntensity( 1.0f, 2.0f, 2.0f );
+		spotLight1a.setAttenuation( 1.0f, 0.0f, 0.0f );
+		spotLight1a.setConcentration( 1.0f );
+		spotLight1a.setCastingShadows( true );
+		scene.addContentNode( "spotLight1a", Matrix3D.getTranslation( 4.0, -5.0, 3.0 ), spotLight1a );
+
+		final SpotLight3D spotLight1b = new SpotLight3D( Vector3D.normalize( -3.0, 5.0, -3.0 ), 10.0f );
+		spotLight1b.setIntensity( 2.0f, 1.0f, 1.0f );
+		spotLight1b.setAttenuation( 1.0f, 0.0f, 0.0f );
+		spotLight1b.setConcentration( 1.0f );
+		spotLight1b.setCastingShadows( true );
+		scene.addContentNode( "spotLight1b", Matrix3D.getTranslation( 5.0, -5.0, 3.0 ), spotLight1b );
 
 		final SpotLight3D spotLight2 = new SpotLight3D( Vector3D.normalize( 0.0, 1.0, 0.0 ), 35.0f );
 		spotLight2.setIntensity( 1.0f );
