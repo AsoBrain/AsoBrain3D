@@ -403,7 +403,7 @@ public class JOGLCapabilities
 			if ( opengl13 || gl.isExtensionAvailable( "GL_ARB_multitexture" ) )
 			{
 				_multitexture = true;
-				_maxTextureUnits = getInteger( gl, GL2ES1.GL_MAX_TEXTURE_UNITS );
+				_maxTextureUnits = JOGLTools.getInteger( gl, GL2ES1.GL_MAX_TEXTURE_UNITS );
 			}
 
 			/*
@@ -418,30 +418,30 @@ public class JOGLCapabilities
 			gl.glGetIntegerv( GL.GL_GREEN_BITS, colorBits, 1 );
 			gl.glGetIntegerv( GL.GL_BLUE_BITS, colorBits, 2 );
 			gl.glGetIntegerv( GL.GL_ALPHA_BITS, colorBits, 3 );
-			_depthBits = getInteger( gl, GL.GL_DEPTH_BITS );
+			_depthBits = JOGLTools.getInteger( gl, GL.GL_DEPTH_BITS );
 
 			// Limits the number of passes that could be combined using a
 			// multi-layer depth-peeling algorithm.
 			if ( _drawBuffers )
 			{
-				getInteger( gl, GL2ES2.GL_MAX_DRAW_BUFFERS );
+				JOGLTools.getInteger( gl, GL2ES2.GL_MAX_DRAW_BUFFERS );
 			}
 
 			// Limits the complexity of shaders we can use.
 			if ( _shaderObjects )
 			{
-				_maxVaryingFloats = getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
-				_maxCombinedTextureImageUnits = getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
-				_maxTextureImageUnits = getInteger( gl, GL2ES2.GL_MAX_TEXTURE_IMAGE_UNITS );
-				_maxFragmentUniformComponents = getInteger( gl, GL2ES3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_maxVaryingFloats = JOGLTools.getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
+				_maxCombinedTextureImageUnits = JOGLTools.getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				_maxTextureImageUnits = JOGLTools.getInteger( gl, GL2ES2.GL_MAX_TEXTURE_IMAGE_UNITS );
+				_maxFragmentUniformComponents = JOGLTools.getInteger( gl, GL2ES3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
 				_shadingLanguageVersion = gl.glGetString( GL2ES2.GL_SHADING_LANGUAGE_VERSION );
 			}
 			else if ( _shaderObjectsARB )
 			{
-				_maxVaryingFloats = getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
-				_maxCombinedTextureImageUnits = getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
-				_maxTextureImageUnits = getInteger( gl, GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
-				_maxFragmentUniformComponents = getInteger( gl, GL2ES3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_maxVaryingFloats = JOGLTools.getInteger( gl, GL2GL3.GL_MAX_VARYING_FLOATS );
+				_maxCombinedTextureImageUnits = JOGLTools.getInteger( gl, GL2ES2.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				_maxTextureImageUnits = JOGLTools.getInteger( gl, GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
+				_maxFragmentUniformComponents = JOGLTools.getInteger( gl, GL2ES3.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
 				_shadingLanguageVersion = gl.glGetString( GL2.GL_SHADING_LANGUAGE_VERSION_ARB );
 			}
 
@@ -450,25 +450,6 @@ public class JOGLCapabilities
 			_extensions = gl.glGetString( GL.GL_EXTENSIONS );
 			_renderer = gl.glGetString( GL.GL_RENDERER );
 		}
-	}
-
-	/**
-	 * Returns the value of the given OpenGL parameter. Retrieving an
-	 * <code>int</code> value with <code>glGetInteger</code> requires an array.
-	 * This method wraps the process of creating and reading from the array.
-	 *
-	 * @param gl        OpenGL pipeline.
-	 * @param parameter Parameter to get. See {@link GL} constants.
-	 *
-	 * @return Value of the parameter.
-	 *
-	 * @throws GLException if an OpenGL-specific exception occurs.
-	 */
-	private static int getInteger( final GL gl, final int parameter )
-	{
-		final int[] result = new int[ 1 ];
-		gl.glGetIntegerv( parameter, result, 0 );
-		return result[ 0 ];
 	}
 
 	/**

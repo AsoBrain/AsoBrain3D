@@ -1,9 +1,20 @@
 /*
- * (C) Copyright Numdata BV 2019-2019 - All Rights Reserved
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package ab.j3d.awt.view.jogl;
 
@@ -11,7 +22,7 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.*;
 
 /**
- * FIXME Need comment.
+ * Wrapper for an OpenGL renderbuffer object.
  *
  * @author Gerrit Meinders
  */
@@ -60,7 +71,6 @@ public class Renderbuffer
 	public void storage( final int width, final int height )
 	{
 		final GL gl = GLU.getCurrentGL();
-		System.out.println( "Renderbuffer.storage() bind " + _renderbuffer );
 		gl.glBindRenderbuffer( GL.GL_RENDERBUFFER, _renderbuffer );
 
 		final int[] size = new int[ 2 ];
@@ -76,7 +86,6 @@ public class Renderbuffer
 	public void delete()
 	{
 		final GL gl = GLU.getCurrentGL();
-		System.out.println( "Renderbuffer.delete() " + _renderbuffer );
 		gl.glDeleteRenderbuffers( 1, new int[] { _renderbuffer }, 0 );
 	}
 }

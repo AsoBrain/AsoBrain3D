@@ -306,4 +306,23 @@ public class JOGLTools
 
 		gl2.glPopAttrib();
 	}
+
+	/**
+	 * Returns the value of the given OpenGL parameter. Retrieving an
+	 * <code>int</code> value with <code>glGetInteger</code> requires an array.
+	 * This method wraps the process of creating and reading from the array.
+	 *
+	 * @param gl        OpenGL pipeline.
+	 * @param parameter Parameter to get. See {@link GL} constants.
+	 *
+	 * @return Value of the parameter.
+	 *
+	 * @throws GLException if an OpenGL-specific exception occurs.
+	 */
+	public static int getInteger( final GL gl, final int parameter )
+	{
+		final int[] result = new int[ 1 ];
+		gl.glGetIntegerv( parameter, result, 0 );
+		return result[ 0 ];
+	}
 }
