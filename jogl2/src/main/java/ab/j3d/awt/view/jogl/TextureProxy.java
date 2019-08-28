@@ -34,13 +34,13 @@ import org.jetbrains.annotations.*;
 /**
  * Provides access to a {@link Texture} in such a way that it can be loaded
  * asynchronously. Typical usage involves submitting an object of this class to
- * an {@link ExecutorService} and passing the resulting future back using
- * {@link #setTextureData(Future)}.
+ * an {@link ExecutorService} and passing the resulting future back using {@link
+ * #setTextureData(Future)}.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public class TextureProxy
-	implements Callable<TextureData>
+implements Callable<TextureData>
 {
 	/**
 	 * Name of the texture image.
@@ -65,7 +65,7 @@ public class TextureProxy
 	/**
 	 * Construct new texture proxy for a texture that is already loaded.
 	 *
-	 * @param   texture     Texture to be wrapped.
+	 * @param texture Texture to be wrapped.
 	 */
 	public TextureProxy( @NotNull final Texture texture )
 	{
@@ -78,8 +78,8 @@ public class TextureProxy
 	/**
 	 * Construct new texture proxy.
 	 *
-	 * @param   textureMap      Texture map.
-	 * @param   textureCache    Texture cache.
+	 * @param textureMap   Texture map.
+	 * @param textureCache Texture cache.
 	 */
 	public TextureProxy( @NotNull final TextureMap textureMap, final TextureCache textureCache )
 	{
@@ -92,7 +92,7 @@ public class TextureProxy
 	/**
 	 * Construct new texture proxy.
 	 *
-	 * @param   textureCache    Texture cache.
+	 * @param textureCache Texture cache.
 	 */
 	protected TextureProxy( final TextureCache textureCache )
 	{
@@ -106,7 +106,7 @@ public class TextureProxy
 	 * Returns whether the proxy has access to texture data to create a texture
 	 * from when needed.
 	 *
-	 * @return  <code>true</code> if texture data is available/accessible.
+	 * @return <code>true</code> if texture data is available/accessible.
 	 */
 	public boolean isTextureDataSet()
 	{
@@ -116,9 +116,9 @@ public class TextureProxy
 	/**
 	 * Returns the texture, if available. Must be called on the OpenGL thread.
 	 *
-	 * @return  Texture.
+	 * @return Texture.
 	 *
-	 * @throws  GLException if there is no current OpenGL context.
+	 * @throws GLException if there is no current OpenGL context.
 	 */
 	@Nullable
 	public Texture getTexture()
@@ -147,9 +147,9 @@ public class TextureProxy
 	/**
 	 * Creates a texture from the given texture data.
 	 *
-	 * @param   textureData     Texture data.
+	 * @param textureData Texture data.
 	 *
-	 * @return  Created texture.
+	 * @return Created texture.
 	 */
 	protected Texture createTexture( final TextureData textureData )
 	{
@@ -164,7 +164,7 @@ public class TextureProxy
 	/**
 	 * Returns the texture data, if available.
 	 *
-	 * @return  Texture data.
+	 * @return Texture data.
 	 */
 	@Nullable
 	public TextureData getTextureData()
@@ -195,7 +195,7 @@ public class TextureProxy
 	/**
 	 * Sets a future that will provide texture data when it becomes available.
 	 *
-	 * @param   textureData     Future providing texture data.
+	 * @param textureData Future providing texture data.
 	 */
 	public void setTextureData( @NotNull final Future<TextureData> textureData )
 	{
@@ -205,19 +205,19 @@ public class TextureProxy
 	/**
 	 * Loads and returns the texture data for the texture.
 	 *
-	 * @return  Texture data.
+	 * @return Texture data.
 	 */
 	@Override
 	@Nullable
 	public TextureData call()
-		throws IOException
+	throws IOException
 	{
 		return createTextureData( _textureCache.loadImage( _textureMap ) );
 	}
 
 	/**
-	 * Creates texture data from the given buffered image, if not {@code null}. The
-	 * image is automatically converted to a compatible size using {@link
+	 * Creates texture data from the given buffered image, if not {@code null}.
+	 * The image is automatically converted to a compatible size using {@link
 	 * #createCompatibleTextureImage(BufferedImage)}.
 	 *
 	 * @param image Texture image.
@@ -240,13 +240,13 @@ public class TextureProxy
 	 * Scales the given image, if necessary according to the criteria specified
 	 * by the texture cache.
 	 *
-	 * @param   image   Image to be scaled, if necessary.
+	 * @param image Image to be scaled, if necessary.
 	 *
-	 * @return  Compatible texture image. If the given image already meets all
-	 *          requirements, that same image is returned.
+	 * @return Compatible texture image. If the given image already meets all
+	 * requirements, that same image is returned.
 	 *
-	 * @throws  IllegalStateException if the given OpenGL pipeline specifies a
-	 *          non-positive maximum texture size.
+	 * @throws IllegalStateException if the given OpenGL pipeline specifies a
+	 * non-positive maximum texture size.
 	 */
 	protected BufferedImage createCompatibleTextureImage( final BufferedImage image )
 	{
@@ -256,7 +256,7 @@ public class TextureProxy
 		final int imageHeight = image.getHeight();
 
 		final TextureCache textureCache = _textureCache;
-		int scaledWidth  = Math.min( textureCache.getMaximumTextureSize(), imageWidth );
+		int scaledWidth = Math.min( textureCache.getMaximumTextureSize(), imageWidth );
 		int scaledHeight = Math.min( textureCache.getMaximumTextureSize(), imageHeight );
 
 		/*
@@ -264,7 +264,7 @@ public class TextureProxy
 		 */
 		if ( !textureCache.isNonPowerOfTwo() )
 		{
-			scaledWidth  = MathTools.nearestPowerOfTwo( scaledWidth );
+			scaledWidth = MathTools.nearestPowerOfTwo( scaledWidth );
 			scaledHeight = MathTools.nearestPowerOfTwo( scaledHeight );
 		}
 
@@ -291,12 +291,12 @@ public class TextureProxy
 	 * <a href="http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html">
 	 * The Perils of Image.getScaledInstance()</a>.
 	 *
-	 * @param   source          Image to be scaled.
-	 * @param   targetWidth     Width of the result, in pixels.
-	 * @param   targetHeight    Height of the result, in pixels.
+	 * @param source       Image to be scaled.
+	 * @param targetWidth  Width of the result, in pixels.
+	 * @param targetHeight Height of the result, in pixels.
 	 *
-	 * @return  Scaled version of the given image. If the source image already
-	 *          had the specified target size, the source image is returned.
+	 * @return Scaled version of the given image. If the source image already
+	 * had the specified target size, the source image is returned.
 	 */
 	public static BufferedImage createScaledInstance( final BufferedImage source, final int targetWidth, final int targetHeight )
 	{
@@ -306,7 +306,7 @@ public class TextureProxy
 		final ColorModel sourceColorModel = source.getColorModel();
 		final int scaledType = sourceColorModel.hasAlpha() ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
-		int currentWidth  = source.getWidth();
+		int currentWidth = source.getWidth();
 		int currentHeight = source.getHeight();
 
 		/*
@@ -357,19 +357,20 @@ public class TextureProxy
 	/**
 	 * Sets common texture parameters for wrapping and mipmapping.
 	 *
-	 * @param   gl          OpenGL pipeline.
-	 * @param   texture     Texture to set parameters for.
+	 * @param gl      OpenGL pipeline.
+	 * @param texture Texture to set parameters for.
 	 */
 	private static void setTextureParameters( @NotNull final GL gl, @NotNull final Texture texture )
 	{
-		texture.setTexParameteri( gl, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT );
-		texture.setTexParameteri( gl, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT );
+		final boolean rectangle = ( texture.getTarget() == GL2.GL_TEXTURE_RECTANGLE );
+		texture.setTexParameteri( gl, GL.GL_TEXTURE_WRAP_S, rectangle ? GL.GL_CLAMP_TO_EDGE : GL.GL_REPEAT );
+		texture.setTexParameteri( gl, GL.GL_TEXTURE_WRAP_T, rectangle ? GL.GL_CLAMP_TO_EDGE : GL.GL_REPEAT );
 
 		if ( hasAutoMipMapGenerationSupport( gl ) )
 		{
 			try
 			{
-				/**
+				/*
 				 * Generate mip maps to avoid 'noise' on far-away textures.
 				 */
 				texture.setTexParameteri( gl, GL2.GL_GENERATE_MIPMAP, GL.GL_TRUE );
@@ -378,7 +379,7 @@ public class TextureProxy
 				 * Use linear texture filtering.
 				 */
 				texture.setTexParameteri( gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
-				texture.setTexParameteri( gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST );
+				texture.setTexParameteri( gl, GL.GL_TEXTURE_MIN_FILTER, rectangle ? GL.GL_LINEAR : GL.GL_LINEAR_MIPMAP_NEAREST );
 			}
 			catch ( GLException e )
 			{
@@ -395,10 +396,10 @@ public class TextureProxy
 	/**
 	 * Test if OpenGL supports auto-generated mipmaps.
 	 *
-	 * @param   gl  OpenGL pipeline.
+	 * @param gl OpenGL pipeline.
 	 *
-	 * @return  <code>true</code> if OpenGL supports auto-generated mipmaps;
-	 *          <code>false</code> otherwise.
+	 * @return <code>true</code> if OpenGL supports auto-generated mipmaps;
+	 * <code>false</code> otherwise.
 	 */
 	private static boolean hasAutoMipMapGenerationSupport( final GL gl )
 	{
