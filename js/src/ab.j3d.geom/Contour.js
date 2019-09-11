@@ -18,6 +18,25 @@
  */
 import { Enum } from '@numdata/oss';
 
+class ShapeClass extends Enum
+{
+}
+
+ShapeClass.values = [
+	ShapeClass.VOID = new ShapeClass( 'VOID' ),
+	ShapeClass.LINE_SEGMENT = new ShapeClass( 'LINE_SEGMENT' ),
+	ShapeClass.OPEN_PATH = new ShapeClass( 'OPEN_PATH' ),
+	ShapeClass.CW_TRIANGLE = new ShapeClass( 'CW_TRIANGLE' ),
+	ShapeClass.CCW_TRIANGLE = new ShapeClass( 'CCW_TRIANGLE' ),
+	ShapeClass.CW_QUAD = new ShapeClass( 'CW_QUAD' ),
+	ShapeClass.CCW_QUAD = new ShapeClass( 'CCW_QUAD' ),
+	ShapeClass.CW_CONVEX = new ShapeClass( 'CW_CONVEX' ),
+	ShapeClass.CCW_CONVEX = new ShapeClass( 'CCW_CONVEX' ),
+	ShapeClass.CW_CONCAVE = new ShapeClass( 'CW_CONCAVE' ),
+	ShapeClass.CCW_CONCAVE = new ShapeClass( 'CCW_CONCAVE' ),
+	ShapeClass.COMPLEX = new ShapeClass( 'COMPLEX' )
+];
+
 /**
  * External class definition for ROM.
  *
@@ -25,5 +44,5 @@ import { Enum } from '@numdata/oss';
  */
 export default class Contour
 {
-	static ShapeClass = Enum.create( 'VOID', 'LINE_SEGMENT', 'OPEN_PATH', 'CW_TRIANGLE', 'CCW_TRIANGLE', 'CW_QUAD', 'CCW_QUAD', 'CW_CONVEX', 'CCW_CONVEX', 'CW_CONCAVE', 'CCW_CONCAVE', 'COMPLEX' );
+	static ShapeClass = ShapeClass;
 }
