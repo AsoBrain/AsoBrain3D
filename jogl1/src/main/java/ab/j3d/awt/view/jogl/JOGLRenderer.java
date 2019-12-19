@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2019 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -337,7 +337,7 @@ public class JOGLRenderer
 		/* Set local view point */
 		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE );
 
-		/* Apply specular hightlight after texturing (otherwise, this would be done before texturing, so we won't see it). */
+		/* Apply specular highlight after texturing (otherwise, this would be done before texturing, so we won't see it). */
 		if ( gl.isExtensionAvailable( "GL_VERSION_1_2" ) )
 		{
 			gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL, GL.GL_SEPARATE_SPECULAR_COLOR );
@@ -1819,7 +1819,7 @@ public class JOGLRenderer
 		final int minY = minCellY * cellSize;
 		final int maxY = maxCellY * cellSize;
 
-		final boolean hightlightAxes = grid.isHighlightAxes();
+		final boolean highlightAxes = grid.isHighlightAxes();
 		final int highlightInterval = grid.getHighlightInterval();
 
 		gl.glLineWidth( 1.0f );
@@ -1828,7 +1828,7 @@ public class JOGLRenderer
 
 		for ( int x = minCellX; x <= maxCellX; x++ )
 		{
-			if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
+			if ( ( !highlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
 			{
 				gl.glVertex3i( x * cellSize, minY, 0 );
 				gl.glVertex3i( x * cellSize, maxY, 0 );
@@ -1837,7 +1837,7 @@ public class JOGLRenderer
 
 		for ( int y = minCellY; y <= maxCellY; y++ )
 		{
-			if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
+			if ( ( !highlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
 			{
 				gl.glVertex3i( minX, y * cellSize, 0 );
 				gl.glVertex3i( maxX, y * cellSize, 0 );
@@ -1853,8 +1853,8 @@ public class JOGLRenderer
 			final int highlightMinY = minCellX - minCellX % highlightInterval;
 			final int highLightMaxY = maxCellX - maxCellX % highlightInterval;
 
-			final boolean hasHighlightX = ( highLightMaxX >= highlightMinX ) && ( !hightlightAxes || ( highlightMinX < 0 ) || ( highLightMaxX > 0 ) );
-			final boolean hasHighlightY = ( highLightMaxY >= highlightMinY ) && ( !hightlightAxes || ( highlightMinY < 0 ) || ( highLightMaxY > 0 ) );
+			final boolean hasHighlightX = ( highLightMaxX >= highlightMinX ) && ( !highlightAxes || ( highlightMinX < 0 ) || ( highLightMaxX > 0 ) );
+			final boolean hasHighlightY = ( highLightMaxY >= highlightMinY ) && ( !highlightAxes || ( highlightMinY < 0 ) || ( highLightMaxY > 0 ) );
 
 			if ( hasHighlightX || hasHighlightY )
 			{
@@ -1864,7 +1864,7 @@ public class JOGLRenderer
 
 				for ( int x = highlightMinX; x <= highLightMaxX; x += highlightInterval )
 				{
-					if ( !hightlightAxes || ( x != 0 ) )
+					if ( !highlightAxes || ( x != 0 ) )
 					{
 						gl.glVertex3i( x * cellSize, minY, 0 );
 						gl.glVertex3i( x * cellSize, maxY, 0 );
@@ -1873,7 +1873,7 @@ public class JOGLRenderer
 
 				for ( int y = highlightMinY; y <= highLightMaxY; y += highlightInterval )
 				{
-					if ( !hightlightAxes || ( y != 0 ) )
+					if ( !highlightAxes || ( y != 0 ) )
 					{
 						gl.glVertex3i( minX, y * cellSize, 0 );
 						gl.glVertex3i( maxX, y * cellSize, 0 );
@@ -1884,7 +1884,7 @@ public class JOGLRenderer
 			}
 		}
 
-		if ( hightlightAxes )
+		if ( highlightAxes )
 		{
 			final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
 			final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
