@@ -31,6 +31,7 @@
 		<module>examples</module>
 		<module>demos</module>
 		<module>js</module>
+		<module>coverage-report</module>
 	</modules>
 
 	<dependencyManagement>
@@ -122,6 +123,19 @@
 						<id>attach-sources</id>
 						<goals>
 							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.4</version>
+				<executions>
+					<execution>
+						<id>default-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
 				</executions>
