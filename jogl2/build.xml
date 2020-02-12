@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ANT build file to install files in Maven repo" default="install-jogl2">
+	<property environment="env"/>
+	<property name="jogl2.version" value="2.4.0"/>
+	<property name="jogl2.url" value="https://jogamp.org/deployment/v2.4.0-rc-20200202/jar/"/>
+	<condition property="maven.executable" value="mvn.cmd" else="mvn">
+		<os family="windows"/>
+	</condition>
+
+	<target name="install-jogl2" description="Install JOGL 2.4.0 RC release into local Maven repository">
+		<mkdir dir="target/gluegen"/>
+
+		<get src="${jogl2.url}gluegen-rt.jar" dest="target/gluegen/gluegen-rt.jar"/>
+		<exec dir="target/gluegen" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=gluegen-rt.jar"/>
+			<arg value="-DgroupId=org.jogamp.gluegen"/>
+			<arg value="-DartifactId=gluegen-rt"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}gluegen-rt-natives-linux-amd64.jar" dest="target/gluegen/gluegen-rt-natives-linux-amd64.jar"/>
+		<exec dir="target/gluegen" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=gluegen-rt-natives-linux-amd64.jar"/>
+			<arg value="-DgroupId=org.jogamp.gluegen"/>
+			<arg value="-DartifactId=gluegen-rt"/>
+			<arg value="-Dclassifier=natives-linux-amd64"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}gluegen-rt-natives-linux-i586.jar" dest="target/gluegen/gluegen-rt-natives-linux-i586.jar"/>
+		<exec dir="target/gluegen" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=gluegen-rt-natives-linux-i586.jar"/>
+			<arg value="-DgroupId=org.jogamp.gluegen"/>
+			<arg value="-DartifactId=gluegen-rt"/>
+			<arg value="-Dclassifier=natives-linux-i586"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}gluegen-rt-natives-macosx-universal.jar" dest="target/gluegen/gluegen-rt-natives-macosx-universal.jar"/>
+		<exec dir="target/gluegen" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=gluegen-rt-natives-macosx-universal.jar"/>
+			<arg value="-DgroupId=org.jogamp.gluegen"/>
+			<arg value="-DartifactId=gluegen-rt"/>
+			<arg value="-Dclassifier=natives-macosx-universal"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}gluegen-rt-natives-windows-amd64.jar" dest="target/gluegen/gluegen-rt-natives-windows-amd64.jar"/>
+		<exec dir="target/gluegen" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=gluegen-rt-natives-windows-amd64.jar"/>
+			<arg value="-DgroupId=org.jogamp.gluegen"/>
+			<arg value="-DartifactId=gluegen-rt"/>
+			<arg value="-Dclassifier=natives-windows-amd64"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}gluegen-rt-natives-windows-i586.jar" dest="target/gluegen/gluegen-rt-natives-windows-i586.jar"/>
+		<exec dir="target/gluegen" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=gluegen-rt-natives-windows-i586.jar"/>
+			<arg value="-DgroupId=org.jogamp.gluegen"/>
+			<arg value="-DartifactId=gluegen-rt"/>
+			<arg value="-Dclassifier=natives-windows-i586"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<mkdir dir="target/gluegen/gluegen-rt-main"/>
+		<!-- <get src="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2.pom" dest="target/gluegen/gluegen-rt-main/pom.xml"/> -->
+		<copy file="gluegen-rt-main.pom" tofile="target/gluegen/gluegen-rt-main/pom.xml"/>
+		<exec dir="target/gluegen/gluegen-rt-main" executable="${maven.executable}" failonerror="true">
+			<arg value="versions:set"/>
+			<arg value="-DnewVersion=${jogl2.version}"/>
+			<arg value="--non-recursive"/>
+		</exec>
+		<exec dir="target/gluegen/gluegen-rt-main" executable="${maven.executable}" failonerror="true">
+			<arg value="install"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+			<arg value="-Dgpg.skip"/>
+			<arg value="--non-recursive"/>
+		</exec>
+
+		<mkdir dir="target/jogl"/>
+
+		<get src="${jogl2.url}jogl-all.jar" dest="target/jogl/jogl-all.jar"/>
+		<exec dir="target/jogl" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=jogl-all.jar"/>
+			<arg value="-DgroupId=org.jogamp.jogl"/>
+			<arg value="-DartifactId=jogl-all"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}jogl-all-natives-linux-i586.jar" dest="target/jogl/jogl-all-natives-linux-i586.jar"/>
+		<exec dir="target/jogl" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=jogl-all-natives-linux-i586.jar"/>
+			<arg value="-DgroupId=org.jogamp.jogl"/>
+			<arg value="-DartifactId=jogl-all"/>
+			<arg value="-Dclassifier=natives-linux-i586"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}jogl-all-natives-linux-amd64.jar" dest="target/jogl/jogl-all-natives-linux-amd64.jar"/>
+		<exec dir="target/jogl" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=jogl-all-natives-linux-amd64.jar"/>
+			<arg value="-DgroupId=org.jogamp.jogl"/>
+			<arg value="-DartifactId=jogl-all"/>
+			<arg value="-Dclassifier=natives-linux-amd64"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}jogl-all-natives-windows-i586.jar" dest="target/jogl/jogl-all-natives-windows-i586.jar"/>
+		<exec dir="target/jogl" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=jogl-all-natives-windows-i586.jar"/>
+			<arg value="-DgroupId=org.jogamp.jogl"/>
+			<arg value="-DartifactId=jogl-all"/>
+			<arg value="-Dclassifier=natives-windows-i586"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}jogl-all-natives-windows-amd64.jar" dest="target/jogl/jogl-all-natives-windows-amd64.jar"/>
+		<exec dir="target/jogl" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=jogl-all-natives-windows-amd64.jar"/>
+			<arg value="-DgroupId=org.jogamp.jogl"/>
+			<arg value="-DartifactId=jogl-all"/>
+			<arg value="-Dclassifier=natives-windows-amd64"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<get src="${jogl2.url}jogl-all-natives-macosx-universal.jar" dest="target/jogl/jogl-all-natives-macosx-universal.jar"/>
+		<exec dir="target/jogl" executable="${maven.executable}" failonerror="true">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=jogl-all-natives-macosx-universal.jar"/>
+			<arg value="-DgroupId=org.jogamp.jogl"/>
+			<arg value="-DartifactId=jogl-all"/>
+			<arg value="-Dclassifier=natives-macosx-universal"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+		</exec>
+
+		<mkdir dir="target/jogl/jogl-all-main"/>
+		<!-- <get src="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2.pom" dest="target/jogl/jogl-all-main/pom.xml"/> -->
+		<copy file="jogl-all-main.pom" tofile="target/jogl/jogl-all-main/pom.xml"/>
+		<exec dir="target/jogl/jogl-all-main" executable="${maven.executable}" failonerror="true">
+			<arg value="versions:set"/>
+			<arg value="-DnewVersion=${jogl2.version}"/>
+			<arg value="--non-recursive"/>
+		</exec>
+		<exec dir="target/jogl/jogl-all-main" executable="${maven.executable}" failonerror="true">
+			<arg value="install"/>
+			<arg value="-Dversion=${jogl2.version}"/>
+			<arg value="-Dgpg.skip"/>
+			<arg value="--non-recursive"/>
+		</exec>
+	</target>
+</project>
