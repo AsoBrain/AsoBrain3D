@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.asobrain.ab3d</groupId>
 		<artifactId>ab3d</artifactId>
-		<version>1.12-SNAPSHOT</version>
+		<version>1.13-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ab3d-coverage-report</artifactId>
@@ -19,11 +19,13 @@
 			<artifactId>ab3d-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+<!-- Disabled due to overlapping class/package names.
 		<dependency>
 			<groupId>com.asobrain.ab3d</groupId>
 			<artifactId>ab3d-jogl1</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+-->
 		<dependency>
 			<groupId>com.asobrain.ab3d</groupId>
 			<artifactId>ab3d-jogl2</artifactId>
@@ -46,7 +48,6 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.4</version>
 				<executions>
 					<execution>
 						<id>report-aggregate</id>
