@@ -42,7 +42,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jar-plugin</artifactId>
-						<version>3.0.2</version>
 						<configuration>
 							<archive>
 								<manifestEntries>
@@ -56,7 +55,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-antrun-plugin</artifactId>
-						<version>1.8</version>
 						<executions>
 							<execution>
 								<phase>package</phase>
@@ -85,7 +83,6 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.0.0</version>
 						<executions>
 							<execution>
 								<phase>package</phase>
@@ -132,7 +129,6 @@
 					<plugin>
 						<groupId>com.github.batkinson.plugins</groupId>
 						<artifactId>maven-pack200-plugin</artifactId>
-						<version>1.0.1</version>
 						<executions>
 							<execution>
 								<id>normalize-jars</id>
@@ -181,7 +177,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jarsigner-plugin</artifactId>
-						<version>1.4</version>
 						<executions>
 							<execution>
 								<id>sign</id>
