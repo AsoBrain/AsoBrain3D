@@ -10,6 +10,7 @@
     "name": "Gerrit Meinders",
     "email": "meinders@numdata.com"
   },
+  "main": "./module.js",
   "module": "./module.js",
   "dependencies": {
     "@numdata/oss": "^1.1.0"
