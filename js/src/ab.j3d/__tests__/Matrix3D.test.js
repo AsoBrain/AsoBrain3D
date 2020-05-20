@@ -20,8 +20,8 @@ import { assert, AssertionError } from 'chai';
 
 import { toRadians } from '@numdata/oss';
 
-import Matrix3D from '../../lib/ab.j3d/Matrix3D';
-import Vector3D from '../../lib/ab.j3d/Vector3D';
+import Matrix3D from '../Matrix3D';
+import Vector3D from '../Vector3D';
 
 /**
  * This tests the {@link Matrix3D} class.

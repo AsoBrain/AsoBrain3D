@@ -18,7 +18,7 @@
  */
 import { assert } from 'chai';
 
-import Vector3D from '../../lib/ab.j3d/Vector3D';
+import Vector3D from '../Vector3D';
 
 /**
  * This class tests the {@link Vector3D} class.
