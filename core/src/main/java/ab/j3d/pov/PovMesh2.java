@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
@@ -179,18 +177,18 @@ public class PovMesh2
 		void writeFaceIndices( final PovWriter out, final boolean includeTextureIndex )
 			throws IOException
 		{
-			out.write( (int)'<' );
-			out.write( format( _vertexIndex1 ) );
-			out.write( (int)',' );
-			out.write( format( _vertexIndex2 ) );
-			out.write( (int)',' );
-			out.write( format( _vertexIndex3 ) );
-			out.write( (int)'>' );
+			out.write( '<' );
+			out.write( Integer.toString( _vertexIndex1 ) );
+			out.write( ',' );
+			out.write( Integer.toString( _vertexIndex2 ) );
+			out.write( ',' );
+			out.write( Integer.toString( _vertexIndex3 ) );
+			out.write( '>' );
 
 			if ( includeTextureIndex && ( _textureIndex >= 0 ) )
 			{
-				out.write( (int)',' );
-				out.write( format( _textureIndex ) );
+				out.write( ',' );
+				out.write( Integer.toString( _textureIndex ) );
 			}
 		}
 
@@ -204,13 +202,13 @@ public class PovMesh2
 		{
 			if ( hasUV() )
 			{
-				out.write( (int)'<' );
-				out.write( format( _uvIndex1 ) );
-				out.write( (int)',' );
-				out.write( format( _uvIndex2 ) );
-				out.write( (int)',' );
-				out.write( format( _uvIndex3 ) );
-				out.write( (int)'>' );
+				out.write( '<' );
+				out.write( Integer.toString( _uvIndex1 ) );
+				out.write( ',' );
+				out.write( Integer.toString( _uvIndex2 ) );
+				out.write( ',' );
+				out.write( Integer.toString( _uvIndex3 ) );
+				out.write( '>' );
 			}
 			else
 			{
@@ -228,13 +226,13 @@ public class PovMesh2
 		{
 			if ( hasNormals() )
 			{
-				out.write( (int)'<' );
-				out.write( format( _normalIndex1 ) );
-				out.write( (int)',' );
-				out.write( format( _normalIndex2 ) );
-				out.write( (int)',' );
-				out.write( format( _normalIndex3 ) );
-				out.write( (int)'>' );
+				out.write( '<' );
+				out.write( Integer.toString( _normalIndex1 ) );
+				out.write( ',' );
+				out.write( Integer.toString( _normalIndex2 ) );
+				out.write( ',' );
+				out.write( Integer.toString( _normalIndex3 ) );
+				out.write( '>' );
 			}
 		}
 
@@ -573,10 +571,11 @@ public class PovMesh2
 			_trianglesSorted = true;
 			Collections.sort( _triangles, new Comparator<Triangle>()
 			{
+				@Override
 				public int compare( final Triangle o1, final Triangle o2 )
 				{
 					return o1.hasUV() ? o2.hasUV() ? 0 : -1 :
-					                    o2.hasUV() ? 1 : 0;
+					       o2.hasUV() ? 1 : 0;
 				}
 			} );
 		}
@@ -642,17 +641,17 @@ public class PovMesh2
 		throws IOException
 	{
 		final List<PovVector> vertexVectors = _vertexVectors;
-		final int             vertexCount   = vertexVectors.size();
+		final int vertexCount = vertexVectors.size();
 
 		out.writeln( "vertex_vectors" );
 		out.writeln( "{" );
 		out.indentIn();
 
-		out.write( format( vertexCount ) );
-		out.write( (int)',' );
+		out.write( Integer.toString( vertexCount ) );
+		out.write( ',' );
 		out.newLine();
 
-		for ( int i = 0 ; i < vertexCount ; i++ )
+		for ( int i = 0; i < vertexCount; i++ )
 		{
 			final PovVector vector = vertexVectors.get( i );
 
@@ -687,26 +686,26 @@ public class PovMesh2
 		if ( hasUV() )
 		{
 			final List<PovVector> uvVectors = _uvVectors;
-			final int             uvCount   = uvVectors.size();
+			final int uvCount = uvVectors.size();
 
 			out.writeln( "uv_vectors" );
 			out.writeln( "{" );
 			out.indentIn();
 
-			out.write( format( uvCount ) );
-			out.write( (int)',' );
+			out.write( Integer.toString( uvCount ) );
+			out.write( ',' );
 			out.newLine();
 
-			for ( int i = 0 ; i < uvCount ; i++ )
+			for ( int i = 0; i < uvCount; i++ )
 			{
 				final PovVector vector = uvVectors.get( i );
 
 				writeElementSeparator( out, 3, i );
-				out.write( (int)'<' );
+				out.write( '<' );
 				out.write( format( vector.getX() ) );
-				out.write( (int)',' );
+				out.write( ',' );
 				out.write( format( vector.getY() ) );
-				out.write( (int)'>' );
+				out.write( '>' );
 			}
 
 			out.newLine();
@@ -737,17 +736,17 @@ public class PovMesh2
 		if ( hasNormals() )
 		{
 			final List<PovVector> normalVectors = _normalVectors;
-			final int             normalCount   = normalVectors.size();
+			final int normalCount = normalVectors.size();
 
 			out.writeln( "normal_vectors" );
 			out.writeln( "{" );
 			out.indentIn();
 
-			out.write( format( normalCount ) );
-			out.write( (int)',' );
+			out.write( Integer.toString( normalCount ) );
+			out.write( ',' );
 			out.newLine();
 
-			for ( int i = 0 ; i < normalCount ; i++ )
+			for ( int i = 0; i < normalCount; i++ )
 			{
 				final PovVector vector = normalVectors.get( i );
 
@@ -790,8 +789,8 @@ public class PovMesh2
 			out.writeln( "{" );
 			out.indentIn();
 
-			out.write( format( textureCount ) );
-			out.write( (int)',' );
+			out.write( Integer.toString( textureCount ) );
+			out.write( ',' );
 			out.newLine();
 
 			for ( final PovTexture texture : textureList )
@@ -829,10 +828,10 @@ public class PovMesh2
 		out.writeln( "{" );
 		out.indentIn();
 
-		out.write( format( triangles.size() ) );
+		out.write( Integer.toString( triangles.size() ) );
 		out.writeln( "," );
 
-		for ( int i = 0 ; i < triangles.size() ; i++ )
+		for ( int i = 0; i < triangles.size(); i++ )
 		{
 			writeElementSeparator( out, 6, i );
 
@@ -870,10 +869,10 @@ public class PovMesh2
 			out.writeln( "{" );
 			out.indentIn();
 
-			out.write( format( triangles.size() ) );
+			out.write( Integer.toString( triangles.size() ) );
 			out.writeln( "," );
 
-			for ( int i = 0 ; i < triangles.size() ; i++ )
+			for ( int i = 0; i < triangles.size(); i++ )
 			{
 				final Triangle triangle = triangles.get( i );
 
@@ -912,10 +911,10 @@ public class PovMesh2
 			out.writeln( "{" );
 			out.indentIn();
 
-			out.write( format( triangles.size() ) );
+			out.write( Integer.toString( triangles.size() ) );
 			out.writeln( "," );
 
-			for ( int i = 0 ; i < triangles.size() ; i++ )
+			for ( int i = 0; i < triangles.size(); i++ )
 			{
 				writeElementSeparator( out, 3, i );
 

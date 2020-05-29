@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,15 +40,14 @@ public class ObjWriter
 	/**
 	 * Number format with up to 6 decimals.
 	 */
-	private static final NumberFormat DECIMAL_FORMAT;
+	private final NumberFormat _decimalFormat;
 
-	static
 	{
 		final NumberFormat df = NumberFormat.getNumberInstance( Locale.US );
 		df.setGroupingUsed( false );
 		df.setMinimumFractionDigits( 1 );
 		df.setMaximumFractionDigits( 6 );
-		DECIMAL_FORMAT = df;
+		_decimalFormat = df;
 	}
 
 	/**
@@ -470,29 +469,29 @@ public class ObjWriter
 
 		final Color4 ambientColor = appearance.getAmbientColor();
 		out.append( "Ka " );
-		out.append( DECIMAL_FORMAT.format( ambientColor.getRedFloat() ) );
+		out.append( _decimalFormat.format( ambientColor.getRedFloat() ) );
 		out.append( ' ' );
-		out.append( DECIMAL_FORMAT.format( ambientColor.getGreenFloat() ) );
+		out.append( _decimalFormat.format( ambientColor.getGreenFloat() ) );
 		out.append( ' ' );
-		out.append( DECIMAL_FORMAT.format( ambientColor.getBlueFloat() ) );
+		out.append( _decimalFormat.format( ambientColor.getBlueFloat() ) );
 		out.append( "\r\n" );
 
 		final Color4 diffuseColor = appearance.getDiffuseColor();
 		out.append( "Kd " );
-		out.append( DECIMAL_FORMAT.format( diffuseColor.getRedFloat() ) );
+		out.append( _decimalFormat.format( diffuseColor.getRedFloat() ) );
 		out.append( ' ' );
-		out.append( DECIMAL_FORMAT.format( diffuseColor.getGreenFloat() ) );
+		out.append( _decimalFormat.format( diffuseColor.getGreenFloat() ) );
 		out.append( ' ' );
-		out.append( DECIMAL_FORMAT.format( diffuseColor.getBlueFloat() ) );
+		out.append( _decimalFormat.format( diffuseColor.getBlueFloat() ) );
 		out.append( "\r\n" );
 
 		final Color4 specularColor = appearance.getSpecularColor();
 		out.append( "Ks " );
-		out.append( DECIMAL_FORMAT.format( specularColor.getRedFloat() ) );
+		out.append( _decimalFormat.format( specularColor.getRedFloat() ) );
 		out.append( ' ' );
-		out.append( DECIMAL_FORMAT.format( specularColor.getGreenFloat() ) );
+		out.append( _decimalFormat.format( specularColor.getGreenFloat() ) );
 		out.append( ' ' );
-		out.append( DECIMAL_FORMAT.format( specularColor.getBlueFloat() ) );
+		out.append( _decimalFormat.format( specularColor.getBlueFloat() ) );
 		out.append( "\r\n" );
 
 		//noinspection SpellCheckingInspection
@@ -505,7 +504,7 @@ public class ObjWriter
 		out.append( "\r\n" );
 
 		out.append( "d " );
-		out.append( DECIMAL_FORMAT.format( diffuseColor.getAlphaFloat() ) );
+		out.append( _decimalFormat.format( diffuseColor.getAlphaFloat() ) );
 		out.append( "\r\n" );
 
 		final TextureMap colorMap = appearance.getColorMap();
@@ -628,11 +627,11 @@ public class ObjWriter
 		{
 			out.append( "v " );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( vertex.x ) );
+			out.append( _decimalFormat.format( vertex.x ) );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( vertex.y ) );
+			out.append( _decimalFormat.format( vertex.y ) );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( vertex.z ) );
+			out.append( _decimalFormat.format( vertex.z ) );
 			out.append( "\r\n" );
 		}
 	}
@@ -650,9 +649,9 @@ public class ObjWriter
 		for ( final Vector2f textureVertex : _textureVertices )
 		{
 			out.append( "vt " );
-			out.append( DECIMAL_FORMAT.format( (double)textureVertex.getX() ) );
+			out.append( _decimalFormat.format( (double)textureVertex.getX() ) );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( (double)textureVertex.getY() ) );
+			out.append( _decimalFormat.format( (double)textureVertex.getY() ) );
 			out.append( "\r\n" );
 		}
 	}
@@ -671,11 +670,11 @@ public class ObjWriter
 		{
 			out.append( "vn " );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( normal.x ) );
+			out.append( _decimalFormat.format( normal.x ) );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( normal.y ) );
+			out.append( _decimalFormat.format( normal.y ) );
 			out.append( ' ' );
-			out.append( DECIMAL_FORMAT.format( normal.z ) );
+			out.append( _decimalFormat.format( normal.z ) );
 			out.append( "\r\n" );
 		}
 	}

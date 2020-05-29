@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -66,31 +66,6 @@ public class Vector2D
 	 * Y component of 2D vector.
 	 */
 	public final double y;
-
-	/**
-	 * Number format with one fraction digit.
-	 */
-	protected static final NumberFormat ONE_DECIMAL_FORMAT;
-
-	/**
-	 * Number format with two fraction digits.
-	 */
-	protected static final NumberFormat TWO_DECIMAL_FORMAT;
-
-	static
-	{
-		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
-		oneDecimal.setMinimumFractionDigits( 1 );
-		oneDecimal.setMaximumFractionDigits( 1 );
-		oneDecimal.setGroupingUsed( false );
-		ONE_DECIMAL_FORMAT = oneDecimal;
-
-		final NumberFormat twoDecimals = NumberFormat.getNumberInstance( Locale.US );
-		twoDecimals.setMinimumFractionDigits( 2 );
-		twoDecimals.setMaximumFractionDigits( 2 );
-		twoDecimals.setGroupingUsed( false );
-		TWO_DECIMAL_FORMAT = twoDecimals;
-	}
 
 	/**
 	 * Serialized data version.
@@ -649,8 +624,11 @@ public class Vector2D
 	 */
 	public static String toFriendlyString( final double x, final double y )
 	{
-		final NumberFormat df = TWO_DECIMAL_FORMAT;
-		return "[ " + df.format( x ) + ", " + df.format( y ) + " ]";
+		final NumberFormat twoDecimals = NumberFormat.getNumberInstance( Locale.US );
+		twoDecimals.setMinimumFractionDigits( 2 );
+		twoDecimals.setMaximumFractionDigits( 2 );
+		twoDecimals.setGroupingUsed( false );
+		return "[ " + twoDecimals.format( x ) + ", " + twoDecimals.format( y ) + " ]";
 	}
 
 	/**
@@ -685,7 +663,10 @@ public class Vector2D
 	 */
 	public static String toShortFriendlyString( final double x, final double y )
 	{
-		final NumberFormat nf = ONE_DECIMAL_FORMAT;
-		return '[' + nf.format( x ) + ',' + nf.format( y ) + ']';
+		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
+		oneDecimal.setMinimumFractionDigits( 1 );
+		oneDecimal.setMaximumFractionDigits( 1 );
+		oneDecimal.setGroupingUsed( false );
+		return '[' + oneDecimal.format( x ) + ',' + oneDecimal.format( y ) + ']';
 	}
 }

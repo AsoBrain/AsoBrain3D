@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
@@ -24,6 +22,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 
+import org.jetbrains.annotations.*;
 
 /**
  * Base class for each object pov object.
@@ -34,28 +33,24 @@ import java.util.*;
 public abstract class PovObject
 {
 	/**
-	 * Number format to format numeric values as integers.
+	 * Returns a number format for floats.
+	 *
+	 * @return Number format.
 	 */
-	private static final NumberFormat INT_FORMAT;
-	static
-	{
-		final NumberFormat nf = NumberFormat.getIntegerInstance( Locale.US );
-		nf.setGroupingUsed( false );
-		INT_FORMAT = nf;
-	}
-
-	/**
-	 * Number format to format numeric as floating-point values.
-	 */
-	private static final NumberFormat FLOAT_FORMAT;
-	static
+	@NotNull
+	static NumberFormat getFloatFormat()
 	{
 		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
 		nf.setMinimumFractionDigits( 1 );
 		nf.setMaximumFractionDigits( 5 );
 		nf.setGroupingUsed( false );
-		FLOAT_FORMAT = nf;
+		return nf;
 	}
+
+	/**
+	 * Number format to format numeric as floating-point values.
+	 */
+	private final NumberFormat _floatFormat = getFloatFormat();
 
 	/**
 	 * Writes the PovObject to the specified writer.
@@ -65,32 +60,20 @@ public abstract class PovObject
 	 *
 	 * @param   out     Writer to use for output.
 	 *
-	 * @throws  IOException when writing failed.
+	 * @throws IOException when writing failed.
 	 */
 	public abstract void write( final PovWriter out )
-		throws IOException;
-
-	/**
-	 * Format integer value.
-	 *
-	 * @param   value   Floating-point value.
-	 *
-	 * @return  Formatted string.
-	 */
-	protected static String format( final int value )
-	{
-		return INT_FORMAT.format( (long)value );
-	}
+	throws IOException;
 
 	/**
 	 * Format float-point value.
 	 *
-	 * @param   value   Floating-point value.
+	 * @param value Floating-point value.
 	 *
-	 * @return  Formatted string.
+	 * @return Formatted string.
 	 */
-	protected static String format( final double value )
+	protected String format( final double value )
 	{
-		return FLOAT_FORMAT.format( ( value == -0.0 ) ? 0.0 : value );
+		return _floatFormat.format( value + 0.0 ); // Prevent negative zero.
 	}
 }

@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
@@ -44,14 +42,14 @@ public class PovMatrix
 	/**
 	 * Number format to format numeric as floating-point values.
 	 */
-	private static final NumberFormat DOUBLE_FORMAT;
-	static
+	private final NumberFormat _doubleFormat;
+
 	{
 		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
 		nf.setMinimumFractionDigits( 1 );
 		nf.setMaximumFractionDigits( 16 );
 		nf.setGroupingUsed( false );
-		DOUBLE_FORMAT = nf;
+		_doubleFormat = nf;
 	}
 
 	/**
@@ -137,13 +135,14 @@ public class PovMatrix
 	/**
 	 * Format float-point value.
 	 *
-	 * @param   value   Floating-point value.
+	 * @param value Floating-point value.
 	 *
-	 * @return  Formatted string.
+	 * @return Formatted string.
 	 */
-	protected static String format( final double value )
+	@Override
+	protected String format( final double value )
 	{
-		return DOUBLE_FORMAT.format( ( value == -0.0 ) ? 0.0 : value );
+		return _doubleFormat.format( value + 0.0 ); // Prevent negative zero.
 	}
 
 	@Override
