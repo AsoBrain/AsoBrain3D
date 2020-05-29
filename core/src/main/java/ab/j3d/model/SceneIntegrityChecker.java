@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,28 +33,16 @@ import org.jetbrains.annotations.*;
 public class SceneIntegrityChecker
 {
 	/**
-	 * Number format with one fraction digit.
-	 */
-	protected static final NumberFormat ONE_DECIMAL_FORMAT;
-
-	/**
 	 * Number format with two fraction digits.
 	 */
-	protected static final NumberFormat TWO_DECIMAL_FORMAT;
+	private final NumberFormat _twoDecimalFormat;
 
-	static
 	{
-		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
-		oneDecimal.setMinimumFractionDigits( 1 );
-		oneDecimal.setMaximumFractionDigits( 1 );
-		oneDecimal.setGroupingUsed( false );
-		ONE_DECIMAL_FORMAT = oneDecimal;
-
 		final NumberFormat twoDecimals = NumberFormat.getNumberInstance( Locale.US );
 		twoDecimals.setMinimumFractionDigits( 2 );
 		twoDecimals.setMaximumFractionDigits( 2 );
 		twoDecimals.setGroupingUsed( false );
-		TWO_DECIMAL_FORMAT = twoDecimals;
+		_twoDecimalFormat = twoDecimals;
 	}
 
 	/**
@@ -410,9 +398,9 @@ public class SceneIntegrityChecker
 				error.append( ", vertexCoordinateIndex=" );
 				error.append( vertex.vertexCoordinateIndex );
 				error.append( ", colorMapU,V=[" );
-				error.append( TWO_DECIMAL_FORMAT.format( vertex.colorMapU ) );
+				error.append( _twoDecimalFormat.format( vertex.colorMapU ) );
 				error.append( ',' );
-				error.append( TWO_DECIMAL_FORMAT.format( vertex.colorMapV ) );
+				error.append( _twoDecimalFormat.format( vertex.colorMapV ) );
 				error.append( ']' );
 
 			}

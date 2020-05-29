@@ -1,7 +1,6 @@
 /*
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d;
 
@@ -90,23 +88,9 @@ public class Matrix3D
 	0.0, 0.0, 1.0, 0.0 );
 
 	/**
-	 * Number format with one fraction digit.
-	 */
-	private static final NumberFormat ONE_DECIMAL_FORMAT;
-
-	/**
 	 * Regex pattern only consisting of comma character.
 	 */
 	private static final Pattern COMMA = Pattern.compile( "," );
-
-	static
-	{
-		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
-		oneDecimal.setMinimumFractionDigits( 1 );
-		oneDecimal.setMaximumFractionDigits( 1 );
-		oneDecimal.setGroupingUsed( false );
-		ONE_DECIMAL_FORMAT = oneDecimal;
-	}
 
 	/**
 	 * Construct a new matrix.
@@ -1417,7 +1401,10 @@ public class Matrix3D
 	 */
 	public String toShortFriendlyString()
 	{
-		final NumberFormat nf = ONE_DECIMAL_FORMAT;
+		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
+		nf.setMinimumFractionDigits( 1 );
+		nf.setMaximumFractionDigits( 1 );
+		nf.setGroupingUsed( false );
 		return "[[" + nf.format( xx ) + ',' + nf.format( xy ) + ',' + nf.format( xz ) + ',' + nf.format( xo ) +
 		       "],[" + nf.format( yx ) + ',' + nf.format( yy ) + ',' + nf.format( yz ) + ',' + nf.format( yo ) +
 		       "],[" + nf.format( zx ) + ',' + nf.format( zy ) + ',' + nf.format( zz ) + ',' + nf.format( zo ) + "]]";

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2017 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -576,7 +576,7 @@ public class PovScene
 		_ambientLight.write( out );
 		out.newLine();
 		out.write( "assumed_gamma " );
-		out.writeln( PovObject.format( getAssumedGamma() ) );
+		out.writeln( PovObject.getFloatFormat().format( getAssumedGamma() ) );
 
 		if ( _radiosity )
 		{

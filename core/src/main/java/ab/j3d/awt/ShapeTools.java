@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,8 @@ import java.awt.*;
 import java.awt.font.*;
 import java.awt.geom.*;
 import java.text.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -43,20 +43,6 @@ public class ShapeTools
 	 * PI / 2.
 	 */
 	public static final double HALF_PI = Math.PI / 2.0;
-
-	/**
-	 * Number format that has upto 2 decimals.
-	 */
-	public static final NumberFormat TOW_DECIMALS;
-
-	static
-	{
-		final NumberFormat df = NumberFormat.getNumberInstance( Locale.US );
-		df.setGroupingUsed( false );
-		df.setMinimumFractionDigits( 0 );
-		df.setMaximumFractionDigits( 2 );
-		TOW_DECIMALS = df;
-	}
 
 	/**
 	 * Create contour(s) from a flattened {@link Shape}.
@@ -882,7 +868,10 @@ public class ShapeTools
 	{
 		final String result;
 
-		final NumberFormat df = TOW_DECIMALS;
+		final NumberFormat df = NumberFormat.getNumberInstance( Locale.US );
+		df.setGroupingUsed( false );
+		df.setMinimumFractionDigits( 0 );
+		df.setMaximumFractionDigits( 2 );
 
 		if ( shape instanceof Line2D )
 		{

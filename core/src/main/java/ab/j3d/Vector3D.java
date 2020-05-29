@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -887,8 +887,11 @@ extends Vector2D
 	 */
 	public static String toFriendlyString( final double x, final double y, final double z )
 	{
-		final NumberFormat df = TWO_DECIMAL_FORMAT;
-		return "[ " + df.format( x ) + ", " + df.format( y ) + ", " + df.format( z ) + " ]";
+		final NumberFormat twoDecimals = NumberFormat.getNumberInstance( Locale.US );
+		twoDecimals.setMinimumFractionDigits( 2 );
+		twoDecimals.setMaximumFractionDigits( 2 );
+		twoDecimals.setGroupingUsed( false );
+		return "[ " + twoDecimals.format( x ) + ", " + twoDecimals.format( y ) + ", " + twoDecimals.format( z ) + " ]";
 	}
 
 	/**
@@ -925,7 +928,10 @@ extends Vector2D
 	 */
 	public static String toShortFriendlyString( final double x, final double y, final double z )
 	{
-		final NumberFormat nf = ONE_DECIMAL_FORMAT;
-		return '[' + nf.format( x ) + ',' + nf.format( y ) + ',' + nf.format( z ) + ']';
+		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
+		oneDecimal.setMinimumFractionDigits( 1 );
+		oneDecimal.setMaximumFractionDigits( 1 );
+		oneDecimal.setGroupingUsed( false );
+		return '[' + oneDecimal.format( x ) + ',' + oneDecimal.format( y ) + ',' + oneDecimal.format( z ) + ']';
 	}
 }
