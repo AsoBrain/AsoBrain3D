@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -225,6 +225,8 @@ public class BasicAppearances
 		metal.setReflectionMin( 0.2f );
 		metal.setReflectionMax( 1.0f );
 		metal.setReflectionColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
+		metal.setProperty( "metalness", 1 );
+		metal.setProperty( "roughness", 0.6 );
 		METAL = metal; // "metal"
 
 		final BasicAppearance gold = new BasicAppearance();
@@ -236,6 +238,8 @@ public class BasicAppearances
 		gold.setReflectionMin( 0.2f );
 		gold.setReflectionMax( 1.0f );
 		gold.setReflectionColor( new Color4f( 0.75f, 0.61f, 0.23f ) );
+		gold.setProperty( "metalness", 1 );
+		gold.setProperty( "roughness", 0.1 );
 		GOLD = gold; // "gold"
 
 		final BasicAppearance chrome = new BasicAppearance();
@@ -247,6 +251,8 @@ public class BasicAppearances
 		chrome.setReflectionMin( 0.8f );
 		chrome.setReflectionMax( 1.0f );
 		chrome.setReflectionColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
+		chrome.setProperty( "metalness", 1 );
+		chrome.setProperty( "roughness", 0.1 );
 		CHROME = chrome; // "chrome"
 
 		final BasicAppearance matteChrome = new BasicAppearance();
@@ -258,6 +264,8 @@ public class BasicAppearances
 		matteChrome.setReflectionMin( 0.0f );
 		matteChrome.setReflectionMax( 0.2f );
 		matteChrome.setReflectionColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
+		matteChrome.setProperty( "metalness", 1 );
+		matteChrome.setProperty( "roughness", 0.6 );
 		MATTE_CHROME = matteChrome; // "matteChrome"
 
 		final BasicAppearance silver = new BasicAppearance();
@@ -269,6 +277,8 @@ public class BasicAppearances
 		silver.setReflectionMin( 0.2f );
 		silver.setReflectionMax( 1.0f );
 		silver.setReflectionColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
+		silver.setProperty( "metalness", 1 );
+		silver.setProperty( "roughness", 0.3 );
 		SILVER = silver; // "silver"
 
 		final BasicAppearance nickel = new BasicAppearance();
@@ -280,6 +290,8 @@ public class BasicAppearances
 		nickel.setReflectionMin( 0.2f );
 		nickel.setReflectionMax( 1.0f );
 		nickel.setReflectionColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
+		nickel.setProperty( "metalness", 1 );
+		nickel.setProperty( "roughness", 0.1 );
 		NICKEL = nickel; // "nickel"
 
 		final BasicAppearance zinc = new BasicAppearance();
@@ -291,6 +303,8 @@ public class BasicAppearances
 		zinc.setReflectionMin( 0.1f );
 		zinc.setReflectionMax( 0.3f );
 		zinc.setReflectionColor( new Color4f( 0.65f, 0.69f, 0.69f ) );
+		zinc.setProperty( "metalness", 1 );
+		zinc.setProperty( "roughness", 0.5 );
 		ZINC = zinc; // "zinc"
 
 		final BasicAppearance aluminium = new BasicAppearance();
@@ -302,6 +316,8 @@ public class BasicAppearances
 		aluminium.setReflectionMin( 0.2f );
 		aluminium.setReflectionMax( 1.0f );
 		aluminium.setReflectionColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
+		aluminium.setProperty( "metalness", 1 );
+		aluminium.setProperty( "roughness", 0.65 );
 		ALUMINIUM = aluminium; // "aluminium"
 
 		final BasicAppearance aluPlate = new BasicAppearance();
@@ -313,6 +329,8 @@ public class BasicAppearances
 		aluPlate.setReflectionMap( reflectionMap );
 		aluPlate.setReflectionMin( 0.0f );
 		aluPlate.setReflectionMax( 0.1f );
+		aluPlate.setProperty( "metalness", 1 );
+		aluPlate.setProperty( "roughness", 0.5 );
 		ALU_PLATE = aluPlate; // "alu-plate"
 
 		final BasicAppearance steel = new BasicAppearance();
@@ -324,6 +342,8 @@ public class BasicAppearances
 		steel.setReflectionMin( 0.1f );
 		steel.setReflectionMax( 0.5f );
 		steel.setReflectionColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
+		steel.setProperty( "metalness", 1 );
+		steel.setProperty( "roughness", 0.6 );
 		STEEL = steel; // "steel"
 
 		final BasicAppearance bronze = new BasicAppearance();
@@ -335,6 +355,8 @@ public class BasicAppearances
 		bronze.setReflectionMin( 0.1f );
 		bronze.setReflectionMax( 0.5f );
 		bronze.setReflectionColor( new Color4f( 0.83f, 0.79f, 0.72f ) );
+		bronze.setProperty( "metalness", 1 );
+		bronze.setProperty( "roughness", 0.6 );
 		BRONZE = bronze; // "bronze"
 
 		final BasicAppearance messing = new BasicAppearance();
@@ -346,6 +368,8 @@ public class BasicAppearances
 		messing.setReflectionMin( 0.2f );
 		messing.setReflectionMax( 1.0f );
 		messing.setReflectionColor( new Color4f( 0.78f, 0.57f, 0.11f ) );
+		messing.setProperty( "metalness", 1 );
+		messing.setProperty( "roughness", 0.5 );
 		MESSING = messing; // "messing"
 
 		final BasicAppearance titanium = new BasicAppearance();
@@ -357,6 +381,8 @@ public class BasicAppearances
 		titanium.setReflectionMin( 0.2f );
 		titanium.setReflectionMax( 1.0f );
 		titanium.setReflectionColor( new Color4f( 0.44f, 0.43f, 0.39f ) );
+		titanium.setProperty( "metalness", 1 );
+		titanium.setProperty( "roughness", 0.5 );
 		TITANIUM = titanium; // "titanium"
 
 		final BasicAppearance zamac = new BasicAppearance();
@@ -368,6 +394,8 @@ public class BasicAppearances
 		zamac.setReflectionMin( 0.2f );
 		zamac.setReflectionMax( 1.0f );
 		zamac.setReflectionColor( new Color4f( 0.4f, 0.44f, 0.51f ) );
+		zamac.setProperty( "metalness", 1 );
+		zamac.setProperty( "roughness", 0.6 );
 		ZAMAC = zamac; // "zamac"
 	}
 }

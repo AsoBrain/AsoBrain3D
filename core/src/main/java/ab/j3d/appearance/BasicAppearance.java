@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,8 @@
  */
 package ab.j3d.appearance;
 
+import java.util.*;
+
 import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
@@ -32,25 +34,27 @@ public class BasicAppearance
 	implements Appearance
 {
 	/**
+	 * Custom properties of the appearance.
+	 */
+	private final Map<String, Object> _properties = new HashMap<>();
+
+	/**
 	 * Name of the appearance.
 	 */
 	@Nullable
-	private String _name = null;
+	private String _name;
 
 	/**
 	 * Red component of ambient reflection color.
 	 */
+	@NotNull
 	private Color4 _ambientColor = Color4.BLACK;
 
 	/**
 	 * Red component of diffuse reflection color.
 	 */
+	@NotNull
 	private Color4 _diffuseColor = Color4.BLACK;
-
-	/**
-	 * Red component of specular highlight color.
-	 */
-	private Color4 _specularColor = Color4.BLACK;
 
 	/**
 	 * Specular highlight exponent.
@@ -58,9 +62,10 @@ public class BasicAppearance
 	private int _shininess = 0;
 
 	/**
-	 * Red component of emissive color.
+	 * Red component of specular highlight color.
 	 */
-	private Color4 _emissiveColor = Color4.BLACK;
+	@NotNull
+	private Color4 _specularColor = Color4.BLACK;
 
 	/**
 	 * Color map to use.
@@ -91,8 +96,15 @@ public class BasicAppearance
 	private float _reflectionMax = 1.0f;
 
 	/**
+	 * Red component of emissive color.
+	 */
+	@NotNull
+	private Color4 _emissiveColor = Color4.BLACK;
+
+	/**
 	 * Reflection color/intensity of (specular) reflections.
 	 */
+	@NotNull
 	private Color4 _reflectionColor = Color4.WHITE;
 
 	/**
@@ -177,7 +189,7 @@ public class BasicAppearance
 	}
 
 	@Override
-	public Color4 getAmbientColor()
+	public @NotNull Color4 getAmbientColor()
 	{
 		return _ambientColor;
 	}
@@ -211,13 +223,13 @@ public class BasicAppearance
 	 *
 	 * @param   color   Ambient reflection color.
 	 */
-	public void setAmbientColor( final Color4 color )
+	public void setAmbientColor( final @NotNull Color4 color )
 	{
 		_ambientColor = color;
 	}
 
 	@Override
-	public Color4 getDiffuseColor()
+	public @NotNull Color4 getDiffuseColor()
 	{
 		return _diffuseColor;
 	}
@@ -252,13 +264,13 @@ public class BasicAppearance
 	 *
 	 * @param   color   Diffuse reflection color and opacity.
 	 */
-	public void setDiffuseColor( final Color4 color )
+	public void setDiffuseColor( final @NotNull Color4 color )
 	{
 		_diffuseColor = color;
 	}
 
 	@Override
-	public Color4 getSpecularColor()
+	public @NotNull Color4 getSpecularColor()
 	{
 		return _specularColor;
 	}
@@ -288,7 +300,7 @@ public class BasicAppearance
 	 *
 	 * @param   color   Specular reflection color.
 	 */
-	public void setSpecularColor( final Color4 color )
+	public void setSpecularColor( final @NotNull Color4 color )
 	{
 		_specularColor = color;
 	}
@@ -310,7 +322,7 @@ public class BasicAppearance
 	}
 
 	@Override
-	public Color4 getEmissiveColor()
+	public @NotNull Color4 getEmissiveColor()
 	{
 		return _emissiveColor;
 	}
@@ -338,7 +350,7 @@ public class BasicAppearance
 	 *
 	 * @param   color   Emissive color.
 	 */
-	public void setEmissiveColor( final Color4 color )
+	public void setEmissiveColor( final @NotNull Color4 color )
 	{
 		_emissiveColor = color;
 	}
@@ -428,7 +440,7 @@ public class BasicAppearance
 	}
 
 	@Override
-	public Color4 getReflectionColor()
+	public @NotNull Color4 getReflectionColor()
 	{
 		return _reflectionColor;
 	}
@@ -450,8 +462,34 @@ public class BasicAppearance
 	 *
 	 * @param   color     Reflection color/intensity.
 	 */
-	public void setReflectionColor( final Color4 color )
+	public void setReflectionColor( final @NotNull Color4 color )
 	{
 		_reflectionColor = color;
+	}
+
+	@Override
+	@NotNull
+	public Map<String, Object> getProperties()
+	{
+		return Collections.unmodifiableMap( _properties );
+	}
+
+	public void setProperties( @NotNull final Map<String, Object> properties )
+	{
+		_properties.clear();
+		_properties.putAll( properties );
+	}
+
+	@Override
+	public void setProperty( @NotNull final String key, @Nullable final Object value )
+	{
+		if ( value == null )
+		{
+			_properties.remove( key );
+		}
+		else
+		{
+			_properties.put( key, value );
+		}
 	}
 }
