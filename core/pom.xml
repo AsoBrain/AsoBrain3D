@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>ab3d-core</artifactId>
-	<version>1.14-SNAPSHOT</version>
+	<version>1.15-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>
