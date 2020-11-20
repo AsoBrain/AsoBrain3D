@@ -24,14 +24,22 @@ package ab.j3d.example;
  *
  * @author Gerrit Meinders
  */
-public class SpheresLightsAndShadows
-	extends ExampleApplet
+public class SpheresLightsAndShadowsApp
 {
 	/**
-	 * Constructs a new instance.
+	 * Runs the example.
+	 *
+	 * @param args Ignored.
 	 */
-	public SpheresLightsAndShadows()
+	public static void main( final String[] args )
 	{
-		super( new SpheresLightsAndShadowsExample() );
+		new ExampleApp( new SpheresLightsAndShadowsExample() ).run();
+	}
+
+	/**
+	 * Not used.
+	 */
+	private SpheresLightsAndShadowsApp()
+	{
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,9 +27,9 @@ import ab.j3d.view.*;
 /**
  * Applet with a single 3D view, used as a base class for (most) examples.
  *
- * @author G. Meinders
+ * @author Gerrit Meinders
  */
-public abstract class ExampleApplet
+public class ExampleApplet
 extends JApplet
 {
 	/**
@@ -48,48 +48,25 @@ extends JApplet
 	private View3D _view = null;
 
 	/**
+	 * Example to run.
+	 */
+	private final Example _example;
+
+	/**
 	 * Construct new instance.
+	 *
+	 * @param example Example to run.
 	 */
-	protected ExampleApplet()
+	public ExampleApplet( final Example example )
 	{
+		_example = example;
 	}
-
-	/**
-	 * Creates and configures the render engine to be used.
-	 *
-	 * @return Configured render engine.
-	 */
-	protected abstract RenderEngine createEngine();
-
-	/**
-	 * Creates the (initial) 3D scene.
-	 *
-	 * @return Scene.
-	 */
-	protected abstract Scene createScene();
-
-	/**
-	 * Called when a view is created, to allow it to be configured.
-	 *
-	 * @param view View to be configured.
-	 */
-	protected abstract void configureView( View3D view );
-
-	/**
-	 * Called after each frame to allow for the scene and view to be updated.
-	 *
-	 * @param scene Scene to be updated.
-	 * @param view  View to be updated.
-	 *
-	 * @return <code>true</code> if the view should be updated.
-	 */
-	protected abstract boolean animate( Scene scene, View3D view );
 
 	@Override
 	public void init()
 	{
-		_scene = createScene();
-		_engine = createEngine();
+		_scene = _example.createScene();
+		_engine = _example.createEngine();
 	}
 
 	@Override
@@ -100,8 +77,8 @@ extends JApplet
 
 		view.addViewListener( new AnimationViewListener() );
 
-		configureView( view );
-		animate( _scene, view );
+		_example.configureView( view );
+		_example.animate( _scene, view );
 
 		setLayout( new BorderLayout() );
 		add( view.getComponent(), BorderLayout.CENTER );
@@ -128,13 +105,15 @@ extends JApplet
 	protected class AnimationViewListener
 	implements ViewListener
 	{
+		@Override
 		public void beforeFrame( final View3D view )
 		{
 		}
 
+		@Override
 		public void afterFrame( final View3D view )
 		{
-			if ( animate( _scene, view ) )
+			if ( _example.animate( _scene, view ) )
 			{
 				view.update();
 			}
