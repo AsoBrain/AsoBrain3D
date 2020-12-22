@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,14 +22,15 @@ import java.awt.*;
 
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Java 2D render engine implementation.
  *
- * @author  G.B.M. Rupert
+ * @author G.B.M. Rupert
  */
 public class Java2dEngine
-	implements RenderEngine
+implements RenderEngine
 {
 	/**
 	 * Background color for the model.
@@ -47,24 +48,26 @@ public class Java2dEngine
 	/**
 	 * Construct new Java 2D render engine.
 	 *
-	 * @param   background  Background color to use for 3D views. May be
-	 *                      <code>null</code>, in which case the default
-	 *                      background color of the current look and feel is
-	 *                      used.
+	 * @param background Background color to use for 3D views. May be
+	 *                   {@code null}, in which case the default
+	 *                   background color of the current look and feel is
+	 *                   used.
 	 */
-	public Java2dEngine( final Color background )
+	public Java2dEngine( final @Nullable Color background )
 	{
-		_background   = background;
+		_background = background;
 	}
 
-	public View3D createView( final Scene scene )
+	@NotNull
+	public Java2dView createView( final @NotNull Scene scene )
 	{
 		return new Java2dView( scene, _background );
 	}
 
-	public OffscreenView3D createOffscreenView( final Scene scene )
+	@NotNull
+	public Java2dView createOffscreenView( final @NotNull Scene scene )
 	{
-		throw new UnsupportedOperationException( "Offscreen view is not supported." );
+		return new Java2dView( scene, _background );
 	}
 
 	public void dispose()

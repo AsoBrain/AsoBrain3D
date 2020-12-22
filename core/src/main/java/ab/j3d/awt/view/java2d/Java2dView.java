@@ -1,7 +1,7 @@
-/* $Id$
+/*
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2020 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 package ab.j3d.awt.view.java2d;
 
 import java.awt.*;
+import java.awt.image.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.view.*;
@@ -31,20 +32,21 @@ import org.jetbrains.annotations.*;
 /**
  * Java 2D view implementation.
  *
- * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
+ * @author G.B.M. Rupert
  */
 public class Java2dView
-	extends View3D
+extends OffscreenView3D
 {
 	/**
 	 * Component through which a rendering of the view is shown.
 	 */
+	@NotNull
 	private final Java2dViewComponent _viewComponent;
 
 	/**
 	 * The SceneInputTranslator for this View.
 	 */
+	@NotNull
 	private final ViewControlInput _controlInput;
 
 	/**
@@ -59,10 +61,11 @@ public class Java2dView
 
 	/**
 	 * Binary Space Partitioning Tree ({@link BSPTree}) of the scene.
-	 * <p />
-	 * The tree is only calculated when the scene changes (indicated by
+	 *
+	 * <p>The tree is only calculated when the scene changes (indicated by
 	 * the {@link #_bspTreeDirty} field).
 	 */
+	@NotNull
 	private final BSPTree _bspTree;
 
 	/**
@@ -74,13 +77,13 @@ public class Java2dView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   scene       Scene to view.
-	 * @param   background  Background color to use for 3D views. May be
-	 *                      <code>null</code>, in which case the default
-	 *                      background color of the current look and feel is
-	 *                      used.
+	 * @param scene      Scene to view.
+	 * @param background Background color to use for 3D views. May be
+	 *                   {@code null}, in which case the default
+	 *                   background color of the current look and feel is
+	 *                   used.
 	 */
-	public Java2dView( final Scene scene, final Color background )
+	public Java2dView( final @NotNull Scene scene, final @Nullable Color background )
 	{
 		super( scene );
 
@@ -125,9 +128,9 @@ public class Java2dView
 	}
 
 	@Override
-	public void setFrontClipDistance( final double frontClipDistance )
+	public void setFrontClipDistance( final double front )
 	{
-		_frontClipDistance = frontClipDistance;
+		_frontClipDistance = front;
 		update();
 	}
 
@@ -138,9 +141,9 @@ public class Java2dView
 	}
 
 	@Override
-	public void setBackClipDistance( final double backClipDistance )
+	public void setBackClipDistance( final double back )
 	{
-		_backClipDistance = backClipDistance;
+		_backClipDistance = back;
 		update();
 	}
 
@@ -151,28 +154,28 @@ public class Java2dView
 	}
 
 	@Override
-	public void contentNodeAdded( final SceneUpdateEvent event )
+	public void contentNodeAdded( final @NotNull SceneUpdateEvent event )
 	{
 		_bspTreeDirty = true;
 		super.contentNodeAdded( event );
 	}
 
 	@Override
-	public void contentNodeContentUpdated( final SceneUpdateEvent event )
+	public void contentNodeContentUpdated( final @NotNull SceneUpdateEvent event )
 	{
 		_bspTreeDirty = true;
 		super.contentNodeContentUpdated( event );
 	}
 
 	@Override
-	public void contentNodePropertyChanged( final SceneUpdateEvent event )
+	public void contentNodePropertyChanged( final @NotNull SceneUpdateEvent event )
 	{
 		_bspTreeDirty = true;
 		super.contentNodePropertyChanged( event );
 	}
 
 	@Override
-	public void contentNodeRemoved( final SceneUpdateEvent event )
+	public void contentNodeRemoved( final @NotNull SceneUpdateEvent event )
 	{
 		_bspTreeDirty = true;
 		super.contentNodeRemoved( event );
@@ -184,14 +187,7 @@ public class Java2dView
 		_viewComponent.repaint();
 	}
 
-	/**
-	 * Get binary Space Partitioning Tree ({@link BSPTree}) of the scene.
-	 * <p />
-	 * The tree is only calculated when the scene changes (indicated by
-	 * the {@link #_bspTreeDirty} field).
-	 *
-	 * @return  The Binary Space Partitioning Tree of the scene.
-	 */
+	@NotNull
 	public BSPTree getBspTree()
 	{
 		final BSPTree result = _bspTree;
@@ -208,11 +204,6 @@ public class Java2dView
 		return result;
 	}
 
-	/**
-	 * Returns the {@link Projector} for this view.
-	 *
-	 * @return  the {@link Projector} for this view
-	 */
 	@Override
 	public Projector getProjector()
 	{
@@ -220,7 +211,6 @@ public class Java2dView
 		final Insets insets = viewComponent.getInsets( null );
 		final int imageWidth = viewComponent.getWidth() - insets.left - insets.right;
 		final int imageHeight = viewComponent.getHeight() - insets.top - insets.bottom;
-		final double imageResolution = getResolution();
 
 		final Scene scene = getScene();
 		final double viewUnit = scene.getUnit();
@@ -230,7 +220,7 @@ public class Java2dView
 		final double frontClipDistance = _frontClipDistance;
 		final double backClipDistance = _backClipDistance;
 
-		return Projector.createInstance( getProjectionPolicy(), imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, fieldOfView, zoomFactor );
+		return Projector.createInstance( getProjectionPolicy(), imageWidth, imageHeight, getResolution(), viewUnit, frontClipDistance, backClipDistance, fieldOfView, zoomFactor );
 	}
 
 	@Override
@@ -243,5 +233,22 @@ public class Java2dView
 	public ViewControlInput getControlInput()
 	{
 		return _controlInput;
+	}
+
+	@Override
+	public void setSize( final int width, final int height )
+	{
+		_viewComponent.setSize( width, height );
+	}
+
+	@Override
+	public BufferedImage renderImage( final int width, final int height )
+	{
+		_viewComponent.setSize( width, height );
+		final BufferedImage result = new BufferedImage( width, height, BufferedImage.TYPE_INT_ARGB );
+		final Graphics2D g2d = result.createGraphics();
+		_viewComponent.paintComponent( g2d );
+		g2d.dispose();
+		return result;
 	}
 }
