@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,10 +27,11 @@ import ab.j3d.geom.*;
 /**
  * This class represents a 2D vector.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
+@SuppressWarnings( "FieldNamingConvention" )
 public class Vector2D
-	implements Serializable
+implements Serializable
 {
 	/**
 	 * Zero-vector.
@@ -75,8 +76,8 @@ public class Vector2D
 	/**
 	 * Construct new vector.
 	 *
-	 * @param   x   X-coordinate of vector.
-	 * @param   y   Y-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
 	 */
 	public Vector2D( final double x, final double y )
 	{
@@ -87,7 +88,7 @@ public class Vector2D
 	/**
 	 * Get X-coordinate of vector.
 	 *
-	 * @return  X-coordinate of vector.
+	 * @return X-coordinate of vector.
 	 */
 	public double getX()
 	{
@@ -97,7 +98,7 @@ public class Vector2D
 	/**
 	 * Get Y-coordinate of vector.
 	 *
-	 * @return  Y-coordinate of vector.
+	 * @return Y-coordinate of vector.
 	 */
 	public double getY()
 	{
@@ -107,10 +108,10 @@ public class Vector2D
 	/**
 	 * Get angle between this vector and another one specified as argument.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  angle between vectors in radians.
+	 * @return angle between vectors in radians.
 	 */
 	public static double angle( final Vector2D v1, final Vector2D v2 )
 	{
@@ -120,11 +121,11 @@ public class Vector2D
 	/**
 	 * Test if two vectors are parallel to each other.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  <code>true</code> if the vectors are parallel;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if the vectors are parallel;
+	 * {@code false} if not.
 	 */
 	public static boolean areParallel( final Vector2D v1, final Vector2D v2 )
 	{
@@ -134,11 +135,11 @@ public class Vector2D
 	/**
 	 * Test if two vectors define the same direction.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  <code>true</code> if the vectors define the same direction;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if the vectors define the same direction;
+	 * {@code false} if not.
 	 */
 	public static boolean areSameDirection( final Vector2D v1, final Vector2D v2 )
 	{
@@ -148,11 +149,11 @@ public class Vector2D
 	/**
 	 * Test if two vectors are perpendicular to each other.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  <code>true</code> if the vectors are perpendicular;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if the vectors are perpendicular;
+	 * {@code false} if not.
 	 */
 	public static boolean arePerpendicular( final Vector2D v1, final Vector2D v2 )
 	{
@@ -161,11 +162,12 @@ public class Vector2D
 
 	/**
 	 * Get cos(angle) between this vector and another one specified as argument.
+	 * This is the dot product of both vectors after normalization.
 	 *
-	 * @param   v1  First vector.
-	 * @param   v2  Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  cos(angle) between vectors.
+	 * @return cos(angle) between vectors.
 	 */
 	public static double cosAngle( final Vector2D v1, final Vector2D v2 )
 	{
@@ -174,14 +176,15 @@ public class Vector2D
 	}
 
 	/**
-	 * Get cos(angle) between two vectors.
+	 * Get cos(angle) between two vectors. This is the dot product of both
+	 * vectors after normalization.
 	 *
-	 * @param   x1  X-coordinate of first vector.
-	 * @param   y1  Y-coordinate of first vector.
-	 * @param   x2  X-coordinate of second vector.
-	 * @param   y2  Y-coordinate of second vector.
+	 * @param x1 X-coordinate of first vector.
+	 * @param y1 Y-coordinate of first vector.
+	 * @param x2 X-coordinate of second vector.
+	 * @param y2 Y-coordinate of second vector.
 	 *
-	 * @return  cos(angle) between vectors.
+	 * @return cos(angle) between vectors.
 	 */
 	public static double cosAngle( final double x1, final double y1, final double x2, final double y2 )
 	{
@@ -191,14 +194,14 @@ public class Vector2D
 
 	/**
 	 * Determine sine of angle between two vectors. This is the Z component of
-	 * the cross product of both vectors.
+	 * the cross product of both vectors after normalization.
 	 *
-	 * @param   x1      X-coordinate of first vector operand.
-	 * @param   y1      Y-coordinate of first vector operand.
-	 * @param   x2      X-coordinate of second vector operand.
-	 * @param   y2      Y-coordinate of second vector operand.
+	 * @param x1 X-coordinate of first vector operand.
+	 * @param y1 Y-coordinate of first vector operand.
+	 * @param x2 X-coordinate of second vector operand.
+	 * @param y2 Y-coordinate of second vector operand.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public static double sinAngle( final double x1, final double y1, final double x2, final double y2 )
 	{
@@ -209,23 +212,38 @@ public class Vector2D
 	/**
 	 * Determine Z component of 3D cross vector between two 2D vectors.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public static double crossZ( final Vector2D v1, final Vector2D v2 )
 	{
-		return sinAngle( v1.getX(), v1.getY(), v2.getX(), v2.getY() );
+		return crossZ( v1.getX(), v1.getY(), v2.getX(), v2.getY() );
+	}
+
+	/**
+	 * Determine Z component of 3D cross vector between two 2D vectors.
+	 *
+	 * @param x1 X-coordinate of first vector operand.
+	 * @param y1 Y-coordinate of first vector operand.
+	 * @param x2 X-coordinate of second vector operand.
+	 * @param y2 Y-coordinate of second vector operand.
+	 *
+	 * @return Resulting vector.
+	 */
+	public static double crossZ( final double x1, final double y1, final double x2, final double y2 )
+	{
+		return x1 * y2 - y1 * x2;
 	}
 
 	/**
 	 * Calculate distance between two point vectors.
 	 *
-	 * @param   p1      First point vector to calculate the distance between.
-	 * @param   p2      Second point vector to calculate the distance between.
+	 * @param p1 First point vector to calculate the distance between.
+	 * @param p2 Second point vector to calculate the distance between.
 	 *
-	 * @return  Distance between this and the specified other vector.
+	 * @return Distance between this and the specified other vector.
 	 */
 	public static double distanceBetween( final Vector2D p1, final Vector2D p2 )
 	{
@@ -235,9 +253,9 @@ public class Vector2D
 	/**
 	 * Calculate distance between this point vector and another.
 	 *
-	 * @param   other   Point vector to calculate the distance to.
+	 * @param other Point vector to calculate the distance to.
 	 *
-	 * @return  Distance between this and the other vector.
+	 * @return Distance between this and the other vector.
 	 */
 	public double distanceTo( final Vector2D other )
 	{
@@ -247,10 +265,10 @@ public class Vector2D
 	/**
 	 * Get direction from one point to another point.
 	 *
-	 * @param   from    Point vector for from-point.
-	 * @param   to      Point vector for to-point.
+	 * @param from Point vector for from-point.
+	 * @param to   Point vector for to-point.
 	 *
-	 * @return  Direction from from-point to to-point.
+	 * @return Direction from from-point to to-point.
 	 */
 	public static Vector2D direction( final Vector2D from, final Vector2D to )
 	{
@@ -260,12 +278,12 @@ public class Vector2D
 	/**
 	 * Get direction from one point to another point.
 	 *
-	 * @param   x1      X coordinate of from-point.
-	 * @param   y1      Y coordinate of from-point.
-	 * @param   x2      X coordinate of to-point.
-	 * @param   y2      Y coordinate of to-point.
+	 * @param x1 X coordinate of from-point.
+	 * @param y1 Y coordinate of from-point.
+	 * @param x2 X coordinate of to-point.
+	 * @param y2 Y coordinate of to-point.
 	 *
-	 * @return  Direction from from-point to to-point.
+	 * @return Direction from from-point to to-point.
 	 */
 	public static Vector2D direction( final double x1, final double y1, final double x2, final double y2 )
 	{
@@ -275,9 +293,9 @@ public class Vector2D
 	/**
 	 * Get direction from this point vector to another.
 	 *
-	 * @param   other   Point vector to calculate the direction to.
+	 * @param other Point vector to calculate the direction to.
 	 *
-	 * @return  Direction from this to the other vector.
+	 * @return Direction from this to the other vector.
 	 */
 	public Vector2D directionTo( final Vector2D other )
 	{
@@ -287,10 +305,10 @@ public class Vector2D
 	/**
 	 * Get direction from this point vector to another.
 	 *
-	 * @param   x       X coordinate of point to calculate the direction to.
-	 * @param   y       Y coordinate of point to calculate the direction to.
+	 * @param x X coordinate of point to calculate the direction to.
+	 * @param y Y coordinate of point to calculate the direction to.
 	 *
-	 * @return  Direction from this to the other vector.
+	 * @return Direction from this to the other vector.
 	 */
 	public Vector2D directionTo( final double x, final double y )
 	{
@@ -300,10 +318,10 @@ public class Vector2D
 	/**
 	 * Calculate average of two vectors (i.e. center between two point vectors).
 	 *
-	 * @param   v1  First vector.
-	 * @param   v2  Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return  Average vector (i.e. center point).
+	 * @return Average vector (i.e. center point).
 	 */
 	public static Vector2D average( final Vector2D v1, final Vector2D v2 )
 	{
@@ -314,12 +332,12 @@ public class Vector2D
 	 * Calculate dot product (a.k.a. inner product) of this vector and another
 	 * one specified as argument.
 	 *
-	 * @param   x1      X-coordinate of first vector operand.
-	 * @param   y1      Y-coordinate of first vector operand.
-	 * @param   x2      X-coordinate of second vector operand.
-	 * @param   y2      Y-coordinate of second vector operand.
+	 * @param x1 X-coordinate of first vector operand.
+	 * @param y1 Y-coordinate of first vector operand.
+	 * @param x2 X-coordinate of second vector operand.
+	 * @param y2 Y-coordinate of second vector operand.
 	 *
-	 * @return  Dot product.
+	 * @return Dot product.
 	 */
 	public static double dot( final double x1, final double y1, final double x2, final double y2 )
 	{
@@ -335,10 +353,10 @@ public class Vector2D
 	 * <blockquote>a &middot; b = |a| |b| cos &theta;</blockquote>
 	 * where &theta; denotes the angle between the two vectors.
 	 *
-	 * @param   v1      First vector operand.
-	 * @param   v2      Second vector operand.
+	 * @param v1 First vector operand.
+	 * @param v2 Second vector operand.
 	 *
-	 * @return  Dot product.
+	 * @return Dot product.
 	 */
 	public static double dot( final Vector2D v1, final Vector2D v2 )
 	{
@@ -348,12 +366,12 @@ public class Vector2D
 	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param   other   Vector to compare with.
+	 * @param other Vector to compare with.
 	 *
-	 * @return  <code>true</code> if the objects are almost equal;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if the objects are almost equal;
+	 * {@code false} if not.
 	 *
-	 * @see     GeometryTools#almostEqual
+	 * @see GeometryTools#almostEqual
 	 */
 	public boolean almostEquals( final Vector2D other )
 	{
@@ -363,13 +381,13 @@ public class Vector2D
 	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param   otherX  X-coordinate of vector to compare with.
-	 * @param   otherY  Y-coordinate of vector to compare with.
+	 * @param otherX X-coordinate of vector to compare with.
+	 * @param otherY Y-coordinate of vector to compare with.
 	 *
-	 * @return  <code>true</code> if the objects are almost equal;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if the objects are almost equal;
+	 * {@code false} if not.
 	 *
-	 * @see     GeometryTools#almostEqual
+	 * @see GeometryTools#almostEqual
 	 */
 	public boolean almostEquals( final double otherX, final double otherY )
 	{
@@ -380,11 +398,11 @@ public class Vector2D
 	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param   otherX  X-coordinate of vector to compare with.
-	 * @param   otherY  Y-coordinate of vector to compare with.
+	 * @param otherX X-coordinate of vector to compare with.
+	 * @param otherY Y-coordinate of vector to compare with.
 	 *
-	 * @return  <code>true</code> if vectors are equal;
-	 *          <code>false</code> if not.
+	 * @return {@code true} if vectors are equal;
+	 * {@code false} if not.
 	 */
 	public boolean equals( final double otherX, final double otherY )
 	{
@@ -423,17 +441,16 @@ public class Vector2D
 
 	/**
 	 * Convert string representation of vector back to {@link Vector2D}
-	 * instance (see <code>toString()</code>).
+	 * instance (see {@code toString()}).
 	 *
-	 * @param   value   String representation of object.
+	 * @param value String representation of object.
 	 *
-	 * @return  Object instance.
+	 * @return Object instance.
 	 *
-	 * @throws  NullPointerException if <code>value</code> is <code>null</code>.
-	 * @throws  IllegalArgumentException if the string format is unrecognized.
-	 * @throws  NumberFormatException if any of the numeric components are badly formatted.
-	 *
-	 * @see     #toString()
+	 * @throws NullPointerException if {@code value} is {@code null}.
+	 * @throws IllegalArgumentException if the string format is unrecognized.
+	 * @throws NumberFormatException if any of the numeric components are badly formatted.
+	 * @see #toString()
 	 */
 	public static Vector2D fromString( final String value )
 	{
@@ -442,7 +459,7 @@ public class Vector2D
 			throw new NullPointerException( "value" );
 		}
 
-		final int comma = value.indexOf( (int)',' );
+		final int comma = value.indexOf( ',' );
 		if ( comma < 1 )
 		{
 			throw new IllegalArgumentException( value );
@@ -457,7 +474,7 @@ public class Vector2D
 	/**
 	 * Calculate length of vector.
 	 *
-	 * @return  Length of vector.
+	 * @return Length of vector.
 	 */
 	public double length()
 	{
@@ -467,10 +484,10 @@ public class Vector2D
 	/**
 	 * Calculate length of vector.
 	 *
-	 * @param   x   X-component of vector.
-	 * @param   y   Y-component of vector.
+	 * @param x X-component of vector.
+	 * @param y Y-component of vector.
 	 *
-	 * @return  Length of vector.
+	 * @return Length of vector.
 	 */
 	public static double length( final double x, final double y )
 	{
@@ -480,9 +497,9 @@ public class Vector2D
 	/**
 	 * Subtract another vector from this vector.
 	 *
-	 * @param   other   Vector to subtract from this vector.
+	 * @param other Vector to subtract from this vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector2D minus( final Vector2D other )
 	{
@@ -492,10 +509,10 @@ public class Vector2D
 	/**
 	 * Subtract another vector from this vector.
 	 *
-	 * @param   otherX  X-coordinate of vector.
-	 * @param   otherY  Y-coordinate of vector.
+	 * @param otherX X-coordinate of vector.
+	 * @param otherY Y-coordinate of vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector2D minus( final double otherX, final double otherY )
 	{
@@ -505,9 +522,9 @@ public class Vector2D
 	/**
 	 * Determine vector after scalar multiplication.
 	 *
-	 * @param   factor  Scale multiplication factor.
+	 * @param factor Scale multiplication factor.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector2D multiply( final double factor )
 	{
@@ -518,7 +535,7 @@ public class Vector2D
 	 * Normalize this vector (make length 1). If the vector has length 0 or 1,
 	 * it will be returned as-is.
 	 *
-	 * @return  Normalized vector.
+	 * @return Normalized vector.
 	 */
 	public Vector2D normalize()
 	{
@@ -530,10 +547,10 @@ public class Vector2D
 	 * Normalize the specified vector. If the vector has length 0 or 1, a
 	 * 0-vector will be returned.
 	 *
-	 * @param   x   X-component of vector.
-	 * @param   y   Y-component of vector.
+	 * @param x X-component of vector.
+	 * @param y Y-component of vector.
 	 *
-	 * @return  Normalized vector.
+	 * @return Normalized vector.
 	 */
 	public static Vector2D normalize( final double x, final double y )
 	{
@@ -544,9 +561,9 @@ public class Vector2D
 	/**
 	 * Add another vector to this vector.
 	 *
-	 * @param   other   Vector to add to this vector.
+	 * @param other Vector to add to this vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector2D plus( final Vector2D other )
 	{
@@ -556,10 +573,10 @@ public class Vector2D
 	/**
 	 * Add another vector to this vector.
 	 *
-	 * @param   otherX  X-coordinate of vector.
-	 * @param   otherY  Y-coordinate of vector.
+	 * @param otherX X-coordinate of vector.
+	 * @param otherY Y-coordinate of vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector2D plus( final double otherX, final double otherY )
 	{
@@ -569,10 +586,10 @@ public class Vector2D
 	/**
 	 * Set vector to the specified coordinates.
 	 *
-	 * @param   x   X-coordinate of vector.
-	 * @param   y   Y-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
 	 *
-	 * @return  Resulting vector.
+	 * @return Resulting vector.
 	 */
 	public Vector2D getInstance( final double x, final double y )
 	{
@@ -582,7 +599,7 @@ public class Vector2D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return  String representation of object.
+	 * @return String representation of object.
 	 */
 	@Override
 	public String toString()
@@ -594,7 +611,7 @@ public class Vector2D
 	 * Create human-readable representation of this {@link Vector2D} object.
 	 * This is especially useful for debugging purposes.
 	 *
-	 * @return  Human-readable representation of this {@link Vector2D} object.
+	 * @return Human-readable representation of this {@link Vector2D} object.
 	 */
 	public String toFriendlyString()
 	{
@@ -605,9 +622,9 @@ public class Vector2D
 	 * Create human-readable representation of {@link Vector2D} object.
 	 * This is especially useful for debugging purposes.
 	 *
-	 * @param   vector   Vector2D instance (<code>null</code> produces 'null').
+	 * @param vector Vector2D instance ({@code null} produces 'null').
 	 *
-	 * @return  Human-readable representation of {@link Vector2D} object.
+	 * @return Human-readable representation of {@link Vector2D} object.
 	 */
 	public static String toFriendlyString( final Vector2D vector )
 	{
@@ -617,10 +634,10 @@ public class Vector2D
 	/**
 	 * Create human-readable representation of a vector.
 	 *
-	 * @param   x   X component of vector.
-	 * @param   y   Y component of vector.
+	 * @param x X component of vector.
+	 * @param y Y component of vector.
 	 *
-	 * @return  Human-readable representation of vector.
+	 * @return Human-readable representation of vector.
 	 */
 	public static String toFriendlyString( final double x, final double y )
 	{
@@ -634,7 +651,7 @@ public class Vector2D
 	/**
 	 * Create short human-readable representation of this vector.
 	 *
-	 * @return  Human-readable representation of {@link Vector2D} object.
+	 * @return Human-readable representation of {@link Vector2D} object.
 	 */
 	public String toShortFriendlyString()
 	{
@@ -644,9 +661,9 @@ public class Vector2D
 	/**
 	 * Create short human-readable representation of a vector.
 	 *
-	 * @param   vector   {@link Vector2D} (<code>null</code> produces 'null').
+	 * @param vector {@link Vector2D} ({@code null} produces 'null').
 	 *
-	 * @return  Human-readable representation of {@link Vector2D} object.
+	 * @return Human-readable representation of {@link Vector2D} object.
 	 */
 	public static String toShortFriendlyString( final Vector2D vector )
 	{
@@ -656,10 +673,10 @@ public class Vector2D
 	/**
 	 * Create short human-readable representation of a vector.
 	 *
-	 * @param   x   X component of vector.
-	 * @param   y   Y component of vector.
+	 * @param x X component of vector.
+	 * @param y Y component of vector.
 	 *
-	 * @return  Human-readable representation of vector.
+	 * @return Human-readable representation of vector.
 	 */
 	public static String toShortFriendlyString( final double x, final double y )
 	{
