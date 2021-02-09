@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,13 +31,255 @@ import org.jetbrains.annotations.*;
 public class Tessellation
 {
 	/**
+	 * Primitive list for a single triangle face.
+	 * <dl>
+	 *  <dt><strong>WARNING</strong></dt>
+	 *  <dd>This collection is shared, do not change its contents!</dd>
+	 * </dl>
+	 */
+	@SuppressWarnings( "PublicStaticCollectionField" )
+	public static final List<TessellationPrimitive> TRIANGLE_PRIMITIVES = Collections.singletonList( new TriangleList( new int[] { 2, 1, 0 } ) );
+
+	/**
+	 * {@link Tessellation} for a triangle with outline.
+	 * <pre>
+	 *     2
+	 *     |\
+	 *     | \
+	 *     |  \
+	 *     |___\
+	 *     0    1
+	 * </pre>
+	 */
+	public static final Tessellation TRIANGLE = new Tessellation( Arrays.asList( new int[][] { { 0, 1, 2, 0 } } ), TRIANGLE_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a triangle without an outline.
+	 * <pre>
+	 *     2
+	 *     |\
+	 *     | \
+	 *     |  \
+	 *     |___\
+	 *     0    1
+	 * </pre>
+	 */
+	public static final Tessellation TRIANGLE_NO_OUTLINE = new Tessellation( Collections.emptyList(), TRIANGLE_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a triangle with a partial outline along vertices
+	 * 0, 1, and 2.
+	 * <pre>
+	 *     2
+	 *     :\
+	 *     : \
+	 *     :  \
+	 *     :___\
+	 *     0    1
+	 * </pre>
+	 */
+	public static final Tessellation TRIANGLE_OUTLINE_012 = new Tessellation( Arrays.asList( new int[][] { { 0, 1, 2 } } ), TRIANGLE_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a triangle with a partial outline from vertex 0
+	 * to vertex 1.
+	 * <pre>
+	 *     1
+	 *     :\
+	 *     : \
+	 *     :  \
+	 *     :...\
+	 *     2    0
+	 * </pre>
+	 */
+	public static final Tessellation TRIANGLE_OUTLINE_01 = new Tessellation( Arrays.asList( new int[][] { { 0, 1 } } ), TRIANGLE_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a triangle with a partial outline from vertex 1
+	 * to vertex 2.
+	 * <pre>
+	 *     2
+	 *     :\
+	 *     : \
+	 *     :  \
+	 *     :...\
+	 *     0    1
+	 * </pre>
+	 */
+	public static final Tessellation TRIANGLE_OUTLINE_12 = new Tessellation( Arrays.asList( new int[][] { { 1, 2 } } ), TRIANGLE_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a triangle with a partial outline from vertex 0
+	 * to vertex 2.
+	 * <pre>
+	 *     0
+	 *     :\
+	 *     : \
+	 *     :  \
+	 *     :...\
+	 *     1    2
+	 * </pre>
+	 */
+	public static final Tessellation TRIANGLE_OUTLINE_02 = new Tessellation( Arrays.asList( new int[][] { { 0, 2 } } ), TRIANGLE_PRIMITIVES );
+
+	/**
+	 * Primitive list for a single quad face.
+	 * <dl>
+	 *  <dt><strong>WARNING</strong></dt>
+	 *  <dd>This collection is shared, do not change its contents!</dd>
+	 * </dl>
+	 */
+	@SuppressWarnings( "PublicStaticCollectionField" )
+	public static final List<TessellationPrimitive> QUAD_PRIMITIVES = Collections.singletonList( new QuadList( new int[] { 3, 2, 1, 0 } ) );
+
+	/**
+	 * {@link Tessellation} for a quad with outline.
+	 * <pre>
+	 *     3___2
+	 *     |   |
+	 *     |   |
+	 *     |   |
+	 *     |___|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD = new Tessellation( Arrays.asList( new int[][] { { 0, 1, 2, 3, 0 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad without an outline.
+	 * <pre>
+	 *     3...2
+	 *     :   :
+	 *     :   :
+	 *     :   :
+	 *     :...:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_NO_OUTLINE = new Tessellation( Collections.emptyList(), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with partial outline from vertex 0 to
+	 * vertex 1.
+	 * <pre>
+	 *     3...2
+	 *     :   :
+	 *     :   :
+	 *     :   :
+	 *     :___:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_01 = new Tessellation( Arrays.asList( new int[][] { { 0, 1 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 0, 1, and 2.
+	 * <pre>
+	 *     3...2
+	 *     :   |
+	 *     :   |
+	 *     :   |
+	 *     :___|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_012 = new Tessellation( Arrays.asList( new int[][] { { 0, 1, 2 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 0, 1, 2, and 3.
+	 * <pre>
+	 *     3___2
+	 *     :   |
+	 *     :   |
+	 *     :   |
+	 *     :___|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_0123 = new Tessellation( Arrays.asList( new int[][] { { 0, 1, 2, 3 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with partial outlines from vertex 0 to
+	 * vertex 1 and from vertex 2 to vertex 3.
+	 * <pre>
+	 *     3___2
+	 *     :   :
+	 *     :   :
+	 *     :   :
+	 *     :___:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_01_23 = new Tessellation( Arrays.asList( new int[][] { { 0, 1 }, { 2, 3 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline from vertex 1 to
+	 * vertex 2.
+	 * <pre>
+	 *     3...2
+	 *     :   |
+	 *     :   |
+	 *     :   |
+	 *     :...|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_12 = new Tessellation( Arrays.asList( new int[][] { { 1, 2 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 1, 2, and 3.
+	 * <pre>
+	 *     3___2
+	 *     :   |
+	 *     :   |
+	 *     :   |
+	 *     :...|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_123 = new Tessellation( Arrays.asList( new int[][] { { 1, 2, 3 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with partial outline from vertex 2 to
+	 * vertex 3.
+	 * <pre>
+	 *     3___2
+	 *     :   :
+	 *     :   :
+	 *     :   :
+	 *     :...:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_23 = new Tessellation( Arrays.asList( new int[][] { { 2, 3 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 2, 3, 0, and 1.
+	 * <pre>
+	 *     3___2
+	 *     |   :
+	 *     |   :
+	 *     |   :
+	 *     |___:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_2301 = new Tessellation( Arrays.asList( new int[][] { { 2, 3, 0, 1 } } ), QUAD_PRIMITIVES );
+
+	/**
 	 * Primitives that the tessellation consists of.
 	 */
 	@NotNull
 	protected final List<TessellationPrimitive> _primitives;
 
 	/**
-	 * Outlines of tessellated shapes.
+	 * Outlines of tessellated shapes. Each entry in this list is an array with
+	 * a list of indices in {@link Face3D#getVertices()} that forms a line
+	 * strip.
 	 */
 	@NotNull
 	private List<int[]> _outlines;
@@ -50,8 +292,8 @@ public class Tessellation
 	 *    changes to the collections are not isolated from this object!</dd>
 	 * </dl>
 	 *
-	 * @param   outlines    Outlines of tessellated shapes.
-	 * @param   primitives  Primitives that define the tessellation.
+	 * @param outlines   Outlines of tessellated shapes.
+	 * @param primitives Primitives that define the tessellation.
 	 */
 	public Tessellation( @NotNull final List<int[]> outlines, @NotNull final List<TessellationPrimitive> primitives )
 	{
@@ -59,37 +301,27 @@ public class Tessellation
 		_primitives = primitives;
 	}
 
-	/**
-	 * Returns the primitives that make up the tessellation.
-	 *
-	 * @return  Collection of primitives.
-	 */
 	@NotNull
 	public List<TessellationPrimitive> getPrimitives()
 	{
 		return _primitives;
 	}
 
-	/**
-	 * Get outlines of tessellated shapes.
-	 *
-	 * @return  Outlines of tessellated shapes.
-	 */
 	@NotNull
 	public List<int[]> getOutlines()
 	{
 		return _outlines;
 	}
 
-	/**
-	 * Sets the outlines of the tessellated shapes. Each array is a list of
-	 * indices in {@link Face3D#getVertices()}, forming a line strip.
-	 *
-	 * @param   outlines    Outlines to be set.
-	 */
 	public void setOutlines( @NotNull final List<int[]> outlines )
 	{
 		_outlines = outlines;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _primitives.hashCode() * 31 + _outlines.hashCode();
 	}
 
 	@Override
