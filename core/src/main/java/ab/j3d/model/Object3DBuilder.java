@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2015 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +32,7 @@ import org.jetbrains.annotations.*;
  * @author G.B.M. Rupert
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "OverlyComplexMethod", "DuplicatedCode" } )
 public class Object3DBuilder
 {
 	/**
@@ -123,7 +124,7 @@ public class Object3DBuilder
 			for ( final Face3D originalFace : originalFaceGroup.getFaces() )
 			{
 				final List<Vertex3D> originalVertices = originalFace.getVertices();
-				final List<Vertex3D> vertices = new ArrayList<Vertex3D>( originalVertices.size() );
+				final List<Vertex3D> vertices = new ArrayList<>( originalVertices.size() );
 				for ( final Vertex3D originalVertex : originalVertices )
 				{
 					vertices.add( new Vertex3D( originalVertex.point, originalVertex.normal, _target.getVertexIndex( originalVertex.point ), originalVertex.colorMapU, originalVertex.colorMapV ) );
@@ -564,7 +565,7 @@ public class Object3DBuilder
 	 *
 	 * @param points        Points for vertices that define the face.
 	 * @param appearance    Appearance specification to use for shading.
-	 * @param texturePoints Texture coordiantes for each vertex.
+	 * @param texturePoints Texture coordinates for each vertex.
 	 * @param vertexNormals Normal for each vertex.
 	 * @param smooth        Face is smooth/curved vs. flat.
 	 * @param twoSided      Face is two-sided.
@@ -587,7 +588,7 @@ public class Object3DBuilder
 	 *
 	 * @param vertexIndices Vertex indices of added face.
 	 * @param appearance    Appearance specification to use for shading.
-	 * @param texturePoints Texture coordiantes for each vertex.
+	 * @param texturePoints Texture coordinates for each vertex.
 	 * @param vertexNormals Normal for each vertex.
 	 * @param smooth        Face is smooth/curved vs. flat.
 	 * @param twoSided      Face is two-sided.
@@ -764,7 +765,7 @@ public class Object3DBuilder
 	 */
 	public void addSubdividedQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, final int segmentsX, final int segmentsY, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean smooth, final boolean twoSided )
 	{
-		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( ( segmentsX + 1 ) * ( segmentsY + 1 ) );
+		final List<Vertex3D> vertices = new ArrayList<>( ( segmentsX + 1 ) * ( segmentsY + 1 ) );
 
 		final Vector3D cross = Vector3D.cross( point3.minus( point1 ), point2.minus( point1 ) );
 		final Vector3D normal = cross.normalize();
@@ -820,7 +821,7 @@ public class Object3DBuilder
 		}
 
 		final List<int[]> outline = Collections.singletonList( new int[] { 0, segmentsX, ( segmentsX + 1 ) * ( segmentsY + 1 ) - 1, ( segmentsX + 1 ) * segmentsY, 0 } );
-		final Tessellation tessellation = new Tessellation( outline, Collections.<TessellationPrimitive>singletonList( new TriangleStrip( triangleStrip ) ) );
+		final Tessellation tessellation = new Tessellation( outline, Collections.singletonList( new TriangleStrip( triangleStrip ) ) );
 		addFace( vertices, tessellation, appearance, smooth, twoSided );
 	}
 
@@ -1114,6 +1115,39 @@ public class Object3DBuilder
 	 */
 	public void addExtrudedShape( @NotNull final Tessellator tessellator, final boolean flipVertexOrder, @NotNull final Matrix3D bottomTransform, @NotNull final Matrix3D topTransform, final boolean extrusionLines, final boolean top, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
+		addExtrudedShape( tessellator, flipVertexOrder, bottomTransform, topTransform, true, extrusionLines, top, topAppearance, topMap, topFlipTexture, bottom, bottomAppearance, bottomMap, bottomFlipTexture, side, sideAppearance, sideMap, sideFlipTexture, twoSided, flipNormals, smooth );
+	}
+
+	/**
+	 * Add extruded shape with caps.
+	 *
+	 * @param tessellator       Tessellator that defines the shape.
+	 * @param flipVertexOrder   Flip (counter-)clockwise vertex order.
+	 * @param bottomTransform   Transforms 2D points to bottom face points.
+	 * @param topTransform      Transforms 2D points to top face points.
+	 * @param outline           Include top/bottom outlines.
+	 * @param extrusionLines    Include extrusion (out)lines.
+	 * @param top               {@code true} to include a top face.
+	 * @param topAppearance     Appearance to apply to the top cap.
+	 * @param topMap            Provides UV coordinates for top cap.
+	 * @param topFlipTexture    Whether the top texture direction is flipped.
+	 * @param bottom            {@code true} to include a bottom face.
+	 * @param bottomAppearance  Appearance to apply to the bottom cap.
+	 * @param bottomMap         Provides UV coordinates for bottom cap.
+	 * @param bottomFlipTexture Whether the bottom texture direction is
+	 *                          flipped.
+	 * @param side              {@code true} to include side faces.
+	 * @param sideAppearance    Appearance to apply to the extruded sides.
+	 * @param sideMap           Provides UV coordinates for extruded sides.
+	 * @param sideFlipTexture   Whether the side texture direction is flipped.
+	 * @param twoSided          Flag to indicate if extruded faces are
+	 *                          two-sided.
+	 * @param flipNormals       If {@code true}, normals are flipped to point in
+	 *                          the opposite direction.
+	 * @param smooth            Shape is smooth.
+	 */
+	public void addExtrudedShape( @NotNull final Tessellator tessellator, final boolean flipVertexOrder, @NotNull final Matrix3D bottomTransform, @NotNull final Matrix3D topTransform, final boolean outline, final boolean extrusionLines, final boolean top, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
+	{
 		if ( !side && !top && !bottom )
 		{
 			throw new IllegalArgumentException( "at least one kind of geometry is required" );
@@ -1121,7 +1155,7 @@ public class Object3DBuilder
 
 		final List<TessellationPrimitive> topPrimitives = top ? flipVertexOrder ? tessellator.getClockwisePrimitives() : tessellator.getCounterClockwisePrimitives() : null;
 		final List<TessellationPrimitive> bottomPrimitives = bottom ? flipVertexOrder ? tessellator.getCounterClockwisePrimitives() : tessellator.getClockwisePrimitives() : null;
-		final List<int[]> outlines = flipVertexOrder ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
+		final List<int[]> outlines = outline ? flipVertexOrder ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines() : Collections.emptyList();
 
 		final List<Vector3D> topPoints = ( top || side ) ? transform( topTransform, tessellator.getVertexList() ) : null;
 
@@ -1147,8 +1181,8 @@ public class Object3DBuilder
 		{
 			final FaceGroup sideFaceGroup = _target.getFaceGroup( sideAppearance, smooth, twoSided );
 
-			final List<int[]> extrusionOutlines = extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList();
-			final List<TessellationPrimitive> extrusionPrimitives = Collections.<TessellationPrimitive>singletonList( new QuadList( new int[] { 0, 1, 2, 3 } ) );
+			final List<int[]> extrusionOutlines = extrusionLines ? Collections.singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.emptyList();
+			final List<TessellationPrimitive> extrusionPrimitives = Collections.singletonList( new QuadList( new int[] { 0, 1, 2, 3 } ) );
 			final Tessellation extrusionTessellation = new Tessellation( extrusionOutlines, extrusionPrimitives );
 
 			for ( final int[] contour : outlines )
@@ -1297,8 +1331,25 @@ public class Object3DBuilder
 	 */
 	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Tessellator tessellator, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
 	{
+		addFilledShape2D( transform, tessellator, true, appearance, uvMap, flipTexture, flipNormals, twoSided );
+	}
+
+	/**
+	 * Add filled tessellated shape.
+	 *
+	 * @param transform   Transforms 2D to 3D coordinates.
+	 * @param tessellator Tessellator that defines the shape.
+	 * @param outline     Create shape outlines.
+	 * @param appearance  Appearance specification to use for shading.
+	 * @param uvMap       UV-map used to generate texture coordinates.
+	 * @param flipTexture Whether the bottom texture direction is flipped.
+	 * @param flipNormals Flip normals using CW instead of CCW triangles.
+	 * @param twoSided    Resulting face will be two-sided (has backface).
+	 */
+	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Tessellator tessellator, final boolean outline, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
+	{
 		final List<TessellationPrimitive> primitives = flipNormals ? tessellator.getClockwisePrimitives() : tessellator.getCounterClockwisePrimitives();
-		final List<int[]> outlines = flipNormals ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
+		final List<int[]> outlines = outline ? flipNormals ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines() : Collections.emptyList();
 
 		final Tessellation tessellation = new Tessellation( outlines, primitives );
 		final List<Vertex3D> vertices = createVertices( transform( transform, tessellator.getVertexList() ), appearance, uvMap, flipTexture );
@@ -1307,7 +1358,7 @@ public class Object3DBuilder
 	}
 
 	/**
-	 * Create vertices for 3D face using the specified tessellation.
+	 * Create vertices from the given list of 3D points.
 	 *
 	 * @param points      3D points used as vertex coordinates.
 	 * @param appearance  Appearance specification to use for shading.
@@ -1316,10 +1367,10 @@ public class Object3DBuilder
 	 *
 	 * @return Vertices for 3D face.
 	 */
-	protected List<Vertex3D> createVertices( final List<Vector3D> points, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture )
+	public @NotNull List<Vertex3D> createVertices( final @NotNull List<Vector3D> points, final @Nullable Appearance appearance, final @Nullable UVMap uvMap, final boolean flipTexture )
 	{
 		final int vertexCount = points.size();
-		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( vertexCount );
+		final List<Vertex3D> vertices = new ArrayList<>( vertexCount );
 
 		if ( uvMap != null )
 		{
@@ -1353,9 +1404,9 @@ public class Object3DBuilder
 	 *
 	 * @return 3D points.
 	 */
-	protected static List<Vector3D> transform( @NotNull final Matrix3D transform, @NotNull final Collection<? extends Vector2D> points )
+	public static @NotNull List<Vector3D> transform( final @NotNull Matrix3D transform, final @NotNull Collection<? extends Vector2D> points )
 	{
-		final List<Vector3D> result = new ArrayList<Vector3D>( points.size() );
+		final List<Vector3D> result = new ArrayList<>( points.size() );
 
 		for ( final Vector2D point : points )
 		{
