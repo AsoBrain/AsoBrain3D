@@ -229,6 +229,20 @@ public class Tessellation
 	public static final Tessellation QUAD_OUTLINE_12 = new Tessellation( Arrays.asList( new int[][] { { 1, 2 } } ), QUAD_PRIMITIVES );
 
 	/**
+	 * {@link Tessellation} for a quad with partial outlines from vertex 1 to
+	 * vertex 2 and from vertex 3 to vertex 0.
+	 * <pre>
+	 *     3...2
+	 *     |   |
+	 *     |   |
+	 *     |   |
+	 *     |...|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_12_30 = new Tessellation( Arrays.asList( new int[][] { { 1, 2 }, { 3, 0 } } ), QUAD_PRIMITIVES );
+
+	/**
 	 * {@link Tessellation} for a quad with a partial outline along vertices
 	 * 1, 2, and 3.
 	 * <pre>
@@ -241,6 +255,20 @@ public class Tessellation
 	 * </pre>
 	 */
 	public static final Tessellation QUAD_OUTLINE_123 = new Tessellation( Arrays.asList( new int[][] { { 1, 2, 3 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 1, 2, 3, and 0.
+	 * <pre>
+	 *     3___2
+	 *     |   |
+	 *     |   |
+	 *     |   |
+	 *     |...|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_1230 = new Tessellation( Arrays.asList( new int[][] { { 1, 2, 3, 0 } } ), QUAD_PRIMITIVES );
 
 	/**
 	 * {@link Tessellation} for a quad with partial outline from vertex 2 to
@@ -258,6 +286,20 @@ public class Tessellation
 
 	/**
 	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 2, 3, and 09.
+	 * <pre>
+	 *     3___2
+	 *     |   :
+	 *     |   :
+	 *     |   :
+	 *     |...:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_230 = new Tessellation( Arrays.asList( new int[][] { { 2, 3, 0 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
 	 * 2, 3, 0, and 1.
 	 * <pre>
 	 *     3___2
@@ -269,6 +311,71 @@ public class Tessellation
 	 * </pre>
 	 */
 	public static final Tessellation QUAD_OUTLINE_2301 = new Tessellation( Arrays.asList( new int[][] { { 2, 3, 0, 1 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline between vertices
+	 * 3 and 0.
+	 * <pre>
+	 *     3...2
+	 *     |   :
+	 *     |   :
+	 *     |   :
+	 *     |...:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_30 = new Tessellation( Arrays.asList( new int[][] { { 3, 0 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 3, 0, and 1.
+	 * <pre>
+	 *     3...2
+	 *     |   :
+	 *     |   :
+	 *     |   :
+	 *     |___:
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_301 = new Tessellation( Arrays.asList( new int[][] { { 3, 0, 1 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * {@link Tessellation} for a quad with a partial outline along vertices
+	 * 3, 0, 1, and 2.
+	 * <pre>
+	 *     3...2
+	 *     |   |
+	 *     |   |
+	 *     |   |
+	 *     |___|
+	 *     0   1
+	 * </pre>
+	 */
+	public static final Tessellation QUAD_OUTLINE_3012 = new Tessellation( Arrays.asList( new int[][] { { 3, 0, 1, 2 } } ), QUAD_PRIMITIVES );
+
+	/**
+	 * Arrays with all possible quod outline combinations.
+	 */
+	public static final Tessellation[] QUAD_TESSELATIONS =
+	{
+	QUAD_NO_OUTLINE,    // ....
+	QUAD_OUTLINE_01,    // 1...
+	QUAD_OUTLINE_12,    // .2..
+	QUAD_OUTLINE_012,   // 12..
+	QUAD_OUTLINE_23,    // ..3.
+	QUAD_OUTLINE_01_23, // 1.3.
+	QUAD_OUTLINE_123,   // .23.
+	QUAD_OUTLINE_0123,  // 123.
+	QUAD_OUTLINE_30,    // ...4
+	QUAD_OUTLINE_301,   // 1..4
+	QUAD_OUTLINE_12_30, // .2.4
+	QUAD_OUTLINE_3012,  // 12.4
+	QUAD_OUTLINE_230,   // ..34
+	QUAD_OUTLINE_2301,  // 1.34
+	QUAD_OUTLINE_1230,  // .234
+	QUAD                // 1234
+	};
 
 	/**
 	 * Primitives that the tessellation consists of.
