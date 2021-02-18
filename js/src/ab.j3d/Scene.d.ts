@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-module.exports = require( '@numdata/common-build-gulp' ).build( {
-	source: 'src/**/*.js',
-	sourceCopy: 'src/**/*.d.ts',
-	target: 'lib'
-} );
+/**
+ * This class defines a 3D scene.
+ *
+ * @author Peter S. Heijnen
+ */
+export default class Scene
+{
+    /**
+     * Scale factor for millimeters (metric system).
+     * @type number
+     */
+    static MM: number;
+}

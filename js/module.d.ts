@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-module.exports = require( '@numdata/common-build-gulp' ).build( {
-	source: 'src/**/*.js',
-	sourceCopy: 'src/**/*.d.ts',
-	target: 'lib'
-} );
+import Bounds3D from './lib/ab.j3d/Bounds3D';
+import Bounds3DBuilder from './lib/ab.j3d/Bounds3DBuilder';
+import MathTools from './lib/ab.j3d/MathTools';
+import Matrix3D from './lib/ab.j3d/Matrix3D';
+import Scene from './lib/ab.j3d/Scene';
+import Vector3D from './lib/ab.j3d/Vector3D';
+import GeometryTools from './lib/ab.j3d.geom/GeometryTools';
+
+export {
+    Bounds3D,
+    Bounds3DBuilder,
+    MathTools,
+    Matrix3D,
+    Scene,
+    Vector3D,
+    GeometryTools
+};
