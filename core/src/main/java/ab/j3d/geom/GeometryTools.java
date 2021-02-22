@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( { "StandardVariableNames", "WeakerAccess" } )
+@SuppressWarnings( { "StandardVariableNames", "WeakerAccess", "OverlyComplexArithmeticExpression" } )
 public class GeometryTools
 {
 	/**
@@ -1437,6 +1437,51 @@ public class GeometryTools
 		}
 
 		return result;
+	}
+
+	/**
+	 * Calculate radius of circle through 3 points.
+	 *
+	 * <p>Center point coordinates are:
+	 * <pre>
+	 *       B    (x<sub>1</sub><sup>2</sup> + y<sub>1</sub><sup>2</sup>)(y<sub>2</sub> - y<sub>3</sub>) + (x<sub>2</sub><sup>2</sup> + y<sub>2</sub><sup>2</sup>)(y<sub>3</sub> - y<sub>1</sub>) + (x<sub>3</sub><sup>2</sup> + y<sub>3</sub><sup>2</sup>)(y<sub>1</sub> - y<sub>2</sub>)
+	 * x = - -- = ---------------------------------------------------------------
+	 *       2A              2(x<sub>1</sub>(y<sub>2</sub> - y<sub>3</sub>) - y<sub>1</sub>(x<sub>2</sub> - x<sub>3</sub>) + x<sub>2</sub>y<sub>3</sub> - x<sub>3</sub>y<sub>2</sub>)
+	 *
+	 *       C    (x<sub>1</sub><sup>2</sup> + y<sub>1</sub><sup>2</sup>)(x<sub>3</sub> - x<sub>2</sub>) + (x<sub>2</sub><sup>2</sup> + y<sub>2</sub><sup>2</sup>)(x<sub>1</sub> - x<sub>3</sub>) + (x<sub>3</sub><sup>2</sup> + y<sub>3</sub><sup>2</sup>)(x<sub>2</sub> - x<sub>1</sub>)
+	 * y = - -- = ---------------------------------------------------------------
+	 *       2A              2(x<sub>1</sub>(y<sub>2</sub> - y<sub>3</sub>) - y<sub>1</sub>(x<sub>2</sub> - x<sub>3</sub>) + x<sub>2</sub>y<sub>3</sub> - x<sub>3</sub>y<sub>2</sub>)
+	 * </pre>
+	 *
+	 * <p>Radius is
+	 * <pre>
+	 * r = sqrt( (x - x<sub>1</sub>)<sup>2</sup> + (y - y<sub>1</sub>)<sup>2</sup>) )
+	 * </pre>
+	 *
+	 * @param x1 X coordinate of first point.
+	 * @param y1 Y coordinate of first point.
+	 * @param x2 X coordinate of second point.
+	 * @param y2 Y coordinate of second point.
+	 * @param x3 X coordinate of third point.
+	 * @param y3 Y coordinate of third point.
+	 *
+	 * @return Radius of circle.
+	 *
+	 * @see <a href="http://www.ambrsoft.com/TrigoCalc/Circle3D.htm">Equation of a circle passing through 3 points (x<sub>1</sub>, y<sub>1</sub>) (x<sub>2</sub>, y<sub>2</sub>) and (x<sub>3</sub>, y<sub>3</sub>)</a>
+	 */
+	public static Vector2D centerOfCircleFromThreePoints( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3 )
+	{
+		final double s1 = x1 * x1 + y1 * y1;
+		final double s2 = x2 * x2 + y2 * y2;
+		final double s3 = x3 * x3 + y3 * y3;
+
+		final double a = x1 * ( y2 - y3 ) - y1 * ( x2 - x3 ) + x2 * y3 - x3 * y2;
+		final double b = s1 * ( y2 - y3 ) + s2 * ( y3 - y1 ) + s3 * ( y1 - y2 );
+		final double c = s1 * ( x3 - x2 ) + s2 * ( x1 - x3 ) + s3 * ( x2 - x1 );
+		final double x = b / ( 2 * a );
+		final double y = c / ( 2 * a );
+
+		return new Vector2D( x, y );
 	}
 
 	/**
