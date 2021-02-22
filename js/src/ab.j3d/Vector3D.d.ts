@@ -239,17 +239,19 @@ export default class Vector3D
      * X component of 2D vector.
      * @type number
      */
-    x: number;
+    readonly x: number;
+
     /**
      * Y component of 2D vector.
      * @type number
      */
-    y: number;
+    readonly y: number;
+
     /**
      * Z component of 3D vector.
      * @type number
      */
-    z: number;
+    readonly z: number;
 
     /**
      * Calculate distance between this point vector and another.
