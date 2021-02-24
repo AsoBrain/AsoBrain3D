@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@ import ab.j3d.model.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "OverlyComplexMethod", "AccessingNonPublicFieldOfAnotherObject" } )
 public class Object3DSlicer
 {
 	/**
@@ -106,12 +107,12 @@ public class Object3DSlicer
 	 * Slice intersection graph. The graph nodes are mapped by vertex index in
 	 * {@link #_sliceObject}.
 	 */
-	private final Map<Integer, IntersectionNode> _sliceIntersectionGraph = new HashMap<Integer, IntersectionNode>();
+	private final Map<Integer, IntersectionNode> _sliceIntersectionGraph = new HashMap<>();
 
 	/**
 	 * Plane vertices for intersection.
 	 */
-	private final HashList<Vector2D> _sliceVertices = new HashList<Vector2D>();
+	private final HashList<Vector2D> _sliceVertices = new HashList<>();
 
 	/**
 	 * Appearance override for {@link #_topObject}. If set to {@code null}, the
@@ -646,7 +647,7 @@ public class Object3DSlicer
 	 *
 	 * @param object Object to slice.
 	 */
-	protected void processObject( final Object3D object )
+	private void processObject( final Object3D object )
 	{
 		final Plane3D cuttingPlane = getCuttingPlane();
 		final Vector3D planeNormal = cuttingPlane.getNormal();
@@ -737,7 +738,7 @@ public class Object3DSlicer
 	 * @param faceGroup Face group to which the sliced face belongs.
 	 * @param face      Face to slice.
 	 */
-	protected void processFace( final Object3D object, final FaceGroup faceGroup, final Face3D face )
+	private void processFace( final Object3D object, final FaceGroup faceGroup, final Face3D face )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
 		final Object3D topObject = _topObject;
@@ -857,6 +858,7 @@ public class Object3DSlicer
 		{
 			if ( isTopEnabled() )
 			{
+				//noinspection ConstantConditions
 				copyFace( object, face, topObject, topObject.getFaceGroup( topAppearance, faceGroup.isSmooth(), faceGroup.isTwoSided() ), topObjectVertexMap );
 			}
 		}
@@ -864,6 +866,7 @@ public class Object3DSlicer
 		{
 			if ( isBottomEnabled() )
 			{
+				//noinspection ConstantConditions
 				copyFace( object, face, bottomObject, bottomObject.getFaceGroup( bottomAppearance, faceGroup.isSmooth(), faceGroup.isTwoSided() ), bottomObjectVertexMap );
 			}
 		}
@@ -880,7 +883,7 @@ public class Object3DSlicer
 	 * @param face      Face being sliced.
 	 * @param primitive Tessellation primitive to slice.
 	 */
-	protected void processPrimitive( final Object3D object, final Face3D face, final TessellationPrimitive primitive )
+	private void processPrimitive( final Object3D object, final Face3D face, final TessellationPrimitive primitive )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
 
@@ -940,7 +943,7 @@ public class Object3DSlicer
 	 * @param v2     Second vertex of triangle.
 	 * @param v3     Third vertex of triangle.
 	 */
-	protected void processTriangle( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3 )
+	private void processTriangle( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3 )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
 		final Object3D topObject = _topObject;
@@ -1135,7 +1138,7 @@ public class Object3DSlicer
 	 * @param targetFace      Target face.
 	 * @param objectVertexMap Maps source object vertex coordinate indices
 	 */
-	protected void addQuad( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Vertex3D v4, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap )
+	private void addQuad( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Vertex3D v4, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap )
 	{
 		final int objectVertexIndex1 = ( v1.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v1.point ) : copyObjectVertex( object, v1.vertexCoordinateIndex, targetObject, objectVertexMap );
 		final int objectVertexIndex2 = ( v2.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v2.point ) : copyObjectVertex( object, v2.vertexCoordinateIndex, targetObject, objectVertexMap );
@@ -1161,7 +1164,7 @@ public class Object3DSlicer
 	 * @param targetFace      Target face.
 	 * @param objectVertexMap Maps source object vertex coordinate indices
 	 */
-	protected void addTriangle( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap )
+	private void addTriangle( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap )
 	{
 		final int objectVertexIndex1 = ( v1.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v1.point ) : copyObjectVertex( object, v1.vertexCoordinateIndex, targetObject, objectVertexMap );
 		final int objectVertexIndex2 = ( v2.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v2.point ) : copyObjectVertex( object, v2.vertexCoordinateIndex, targetObject, objectVertexMap );
@@ -1181,7 +1184,7 @@ public class Object3DSlicer
 	 * @param face    Face being sliced.
 	 * @param outline Outline to slice.
 	 */
-	protected void processOutline( final Object3D object, final Face3D face, final int[] outline )
+	private void processOutline( final Object3D object, final Face3D face, final int[] outline )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
 		final Object3D topObject = _topObject;
@@ -1279,7 +1282,7 @@ public class Object3DSlicer
 				List<Vector3D> intersectionPoints = _outlineIntersections;
 				if ( intersectionPoints == null )
 				{
-					intersectionPoints = new ArrayList<Vector3D>( outlineLength );
+					intersectionPoints = new ArrayList<>( outlineLength );
 					_outlineIntersections = intersectionPoints;
 				}
 				else
@@ -1592,11 +1595,11 @@ public class Object3DSlicer
 	 * @param targetFaceGroup Group to add copied face to.
 	 * @param objectVertexMap Maps source object vertex coordinate indices
 	 */
-	protected void copyFace( final Object3D object, final Face3D face, final Object3D targetObject, final FaceGroup targetFaceGroup, final IntArray objectVertexMap )
+	private void copyFace( final Object3D object, final Face3D face, final Object3D targetObject, final FaceGroup targetFaceGroup, final IntArray objectVertexMap )
 	{
 		final int vertexCount = face.getVertexCount();
 
-		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( vertexCount );
+		final List<Vertex3D> vertices = new ArrayList<>( vertexCount );
 		for ( int i = 0; i < vertexCount; i++ )
 		{
 			final Vertex3D vertex = face.getVertex( i );
@@ -1620,7 +1623,7 @@ public class Object3DSlicer
 	 * @param faceVertexMap   Maps vertex indices from{@code #face} to {@code
 	 *                        targetFace}.
 	 */
-	protected void copyPrimitive( final Object3D object, final Face3D face, final TessellationPrimitive primitive, final IntArray objectVertexMap, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray faceVertexMap )
+	private void copyPrimitive( final Object3D object, final Face3D face, final TessellationPrimitive primitive, final IntArray objectVertexMap, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray faceVertexMap )
 	{
 		final int[] vertices = copyFaceVertices( object, face, primitive.getVertices(), objectVertexMap, targetObject, targetFace, faceVertexMap );
 
@@ -1670,7 +1673,7 @@ public class Object3DSlicer
 	 *
 	 * @return Indices of copied face vertices in {@code targetFace}.
 	 */
-	protected int[] copyFaceVertices( final Object3D object, final Face3D face, final int[] vertices, final IntArray objectVertexMap, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray faceVertexMap )
+	private int[] copyFaceVertices( final Object3D object, final Face3D face, final int[] vertices, final IntArray objectVertexMap, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray faceVertexMap )
 	{
 		final int[] result = new int[ vertices.length ];
 
@@ -1702,7 +1705,7 @@ public class Object3DSlicer
 	 *
 	 * @return Index of copied face vertex in {@code targetFace}.
 	 */
-	protected int copyFaceVertex( final Object3D object, final Face3D face, final int faceVertexIndex, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap, final IntArray faceVertexMap )
+	private int copyFaceVertex( final Object3D object, final Face3D face, final int faceVertexIndex, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap, final IntArray faceVertexMap )
 	{
 		int result;
 
@@ -1743,7 +1746,7 @@ public class Object3DSlicer
 	 *
 	 * @return Index of copied face vertex in {@code targetFace}.
 	 */
-	protected int copyObjectVertex( final Object3D object, final int vertexIndex, final Object3D targetObject, final IntArray objectVertexMap )
+	private int copyObjectVertex( final Object3D object, final int vertexIndex, final Object3D targetObject, final IntArray objectVertexMap )
 	{
 		int result;
 
@@ -1777,9 +1780,9 @@ public class Object3DSlicer
 	 *
 	 * @return Created object.
 	 */
-	protected Object3D createObject3D()
+	private Object3D createObject3D()
 	{
-		return _removeDuplicateVertices ? new Object3D() : new Object3D( new ArrayList<Vector3D>() );
+		return _removeDuplicateVertices ? new Object3D() : new Object3D( new ArrayList<>() );
 	}
 
 	/**
@@ -1792,7 +1795,7 @@ public class Object3DSlicer
 	 *
 	 * @see Object3D#getVertexIndex
 	 */
-	protected int getVertexIndex( final Object3D object, final Vector3D point )
+	private int getVertexIndex( final Object3D object, final Vector3D point )
 	{
 		return _removeDuplicateVertices ? object.getVertexIndex( point ) : object.addVertex( point );
 	}
@@ -1809,7 +1812,7 @@ public class Object3DSlicer
 	 *
 	 * @return Intersection point on cutting plane.
 	 */
-	protected Vector3D calculateIntersectionPoint( final Vector3D p1, final double d1, final Vector3D p2, final double d2 )
+	private Vector3D calculateIntersectionPoint( final Vector3D p1, final double d1, final Vector3D p2, final double d2 )
 	{
 		final double total = d2 - d1;
 		final double r1 = d2 / total;
@@ -1834,7 +1837,7 @@ public class Object3DSlicer
 	 *
 	 * @return Vertex on cutting plane with interpolated properties.
 	 */
-	protected Vertex3D calculateIntersectionVertex( final Vertex3D v1, final double d1, final Vertex3D v2, final double d2 )
+	private Vertex3D calculateIntersectionVertex( final Vertex3D v1, final double d1, final Vertex3D v2, final double d2 )
 	{
 		final double total = d2 - d1;
 		final double r1 = d2 / total;
@@ -1860,8 +1863,9 @@ public class Object3DSlicer
 	 * @param v1 First point of edge.
 	 * @param v2 Second point of edge.
 	 */
-	protected void addIntersectionEdge( final Vector3D v1, final Vector3D v2 )
+	private void addIntersectionEdge( final Vector3D v1, final Vector3D v2 )
 	{
+		//noinspection OverlyComplexBooleanExpression
 		if ( ( _sliceEnabled || ( _topEnabled && _topCapped ) || ( _bottomEnabled && _bottomCapped ) ) && !v1.equals( v2 ) )
 		{
 			final IntersectionNode node1 = addIntersectionNode( v1 );
@@ -1881,14 +1885,14 @@ public class Object3DSlicer
 	 *
 	 * @return Node in plane intersection graph.
 	 */
-	protected IntersectionNode addIntersectionNode( final Vector3D point )
+	private IntersectionNode addIntersectionNode( final Vector3D point )
 	{
 		final Matrix3D object2plane = _object2plane;
 		final Vector2D planePoint = new Vector2D( object2plane.transformX( point ), object2plane.transformY( point ) );
 		final int sliceVertexIndex = _sliceVertices.indexOfOrAdd( planePoint );
 
 		final Map<Integer, IntersectionNode> graph = _sliceIntersectionGraph;
-		final Integer key = Integer.valueOf( sliceVertexIndex );
+		final Integer key = sliceVertexIndex;
 		IntersectionNode result = graph.get( key );
 		if ( result == null )
 		{
@@ -1902,12 +1906,12 @@ public class Object3DSlicer
 	/**
 	 * Build caps from slice intersection graph.
 	 */
-	protected void buildCaps()
+	private void buildCaps()
 	{
 		final Map<Integer, IntersectionNode> intersectionGraph = _sliceIntersectionGraph;
 		if ( !intersectionGraph.isEmpty() && ( _sliceEnabled || _topCapped || _bottomCapped ) )
 		{
-			final Collection<IntersectionNode> nodes = new ArrayList<IntersectionNode>( intersectionGraph.values() );
+			final Collection<IntersectionNode> nodes = new ArrayList<>( intersectionGraph.values() );
 
 			/*
 			 * Remove all nodes that have only 1 connection or no connection at
@@ -1943,7 +1947,7 @@ public class Object3DSlicer
 			 */
 			if ( !nodes.isEmpty() )
 			{
-				final List<IntersectionNode> path = new ArrayList<IntersectionNode>();
+				final List<IntersectionNode> path = new ArrayList<>();
 				final Mesh mesh = new Mesh( Mesh.WindingRule.NONZERO );
 
 				for ( final IntersectionNode node : nodes )
@@ -1966,7 +1970,7 @@ public class Object3DSlicer
 	 *
 	 * @param intersectionMesh Mesh with intersection slice.
 	 */
-	protected void buildCapFaces( final Mesh intersectionMesh )
+	private void buildCapFaces( final Mesh intersectionMesh )
 	{
 		final HashList<Vector2D> planeVertices = _sliceVertices;
 		final Tessellator tessellator = new Tessellator( planeVertices, intersectionMesh );
@@ -1986,19 +1990,19 @@ public class Object3DSlicer
 			final Appearance sliceAppearance = _sliceAppearance;
 			final UVMap sliceUVMap = _sliceUVMap;
 			final UVGenerator sliceUvGenerator = sliceEnabled ? UVGenerator.getColorMapInstance( sliceAppearance, sliceUVMap, planeNormal, false ) : null;
-			final List<Vertex3D> sliceVertices = sliceEnabled ? new ArrayList<Vertex3D>( planeVertices.size() ) : null;
+			final List<Vertex3D> sliceVertices = sliceEnabled ? new ArrayList<>( planeVertices.size() ) : null;
 
 			final Object3D topObject = _topCapped ? _topObject : null;
 			final boolean topCapEnabled = ( topObject != null );
 			final Appearance topAppearance = topCapEnabled ? ( _topAppearance != null ) ? _topAppearance : sliceAppearance : null;
 			final UVGenerator topUvGenerator = topCapEnabled ? UVGenerator.getColorMapInstance( topAppearance, sliceUVMap, inversePlaneNormal, false ) : null;
-			final List<Vertex3D> topVertices = topCapEnabled ? new ArrayList<Vertex3D>( planeVertices.size() ) : null;
+			final List<Vertex3D> topVertices = topCapEnabled ? new ArrayList<>( planeVertices.size() ) : null;
 
 			final Object3D bottomObject = _bottomCapped ? _bottomObject : null;
 			final boolean bottomCapEnabled = ( bottomObject != null );
 			final Appearance bottomAppearance = bottomCapEnabled ? ( _bottomAppearance != null ) ? _bottomAppearance : sliceAppearance : null;
 			final UVGenerator bottomUvGenerator = bottomCapEnabled ? UVGenerator.getColorMapInstance( bottomAppearance, sliceUVMap, planeNormal, false ) : null;
-			final List<Vertex3D> bottomVertices = bottomCapEnabled ? new ArrayList<Vertex3D>( planeVertices.size() ) : null;
+			final List<Vertex3D> bottomVertices = bottomCapEnabled ? new ArrayList<>( planeVertices.size() ) : null;
 
 			final Matrix3D plane2object = _plane2object;
 
@@ -2051,7 +2055,7 @@ public class Object3DSlicer
 	 * @param path Walked path sofar.
 	 * @param node Node to walk.
 	 */
-	protected void addCapContours( final Mesh mesh, final List<IntersectionNode> path, final IntersectionNode node )
+	private void addCapContours( final Mesh mesh, final List<IntersectionNode> path, final IntersectionNode node )
 	{
 		final int pathLength = path.size();
 		path.add( node );
@@ -2090,7 +2094,7 @@ public class Object3DSlicer
 	 * @param start Index of first point in list (inclusive).
 	 * @param end   Index of last point in list (exclusive).
 	 */
-	protected void addContour( final Mesh mesh, final List<IntersectionNode> path, final int start, final int end )
+	private void addContour( final Mesh mesh, final List<IntersectionNode> path, final int start, final int end )
 	{
 		mesh.beginContour();
 
@@ -2124,7 +2128,7 @@ public class Object3DSlicer
 	 * @return {@code true} if path is counter-clockwise; {@code false} if path
 	 * is clockwise.
 	 */
-	protected boolean isCounterClockwisePath( final List<IntersectionNode> path, final int start, final int end )
+	private boolean isCounterClockwisePath( final List<IntersectionNode> path, final int start, final int end )
 	{
 		Vector2D firstDir = null;
 		Vector2D prevPoint = path.get( end - 1 )._planePoint;
@@ -2169,7 +2173,7 @@ public class Object3DSlicer
 	 *
 	 * @return Angle from first to second direction (ccw in radians).
 	 */
-	protected static double getAngle( final Vector2D dir1, final Vector2D dir2 )
+	private static double getAngle( final Vector2D dir1, final Vector2D dir2 )
 	{
 		final double result;
 
@@ -2198,7 +2202,7 @@ public class Object3DSlicer
 	/**
 	 * This is used as a simple graph node.
 	 */
-	protected static class IntersectionNode
+	private static class IntersectionNode
 	{
 		/**
 		 * This flag is used by {@link Object3DSlicer#buildCaps} and {@link
@@ -2221,7 +2225,7 @@ public class Object3DSlicer
 		/**
 		 * Set of nodes to which this node is connected.
 		 */
-		private final Set<IntersectionNode> _connectedTo = new HashSet<IntersectionNode>();
+		private final Set<IntersectionNode> _connectedTo = new HashSet<>();
 
 		/**
 		 * Construct node.
