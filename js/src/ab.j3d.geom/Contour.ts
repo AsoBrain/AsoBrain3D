@@ -18,7 +18,7 @@
  */
 import { Enum } from '@numdata/oss';
 
-export class ShapeClass extends Enum
+class ShapeClass extends Enum
 {
 	static readonly VOID = new ShapeClass( 'VOID' );
 	static readonly LINE_SEGMENT = new ShapeClass( 'LINE_SEGMENT' );
@@ -33,4 +33,9 @@ export class ShapeClass extends Enum
 	static readonly CCW_CONCAVE = new ShapeClass( 'CCW_CONCAVE' );
 	static readonly COMPLEX = new ShapeClass( 'COMPLEX' );
 	static readonly values = [ ShapeClass.VOID, ShapeClass.LINE_SEGMENT, ShapeClass.OPEN_PATH, ShapeClass.CW_TRIANGLE, ShapeClass.CCW_TRIANGLE, ShapeClass.CW_QUAD, ShapeClass.CCW_QUAD, ShapeClass.CW_CONVEX, ShapeClass.CCW_CONVEX, ShapeClass.CW_CONCAVE, ShapeClass.CCW_CONCAVE, ShapeClass.COMPLEX ];
+}
+
+export default class Contour
+{
+	static ShapeClass = ShapeClass;
 }
