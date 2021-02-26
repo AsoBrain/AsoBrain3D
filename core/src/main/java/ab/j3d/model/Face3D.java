@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@ import org.jetbrains.annotations.*;
  * @author G.B.M. Rupert
  */
 public class Face3D
-	implements Plane3D
+implements Plane3D
 {
 	/**
 	 * Value used for normal vector if no normal vector can be determined.
@@ -46,7 +46,7 @@ public class Face3D
 	 * Tessellation of this face ({@code null} = not tessellated yet).
 	 */
 	@Nullable
-	private Tessellation _tessellation = null;
+	private Tessellation _tessellation;
 
 	/**
 	 * Cross product of first and second edge of this face.
@@ -54,8 +54,8 @@ public class Face3D
 	private Vector3D _cross = null;
 
 	/**
-	 * Plane normal. This defines the <code>A</code>, <code>B</code>, and
-	 * <code>C</code> variables  in the plane equation:
+	 * Plane normal. This defines the {@code A}, {@code B}, and
+	 * {@code C} variables  in the plane equation:
 	 * <pre>
 	 *   A * x + B * y + C * z = D
 	 * </pre>
@@ -69,24 +69,24 @@ public class Face3D
 
 	/**
 	 * Distance component of plane relative to origin. This defines the
-	 * <code>D</code> variable in the plane equation:
+	 * {@code D} variable in the plane equation:
 	 * <pre>
 	 *   A * x + B * y + C * z = D
 	 * </pre>
 	 *
-	 * @see     #getNormal()
+	 * @see #getNormal()
 	 */
 	private Double _planeDistance;
 
 	/**
 	 * Construct new face.
 	 *
-	 * @param   object          Object to which this face belongs.
-	 * @param   vertexIndices   Indices in {@link Object3D#getVertexCoordinates()}.
-	 * @param   texturePoints   Texture coordinates for each vertex (optional).
-	 * @param   vertexNormals   Normal for each vertex (optional).
+	 * @param object        Object to which this face belongs.
+	 * @param vertexIndices Indices in {@link Object3D#getVertexCoordinates()}.
+	 * @param texturePoints Texture coordinates for each vertex (optional).
+	 * @param vertexNormals Normal for each vertex (optional).
 	 */
-	public Face3D( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
+	public Face3D( @NotNull final Object3D object, final int @NotNull [] vertexIndices, final float @Nullable [] texturePoints, final @Nullable Vector3D @Nullable [] vertexNormals )
 	{
 		this( createVertices( object, vertexIndices, texturePoints, vertexNormals ), null );
 	}
@@ -94,8 +94,8 @@ public class Face3D
 	/**
 	 * Construct new face.
 	 *
-	 * @param   vertices        Vertices used by this face.
-	 * @param   tessellation    Tessellation of this face (optional).
+	 * @param vertices     Vertices used by this face.
+	 * @param tessellation Tessellation of this face (optional).
 	 */
 	public Face3D( @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
@@ -108,9 +108,9 @@ public class Face3D
 	/**
 	 * Construct new face.
 	 *
-	 * @param   normal          Face normal ({@link Plane3D#getNormal()}.
-	 * @param   vertices        Vertices used by this face.
-	 * @param   tessellation    Tessellation of this face (optional).
+	 * @param normal       Face normal ({@link Plane3D#getNormal()}.
+	 * @param vertices     Vertices used by this face.
+	 * @param tessellation Tessellation of this face (optional).
 	 */
 	public Face3D( final Vector3D normal, @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
@@ -123,37 +123,37 @@ public class Face3D
 	/**
 	 * Construct new face.
 	 *
-	 * @param   normal          Face normal ({@link Plane3D#getNormal()}.
-	 * @param   planeDistance   Distance of plane {@link Plane3D#getDistance()}.
-	 * @param   vertices        Vertices used by this face.
-	 * @param   tessellation    Tessellation of this face (optional).
+	 * @param normal        Face normal ({@link Plane3D#getNormal()}.
+	 * @param planeDistance Distance of plane {@link Plane3D#getDistance()}.
+	 * @param vertices      Vertices used by this face.
+	 * @param tessellation  Tessellation of this face (optional).
 	 */
 	public Face3D( @NotNull final Vector3D normal, final double planeDistance, @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
 		_vertices = vertices;
 		_tessellation = tessellation;
 		_normal = normal;
-		_planeDistance = Double.valueOf( planeDistance );
+		_planeDistance = planeDistance;
 	}
 
 	/**
 	 * Construct vertices for face.
 	 *
-	 * @param   object          Object to which this face belongs.
-	 * @param   vertexIndices   Indices in {@link Object3D#getVertexCoordinates()}.
-	 * @param   texturePoints   Texture coordinates for each vertex (optional).
-	 * @param   vertexNormals   Normal for each vertex (optional).
+	 * @param object        Object to which this face belongs.
+	 * @param vertexIndices Indices in {@link Object3D#getVertexCoordinates()}.
+	 * @param texturePoints Texture coordinates for each vertex (optional).
+	 * @param vertexNormals Normal for each vertex (optional).
 	 *
-	 * @return  Vertices for face.
+	 * @return Vertices for face.
 	 */
-	public static List<Vertex3D> createVertices( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
+	public static List<Vertex3D> createVertices( @NotNull final Object3D object, final int @NotNull [] vertexIndices, final float @Nullable [] texturePoints, final @Nullable Vector3D @Nullable [] vertexNormals )
 	{
 		final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
 		final int vertexCount = vertexIndices.length;
 
-		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( vertexCount );
+		final List<Vertex3D> vertices = new ArrayList<>( vertexCount );
 
-		for ( int vertexIndex = 0 ; vertexIndex < vertexCount; vertexIndex++ )
+		for ( int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++ )
 		{
 			final Vertex3D vertex = new Vertex3D( vertexCoordinates, vertexIndices[ vertexIndex ] );
 			if ( texturePoints != null )
@@ -179,9 +179,9 @@ public class Face3D
 	 * 'unnormalized normal' of the face and can be used to weigh normals of
 	 * adjacent faces. This is used for the Object3D's smoothing algorithm.
 	 *
-	 * @TODO Determine whether we can just use the real normal instead.
+	 * @return Cross product of first two edges of this face.
 	 *
-	 * @return  Cross product of first two edges of this face.
+	 * @TODO Determine whether we can just use the real normal instead.
 	 */
 	public Vector3D getCross()
 	{
@@ -246,11 +246,11 @@ public class Face3D
 			{
 				final Vector3D normal = getNormal();
 				final Vertex3D vertex = vertices.get( 0 );
-				result = Double.valueOf( Vector3D.dot( normal, vertex.point ) );
+				result = Vector3D.dot( normal, vertex.point );
 			}
 			else
 			{
-				result = Double.valueOf( 0.0 );
+				result = 0.0;
 			}
 
 			_planeDistance = result;
@@ -271,6 +271,15 @@ public class Face3D
 		return result;
 	}
 
+	/**
+	 * Clears the cached face normal, such that {@link #getNormal()} will return
+	 * an updated normal.
+	 */
+	public void updateNormal()
+	{
+		_normal = null;
+	}
+
 	public boolean isTwoSided()
 	{
 		return false;
@@ -279,7 +288,7 @@ public class Face3D
 	/**
 	 * Returns the vertices of this face.
 	 *
-	 * @return  Vertices of this face.
+	 * @return Vertices of this face.
 	 */
 	public List<Vertex3D> getVertices()
 	{
@@ -289,11 +298,11 @@ public class Face3D
 	/**
 	 * Get vertex with the specified index.
 	 *
-	 * @param   index   Index of vertex in face.
+	 * @param index Index of vertex in face.
 	 *
-	 * @return  Vertex.
+	 * @return Vertex.
 	 *
-	 * @throws  IndexOutOfBoundsException if <code>index</code> is out of bounds.
+	 * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
 	 */
 	public Vertex3D getVertex( final int index )
 	{
@@ -303,7 +312,7 @@ public class Face3D
 	/**
 	 * Get number of vertices that define this face.
 	 *
-	 * @return  Number of vertices.
+	 * @return Number of vertices.
 	 */
 	public int getVertexCount()
 	{
@@ -313,11 +322,11 @@ public class Face3D
 	/**
 	 * Get vertex normal with the specified index.
 	 *
-	 * @param   index   Index of vertex in face.
+	 * @param index Index of vertex in face.
 	 *
-	 * @return  Vertex normal.
+	 * @return Vertex normal.
 	 *
-	 * @throws  IndexOutOfBoundsException if <code>index</code> is out of bounds.
+	 * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
 	 */
 	@NotNull
 	public Vector3D getVertexNormal( final int index )
@@ -335,7 +344,7 @@ public class Face3D
 	/**
 	 * Get outlines of face.
 	 *
-	 * @return  Outlines of tessellated shapes.
+	 * @return Outlines of tessellated shapes.
 	 */
 	@NotNull
 	public List<int[]> getOutlines()
@@ -347,7 +356,7 @@ public class Face3D
 	/**
 	 * This method returns a tessellated version of this face.
 	 *
-	 * @return  {@link Tessellation} of this face.
+	 * @return {@link Tessellation} of this face.
 	 */
 	@NotNull
 	public Tessellation getTessellation()
@@ -373,7 +382,7 @@ public class Face3D
 				{
 					vertexIndices[ i ] = lastVertex - i;
 				}
-				primitives = Collections.<TessellationPrimitive>singletonList( new TriangleFan( vertexIndices ) );
+				primitives = Collections.singletonList( new TriangleFan( vertexIndices ) );
 			}
 			else
 			{
@@ -390,9 +399,8 @@ public class Face3D
 	/**
 	 * Set tessellation of this face.
 	 *
-	 * @param   tessellation     Tessellation to use for this face.
+	 * @param tessellation Tessellation to use for this face.
 	 */
-	@SuppressWarnings ( "NullableProblems" )
 	public void setTessellation( @NotNull final Tessellation tessellation )
 	{
 		_tessellation = tessellation;
@@ -400,7 +408,7 @@ public class Face3D
 
 	/**
 	 * Returns the intersection point between the face and the given ray.
-	 * If no intersection exists <code>null</code> will be returned. In the
+	 * If no intersection exists {@code null} will be returned. In the
 	 * following cases, there is no intersection:
 	 * <ol>
 	 *  <li>The ray is parallel to the face's plane;</li>
@@ -408,9 +416,9 @@ public class Face3D
 	 *  <li>The ray intersects the face's plane outside the face.</li>
 	 * </ol>
 	 *
-	 * @param   ray     Ray to get intersection from.
+	 * @param ray Ray to get intersection from.
 	 *
-	 * @return  Intersection point with the ray, if any.
+	 * @return Intersection point with the ray, if any.
 	 */
 	@Nullable
 	public Vector3D getIntersection( @NotNull final Ray3D ray )
@@ -432,7 +440,7 @@ public class Face3D
 				{
 					final int[] triangles = primitive.getTriangles();
 
-					for ( int i = 0 ; i < triangles.length ; i += 3 )
+					for ( int i = 0; i < triangles.length; i += 3 )
 					{
 						final Vector3D v1 = _vertices.get( triangles[ i ] ).point;
 						final Vector3D v2 = _vertices.get( triangles[ i + 1 ] ).point;

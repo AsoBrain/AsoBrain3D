@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.model;
 
@@ -24,17 +22,17 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Object with parametric geometry. The entire object shares a single 3D vector
  * as its parameter, while a linear function using that parameter is associated
  * with each vertex.
  *
- * @author  G. Meinders
- * @version $Revision$ $Date$
+ * @author Gerrit Meinders
  */
 public class ParametricObject3D
-	extends Object3D
+extends Object3D
 {
 	/**
 	 * Parametric coordinates.
@@ -52,7 +50,7 @@ public class ParametricObject3D
 	 */
 	public ParametricObject3D()
 	{
-		_parametricCoordinates = new ArrayList<LinearFunction3D>();
+		_parametricCoordinates = new ArrayList<>();
 		_parameter = Vector3D.ZERO;
 	}
 
@@ -60,10 +58,10 @@ public class ParametricObject3D
 	 * Constructs a new parametric 3D object from two given variations, using
 	 * the size of the objects as parameter.
 	 *
-	 * @param   geometry                Object to be parameterized.
-	 * @param   parametricCoordinates   Parametric vertex coordinates to use.
-	 * @param   initialParameter        Initial parametervalue , corresponding
-	 *                                  with the current state of the geometry.
+	 * @param geometry              Object to be parameterized.
+	 * @param parametricCoordinates Parametric vertex coordinates to use.
+	 * @param initialParameter      Initial parameter value, corresponding
+	 *                              with the current state of the geometry.
 	 */
 	public ParametricObject3D( final Object3D geometry, final List<LinearFunction3D> parametricCoordinates, final Vector3D initialParameter )
 	{
@@ -86,15 +84,18 @@ public class ParametricObject3D
 	 * The tessellation of the first object is reused by the resulting
 	 * parametric object, so that object should no longer be used.
 	 *
-	 * @param   a   First object.
-	 * @param   b   Second object.
+	 * @param a First object.
+	 * @param b Second object.
 	 *
-	 * @return  Parametric object.
+	 * @return Parametric object.
+	 *
+	 * @throws NullPointerException if {@link Object3D#getOrientedBoundingBox()}
+	 * returns {@code null} for either object.
 	 */
-	public static ParametricObject3D fromObjectsBySize( final Object3D a, final Object3D b )
+	public static @NotNull ParametricObject3D fromObjectsBySize( final @NotNull Object3D a, final @NotNull Object3D b )
 	{
-		final Bounds3D boundsA = a.getOrientedBoundingBox();
-		final Bounds3D boundsB = b.getOrientedBoundingBox();
+		final Bounds3D boundsA = Objects.requireNonNull( a.getOrientedBoundingBox(), "first object is empty" );
+		final Bounds3D boundsB = Objects.requireNonNull( b.getOrientedBoundingBox(), "second object is empty" );
 		return fromObjects( a, boundsA, b, boundsB );
 	}
 
@@ -107,12 +108,12 @@ public class ParametricObject3D
 	 * The tessellation of the first object is reused by the resulting
 	 * parametric object, so that object should no longer be used.
 	 *
-	 * @param   objectA     First object.
-	 * @param   boundsA     Bounds used for the first object.
-	 * @param   objectB     Second object.
-	 * @param   boundsB     Bounds used for the second object.
+	 * @param objectA First object.
+	 * @param boundsA Bounds used for the first object.
+	 * @param objectB Second object.
+	 * @param boundsB Bounds used for the second object.
 	 *
-	 * @return  Parametric object.
+	 * @return Parametric object.
 	 */
 	public static ParametricObject3D fromObjects( final Object3D objectA, final Bounds3D boundsA, final Object3D objectB, final Bounds3D boundsB )
 	{
@@ -122,7 +123,7 @@ public class ParametricObject3D
 		final Vector3D sizeA = boundsA.size();
 		final Vector3D sizeB = boundsB.size();
 
-		final List<LinearFunction3D> parametricCoordinates = new ArrayList<LinearFunction3D>( objectA.getVertexCount() );
+		final List<LinearFunction3D> parametricCoordinates = new ArrayList<>( objectA.getVertexCount() );
 		{
 			final List<Vector3D> coordinatesA = objectA.getVertexCoordinates();
 			final List<Vector3D> coordinatesB = objectB.getVertexCoordinates();
@@ -143,7 +144,7 @@ public class ParametricObject3D
 	/**
 	 * Returns the parameter value for the current geometry.
 	 *
-	 * @return  Parameter value.
+	 * @return Parameter value.
 	 */
 	public Vector3D getParameter()
 	{
@@ -153,7 +154,7 @@ public class ParametricObject3D
 	/**
 	 * Sets the parameter value and updates the geometry accordingly.
 	 *
-	 * @param   parameter   Parameter value.
+	 * @param parameter Parameter value.
 	 */
 	public void setParameter( final Vector3D parameter )
 	{
@@ -173,7 +174,7 @@ public class ParametricObject3D
 		final Vector3D parameter = _parameter;
 		final List<LinearFunction3D> parametricCoordinates = _parametricCoordinates;
 
-		final List<Vector3D> coordinates = new ArrayList<Vector3D>( parametricCoordinates.size() );
+		final List<Vector3D> coordinates = new ArrayList<>( parametricCoordinates.size() );
 		for ( final LinearFunction3D parametricCoordinate : parametricCoordinates )
 		{
 			coordinates.add( parametricCoordinate.get( parameter ) );
@@ -181,7 +182,7 @@ public class ParametricObject3D
 		setVertexCoordinates( coordinates );
 
 		final List<FaceGroup> original = getFaceGroups();
-		final List<FaceGroup> updated = new ArrayList<FaceGroup>( original.size() );
+		final List<FaceGroup> updated = new ArrayList<>( original.size() );
 		for ( final FaceGroup originalGroup : original )
 		{
 			final FaceGroup updatedGroup = new FaceGroup( originalGroup.getAppearance(), originalGroup.isSmooth(), originalGroup.isSmooth() );
@@ -192,6 +193,7 @@ public class ParametricObject3D
 				{
 					vertex.point = coordinates.get( vertex.vertexCoordinateIndex );
 				}
+				face.updateNormal();
 			}
 			updated.add( updatedGroup );
 		}
@@ -202,7 +204,7 @@ public class ParametricObject3D
 	 * Returns the parametric vertex coordinates of the object. Each element
 	 * corresponds to an element of {@link #getVertexCoordinates()}.
 	 *
-	 * @return  Parametric vertex coordinates.
+	 * @return Parametric vertex coordinates.
 	 */
 	public List<LinearFunction3D> getParametricCoordinates()
 	{
@@ -212,7 +214,7 @@ public class ParametricObject3D
 	/**
 	 * Sets the parametric vertex coordinates of the object.
 	 *
-	 * @param   parametricCoordinates   Parametric vertex coordinates.
+	 * @param parametricCoordinates Parametric vertex coordinates.
 	 */
 	public void setParametricCoordinates( final List<LinearFunction3D> parametricCoordinates )
 	{
