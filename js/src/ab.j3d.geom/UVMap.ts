@@ -19,8 +19,8 @@
 
 import { BufferGeometry } from 'three'
 import { Appearance } from '@numdata/common';
-import type { TextureMap } from '@numdata/common';
 
+import TextureMap from '../ab.j3d/TextureMap';
 import Vector3D from '../ab.j3d/Vector3D';
 
 import UVGenerator from './UVGenerator';
