@@ -17,12 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+import Bounds3D from '../ab.j3d/Bounds3D';
+import Matrix3D from '../ab.j3d/Matrix3D';
+import Vector3D from '../ab.j3d/Vector3D';
+
 /**
  * Tolerance to use for floating-point comparisons.
  */
 const EPSILON = 0.00001;
-
-import Vector3D from '../ab.j3d/Vector3D';
 
 /**
  * This class contains utility methods to solve common geometric problems.
@@ -41,7 +43,7 @@ export default class GeometryTools
 	 * @return {boolean} <code>true</code> is the values are within a tolerance of
 	 *          {@link #EPSILON} of each other; <code>false</code> otherwise.
 	 */
-	static almostEqual( value1, value2 )
+	static almostEqual( value1: number, value2: number ): boolean
 	{
 		let delta = value1 - value2;
 		return ( delta <= EPSILON ) && ( delta >= -EPSILON );
@@ -58,7 +60,7 @@ export default class GeometryTools
 	 * tolerance of {@link #EPSILON} of {@code value2}; {@code false}
 	 * otherwise.
 	 */
-	static greaterOrAlmostEqual( value1, value2 )
+	static greaterOrAlmostEqual( value1: number, value2: number ): boolean
 	{
 		return ( ( value2 - value1 ) <= EPSILON );
 	}
@@ -74,7 +76,7 @@ export default class GeometryTools
 	 * tolerance of {@link #EPSILON} of {@code value2}; {@code false}
 	 * otherwise.
 	 */
-	static lessOrAlmostEqual( value1, value2 )
+	static lessOrAlmostEqual( value1: number, value2: number ): boolean
 	{
 		return ( ( value1 - value2 ) <= EPSILON );
 	}
@@ -90,7 +92,7 @@ export default class GeometryTools
 	 * @return {boolean} <code>true</code> is {@code value1} is at least {@link #EPSILON}
 	 * greater than {@code value2}; {@code false} otherwise.
 	 */
-	static significantlyGreaterThan( value1, value2 )
+	static significantlyGreaterThan( value1: number, value2: number ): boolean
 	{
 		return ( ( value1 - value2 ) > EPSILON );
 	}
@@ -105,7 +107,7 @@ export default class GeometryTools
 	 * @return {boolean} <code>true</code> is {@code value1} is at least {@link #EPSILON}
 	 * less than {@code value2}; {@code false} otherwise.
 	 */
-	static significantlyLessThan( value1, value2 )
+	static significantlyLessThan( value1: number, value2: number )
 	{
 		return ( ( value2 - value1 ) > EPSILON );
 	}
@@ -125,7 +127,7 @@ export default class GeometryTools
 	 * @return {boolean} {@code true} if the bounding boxes intersect; {@code false}
 	 * otherwise.
 	 */
-	static testOrientedBoundingBoxIntersection( box1, from2to1, box2 )
+	static testOrientedBoundingBoxIntersection( box1: Bounds3D, from2to1: Matrix3D, box2: Bounds3D )
 	{
 		const ox1 = box1.v1.x;
 		const oy1 = box1.v1.y;

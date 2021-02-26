@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,36 +41,33 @@ export default class BoxUVMap
 
 	/**
 	 * Transforms box to world coordinates.
-	 * @type !Matrix3D
 	 */
-	_box2wcs;
+	_box2wcs: Matrix3D;
 
 	/**
 	 * UV maps used to map the sides.
-	 * @type PlanarUVMap[]
 	 */
-	_maps;
+	_maps: PlanarUVMap[];
 
 	/**
 	 * Texture flipping for each map.
-	 * @type boolean[]
 	 */
-	_flips;
+	_flips: boolean[];
 
 	/**
 	 * Construct new UV-map that applies a uniform box mapping with the
 	 * specified box coordinate system.
 	 *
-	 * @param {number} scale Size of a model unit in meters.
-	 * @param {Matrix3D} [box2wcs] Transforms box to world coordinates.
-	 * @param {boolean} [flipLeft] Flip left texture direction.
-	 * @param {boolean} [flipRight] Flip right texture direction.
-	 * @param {boolean} [flipFront] Flip front texture direction.
-	 * @param {boolean} [flipBack] Flip right texture direction.
-	 * @param {boolean} [flipTop] Flip top texture direction.
-	 * @param {boolean} [flipBottom] Flip bottom texture direction.
+	 * @param scale Size of a model unit in meters.
+	 * @param [box2wcs] Transforms box to world coordinates.
+	 * @param [flipLeft] Flip left texture direction.
+	 * @param [flipRight] Flip right texture direction.
+	 * @param [flipFront] Flip front texture direction.
+	 * @param [flipBack] Flip right texture direction.
+	 * @param [flipTop] Flip top texture direction.
+	 * @param [flipBottom] Flip bottom texture direction.
 	 */
-	constructor( scale, box2wcs, flipLeft, flipRight, flipFront, flipBack, flipTop, flipBottom )
+	constructor( scale: number, box2wcs: Matrix3D, flipLeft = false, flipRight = false, flipFront = false, flipBack = false, flipTop = false, flipBottom = false )
 	{
 		super();
 
@@ -146,10 +143,10 @@ export default class BoxUVMap
 		return this._maps[ side ];
 	}
 
-	getGenerator( textureMap, normal, flipTexture )
+	getGenerator( textureMap, normal: Vector3D, flipTexture: boolean )
 	{
 		const map = this.getTargetMap( normal );
-		return this._maps[ map ].getGenerator( textureMap, normal, this._flips[ map ] ^ flipTexture );
+		return this._maps[ map ].getGenerator( textureMap, normal, this._flips[ map ] !== flipTexture );
 	}
 
 	/**

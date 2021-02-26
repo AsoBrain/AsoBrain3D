@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,4 +17,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-module.exports = require( '@numdata/common-config/babel-typescript.config' );
+/**
+ * This interface defines a texture map.
+ *
+ * @author  Peter S. Heijnen
+ */
+export default interface TextureMap
+{
+	/**
+	 * Name of the texture.
+	 */
+	name: string;
+
+	url: string;
+
+	/**
+	 * Physical width of map in meters. If available, this can be used to
+	 * correctly scale the map in a virtual environment. <code>0.0</code> if
+	 * indeterminate.
+	 */
+	physicalWidth: number;
+
+	/**
+	 * Physical height of map in meters. If available, this can be used to
+	 * correctly scale the map in a virtual environment. <code>0.0</code> if
+	 * indeterminate.
+	 */
+	physicalHeight: number;
+};

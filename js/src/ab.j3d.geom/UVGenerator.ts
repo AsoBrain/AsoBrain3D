@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+import { Appearance } from '@numdata/common';
+
+import Vector3D from '../ab.j3d/Vector3D';
+
+import UVMap from './UVMap';
 
 /**
  * This generator can be requested from {@link UVMap} to generate a series of
@@ -35,14 +41,14 @@ export default class UVGenerator
 	/**
 	 * Get generator for 2D points on color map texture for the given appearance.
 	 *
-	 * @param {?Appearance} appearance Appearance to get color map from.
-	 * @param {?UVMap} uvMap UV-map to use.
-	 * @param {!Vector3D} normal Normal of face to map texture on.
-	 * @param {boolean} flipTexture Flip texture direction.
+	 * @param appearance Appearance to get color map from.
+	 * @param uvMap UV-map to use.
+	 * @param normal Normal of face to map texture on.
+	 * @param flipTexture Flip texture direction.
 	 *
-	 * @return {UVGenerator} Generator for U/V-coordinates.
+	 * @return Generator for U/V-coordinates.
 	 */
-	static getColorMapInstance( appearance, uvMap, normal, flipTexture )
+	static getColorMapInstance( appearance: Appearance, uvMap: UVMap, normal: Vector3D, flipTexture: boolean ): UVGenerator
 	{
 		let result = UVGenerator.ZERO_GENERATOR;
 
@@ -61,28 +67,22 @@ export default class UVGenerator
 	/**
 	 * Last generated U-coordinate.
 	 */
-	u;
+	u: number = 0;
 
 	/**
 	 * Last generated V-coordinate.
 	 */
-	v;
-
-	constructor()
-	{
-		this.u = 0;
-		this.v = 0;
-	}
+	v: number = 0;
 
 	/**
 	 * Generate U/V coordinate for the given 3D point. The generated U/V
 	 * coordinates can be retrieved using the getter methods of this class.
 	 *
-	 * @param {number} x X coordinate of 3D point to generate U/V coordinates for.
-	 * @param {number} y Y coordinate of 3D point to generate U/V coordinates for.
-	 * @param {number} z Z coordinate of 3D point to generate U/V coordinates for.
+	 * @param x X coordinate of 3D point to generate U/V coordinates for.
+	 * @param y Y coordinate of 3D point to generate U/V coordinates for.
+	 * @param z Z coordinate of 3D point to generate U/V coordinates for.
 	 */
-	generate( x, y, z ) // eslint-disable-line no-unused-vars
+	generate( x: number, y: number, z: number ): void
 	{
 	}
 }

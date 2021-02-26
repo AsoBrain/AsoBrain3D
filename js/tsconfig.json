@@ -1,0 +1,11 @@
+{
+  "extends": "@numdata/common-config/tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "declaration": true,
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

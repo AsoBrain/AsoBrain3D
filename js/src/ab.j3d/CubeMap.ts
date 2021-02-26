@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,4 +17,48 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-module.exports = require( '@numdata/common-config/babel-typescript.config' );
+import TextureMap from './TextureMap';
+
+/**
+ * A cube map consists of six images, each projected onto a side of a cup.
+ *
+ * @author Peter S. Heijnen
+ * @author Gerrit Meinders
+ */
+export default interface CubeMap
+{
+	/**
+	 * Name of the cube map.
+	 */
+	name: string;
+
+	/**
+	 * Image on the left side of the cube.
+	 */
+	left: TextureMap;
+
+	/**
+	 * Image on the front side of the cube.
+	 */
+	front: TextureMap;
+
+	/**
+	 * Image on the bottom side of the cube.
+	 */
+	bottom: TextureMap;
+
+	/**
+	 * Image on the right side of the cube.
+	 */
+	right: TextureMap;
+
+	/**
+	 * Image on the rear side of the cube.
+	 */
+	rear: TextureMap;
+
+	/**
+	 * Image on the top side of the cube.
+	 */
+	top: TextureMap;
+}

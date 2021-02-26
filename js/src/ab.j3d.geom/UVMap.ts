@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+import { BufferGeometry } from 'three'
+import { Appearance } from '@numdata/common';
+import type { TextureMap } from '@numdata/common';
+
 import Vector3D from '../ab.j3d/Vector3D';
 
 import UVGenerator from './UVGenerator';
@@ -26,43 +31,43 @@ import UVGenerator from './UVGenerator';
  * @author Gerrit Meinders
  * @interface
  */
-export default class UVMap
+export default abstract class UVMap
 {
 	/**
 	 * Get generator for 2D points on texture for the given 3D plane.
 	 *
-	 * @param {?TextureMap} textureMap Specifies texture scale.
-	 * @param {!Vector3D} normal Normal of face to map texture on.
-	 * @param {boolean} flipTexture Flip texture direction.
+	 * @param textureMap Specifies texture scale.
+	 * @param normal Normal of face to map texture on.
+	 * @param flipTexture Flip texture direction.
 	 *
-	 * @return {UVGenerator} Generator for U/V-coordinates.
+	 * @return Generator for U/V-coordinates.
 	 */
-	getGenerator( textureMap, normal, flipTexture ) // eslint-disable-line no-unused-vars
-	{
-	}
+	abstract getGenerator( textureMap: TextureMap, normal: Vector3D, flipTexture: boolean ): UVGenerator;
 
 	/**
 	 * Applies to UV map to the given buffer geometry, overwriting existing
 	 * texture coordinates for the color map.
 	 *
-	 * @param {THREE.BufferGeometry} geometry Geometry to update.
-	 * @param {Appearance} appearance Provides color map information.
-	 * @param {boolean} flipTexture Flip texture direction.
+	 * @param geometry Geometry to update.
+	 * @param appearance Provides color map information.
+	 * @param flipTexture Flip texture direction.
+	 * @param start Start index.
+	 * @param count Number of indices to process.
 	 */
-	applyToBufferGeometry( geometry, appearance, flipTexture = false )
+	applyToBufferGeometry( geometry: BufferGeometry, appearance: Appearance, flipTexture = false, start: number = 0, count: number = Infinity ): void
 	{
 		const positions = geometry.attributes.position;
 		const normals = geometry.attributes.normal;
 		const uvs = geometry.attributes.uv;
 
-		const vertexCount = positions.array.length / positions.itemSize;
+		const end = Math.min( positions.count, start + count );
 
-		for ( let i = 0; i < vertexCount; i++ )
+		for ( let i = start; i < end; i++ )
 		{
 			const normal = new Vector3D( normals.getX( i ), normals.getY( i ), normals.getZ( i ) );
 			const generator = UVGenerator.getColorMapInstance( appearance, this, normal, flipTexture );
 			generator.generate( positions.getX( i ), positions.getY( i ), positions.getZ( i ) );
-			uvs.setXY( generator.u, generator.v );
+			uvs.setXY( i, generator.u, generator.v );
 		}
 		uvs.needsUpdate = true;
 	}
