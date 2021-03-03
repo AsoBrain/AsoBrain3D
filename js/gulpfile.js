@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
  */
 
 module.exports = require( '@numdata/common-build-gulp' ).build( {
-	source: [ 'src/**/*.[tj]s', '!**/__tests__/**' ],
+	source: [ 'src/**/*.[tj]s', '!src/**/*.d.ts', '!**/__tests__/**' ],
+	sourceCopy: [ 'src/**/*.d.ts' ],
 	target: 'lib'
 } );
