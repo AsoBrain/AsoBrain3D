@@ -18,7 +18,7 @@
  */
 
 module.exports = require( '@numdata/common-build-gulp' ).build( {
-	source: [ 'src/**/*.[tj]s', '!src/**/*.d.ts', '!**/__tests__/**' ],
+	source: [ 'src/**/*.js', '!**/__tests__/**' ],
 	sourceCopy: [ 'src/**/*.d.ts' ],
 	target: 'lib'
 } );
