@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>ab3d-core</artifactId>
+	<description>3D core library. Includes geometry classes and a scene graph model.</description>
 	<version>1.16-SNAPSHOT</version>
 
 	<dependencies>

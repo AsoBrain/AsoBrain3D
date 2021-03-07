@@ -11,5 +11,6 @@
 	</parent>
 
 	<artifactId>ab3d-java3d</artifactId>
+	<description>Renderer implementation on top of Java 3D.</description>
 	<version>1.0-SNAPSHOT</version>
 </project>

@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>ab3d-jogl2</artifactId>
+	<description>Renderer implementation on top of Jogamp 2.x.</description>
 	<version>1.16-SNAPSHOT</version>
 
 	<dependencies>

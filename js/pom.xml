@@ -11,6 +11,7 @@
 	</parent>
 
 	<artifactId>ab3d-js</artifactId>
+	<description>Maven pseudo-module to integrate JavaScript into Maven build system.</description>
 	<packaging>pom</packaging>
 
 	<build>
