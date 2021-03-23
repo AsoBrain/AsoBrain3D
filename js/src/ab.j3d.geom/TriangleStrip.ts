@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,51 +19,47 @@
 import TessellationPrimitive from './TessellationPrimitive';
 
 /**
- * A triangle fan is a series of connected triangles with a central vertex.
- * Vertices 0, 1, 2 define the first triangle; vertices 0, 2, 3 define the
- * second triangle; then 0, 3, 4, etc.
+ * A triangle strip is a series of connected triangles. Vertices 0, 1, 2 define
+ * the first triangle; vertices 2, 1, 3 define the second triangle; then 2, 3,
+ * 4, and so on. Notice the alternating orientation to correctly form part of a
+ * surface.
  *
  * @author  Peter S. Heijnen
  */
-export default class TriangleFan extends TessellationPrimitive {
-
+export default class TriangleStrip implements TessellationPrimitive
+{
 	/**
 	 * Empty triangle array.
-	 * @type number[]
 	 */
-	static NO_TRIANGLES = [];
+	static NO_TRIANGLES: number[] = [];
 
 	/**
-	 * Vertices that define the triangle fan.
-	 * @type number[]
+	 * Vertices that define the triangle strip.
 	 */
-	_vertices;
+	_vertices: number[];
 
 	/**
 	 * Cached triangles.
-	 * @type number[]
 	 */
-	_triangles;
+	_triangles: number[] | null;
 
 	/**
-	 * Construct triangle fan.
+	 * Construct triangle strip.
 	 *
-	 * @param   vertices    Vertices that define the triangle fan.
+	 * @param vertices Vertices that define the strip.
 	 */
-	constructor( vertices )
+	constructor( vertices: number[] )
 	{
-		super();
 		this._vertices = vertices;
 		this._triangles = null;
 	}
 
-	getVertices()
+	getVertices(): number[]
 	{
-		//noinspection ReturnOfCollectionOrArrayField
 		return this._vertices;
 	}
 
-	getTriangles()
+	getTriangles(): number[]
 	{
 		let result = this._triangles;
 		if ( !result )
@@ -72,28 +68,33 @@ export default class TriangleFan extends TessellationPrimitive {
 			const vertexCount = vertices.length;
 			if ( vertexCount < 3 )
 			{
-				result = TriangleFan.NO_TRIANGLES;
+				result = TriangleStrip.NO_TRIANGLES;
 			}
 			else
 			{
 				/*
 				 * result[ 0 ] = { vertices[0], vertices[1], vertices[2] }
-				 * result[ 1 ] = { vertices[0], vertices[2], vertices[3] }
-				 * result[ 2 ] = { vertices[0], vertices[3], vertices[4] }
-				 * result[ 3 ] = { vertices[0], vertices[4], vertices[5] }
-				 * result[ 4 ] = { vertices[0], vertices[5], vertices[6] }
+				 * result[ 1 ] = { vertices[2], vertices[1], vertices[3] }
+				 * result[ 2 ] = { vertices[2], vertices[3], vertices[4] }
+				 * result[ 3 ] = { vertices[4], vertices[3], vertices[5] }
+				 * result[ 4 ] = { vertices[4], vertices[5], vertices[6] }
 				 */
-				const v0 = vertices[ 0 ];
+				let v0 = vertices[ 0 ];
 				let v1 = vertices[ 1 ];
+				let v2;
 				result = new Array( ( vertexCount - 2 ) * 3 );
 				let resultIndex = 0;
-				for ( let vertexIndex = 2; vertexIndex < vertexCount; vertexIndex++ )
+				let flip = false;
+				let vertexIndex = 2;
+				while ( vertexIndex < vertexCount )
 				{
-					const v2 = vertices[ vertexIndex ];
-					result[ resultIndex++ ] = v0;
-					result[ resultIndex++ ] = v1;
+					v2 = vertices[ vertexIndex++ ];
+					result[ resultIndex++ ] = flip ? v1 : v0;
+					result[ resultIndex++ ] = flip ? v0 : v1;
 					result[ resultIndex++ ] = v2;
+					v0 = v1;
 					v1 = v2;
+					flip = !flip;
 				}
 			}
 			this._triangles = result;

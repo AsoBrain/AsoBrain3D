@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,23 +23,18 @@
  * @author  Peter S. Heijnen
  * @interface
  */
-export default class TessellationPrimitive {
-
+export default interface TessellationPrimitive {
 	/**
 	 * Get vertices that define the primitive.
 	 *
-	 * @return {number[]} Vertices that define the primitive.
+	 * @return  Vertices that define the primitive.
 	 */
-	getVertices()
-	{
-	}
+	getVertices(): number[];
 
 	/**
 	 * Get triangles defined by this primitive.
 	 *
-	 * @return {number[]} Triangles defined by this primitive.
+	 * @return Triangles defined by this primitive.
 	 */
-	getTriangles()
-	{
-	}
+	getTriangles(): number[];
 }

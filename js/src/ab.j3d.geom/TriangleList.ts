@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,34 +24,30 @@ import TessellationPrimitive from './TessellationPrimitive';
  *
  * @author  Peter S. Heijnen
  */
-export default class TriangleList extends TessellationPrimitive {
-
+export default class TriangleList implements TessellationPrimitive
+{
 	/**
 	 * Vertices that define the triangles.
-	 * @type number[]
 	 */
-	_vertices;
+	_vertices: number[];
 
 	/**
 	 * Construct triangle list.
 	 *
-	 * @param   vertices    Vertices that define the triangles.
+	 * @param vertices Vertices that define the triangles.
 	 */
-	constructor( vertices )
+	constructor( vertices: number[] )
 	{
-		super();
 		this._vertices = vertices;
 	}
 
-	getVertices()
+	getVertices(): number[]
 	{
-		//noinspection ReturnOfCollectionOrArrayField
 		return this._vertices;
 	}
 
-	getTriangles()
+	getTriangles(): number[]
 	{
-		//noinspection ReturnOfCollectionOrArrayField
 		return this._vertices;
 	}
 }
