@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import { BufferGeometry } from 'three'
+import { BufferAttribute, BufferGeometry } from 'three'
 import { Appearance } from '@numdata/common';
 
 import TextureMap from '../ab.j3d/TextureMap';
@@ -58,7 +58,12 @@ export default abstract class UVMap
 	{
 		const positions = geometry.attributes.position;
 		const normals = geometry.attributes.normal;
-		const uvs = geometry.attributes.uv;
+		let uvs = geometry.attributes.uv;
+		if ( !uvs )
+		{
+			uvs = new BufferAttribute( new Float32Array( 2 * positions.count ), 2 );
+			geometry.setAttribute( "uv", uvs );
+		}
 
 		const end = Math.min( positions.count, start + count );
 
