@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,14 @@
 
 import Bounds3D from '../ab.j3d/Bounds3D';
 import Matrix3D from '../ab.j3d/Matrix3D';
-import Vector3D from '../ab.j3d/Vector3D';
+import { AnyVector2D } from '../ab.j3d/Vector2D';
+import Vector3D, { AnyVector3D } from '../ab.j3d/Vector3D';
 
 /**
  * Tolerance to use for floating-point comparisons.
  */
 const EPSILON = 0.00001;
+const TWO_PI = 2 * Math.PI;
 
 /**
  * This class contains utility methods to solve common geometric problems.
@@ -33,6 +35,135 @@ const EPSILON = 0.00001;
  */
 export default class GeometryTools
 {
+	/**
+	 * Test if the specified point is 'inside' the specified 3D polygon. Points
+	 * on the edges and vertices are also considered 'inside'. <dl>
+	 *
+	 * <dt>IMPORTANT:</dt><dd><strong>The polygon must be convex!</strong>
+	 * And the point must be specified in the object's own coordinate system.</dd>
+	 * </dl>
+	 *
+	 * For an explanation of the math used here, see this site under 'Solution 4 (3D)':
+	 * <a href='http://paulbourke.net/geometry/polygonmesh/'>http://paulbourke.net/geometry/polygonmesh/</a>
+	 *
+	 * @param polygon Convex polygon to test point against.
+	 * @param point   Point to test.
+	 *
+	 * @return {@code true} if the point is inside the polygon; {@code false}
+	 * otherwise.
+	 *
+	 * @throws NullPointerException if {@code polygon} is {@code null}.
+	 */
+	static isPointInsidePolygon( polygon: AnyVector3D[], point: AnyVector3D ): boolean
+	{
+		let result: boolean;
+
+		let vertexCount = polygon.length;
+		if ( vertexCount >= 3 )
+		{
+			/*
+			 * The following code is almost a carbon copy of the example code
+			 * on the web page with only performance enhancements and data
+			 * structure integration.
+			 */
+			let i;
+			let d;
+			let angleSum = 0.0;
+
+			let p1x;
+			let p1y;
+			let p1z;
+			let m1;
+
+			i = vertexCount - 1;
+			let p2x = polygon[ i ].x - point.x;
+			let p2y = polygon[ i ].y - point.y;
+			let p2z = polygon[ i ].z - point.z;
+			let m2 = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
+
+			for ( i = 0; i < vertexCount; i++ )
+			{
+				p1x = p2x;
+				p1y = p2y;
+				p1z = p2z;
+				m1 = m2;
+
+				p2x = polygon[ i ].x - point.x;
+				p2y = polygon[ i ].y - point.y;
+				p2z = polygon[ i ].z - point.z;
+				m2 = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
+
+				d = m1 * m2;
+				if ( GeometryTools.almostEqual( d, 0.0 ) ) /* We are on a node, consider this inside */
+				{
+					break;
+				}
+
+				angleSum += Math.acos( ( p1x * p2x + p1y * p2y + p1z * p2z ) / d );
+			}
+
+			/*
+			 * Inside if:
+			 *  - Aborted prematurely; or
+			 *  - Angle sum is 2PI
+			 */
+			result = ( i < vertexCount ) || GeometryTools.almostEqual( angleSum, TWO_PI );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Test if the specified point is 'inside' the specified 3D polygon. Points
+	 * on the edges and vertices are also considered 'inside'. <dl>
+	 *
+	 * For an explanation of the math used here, see this site under
+	 * 'Solution 2 (2D)': <a href='http://paulbourke.net/geometry/polygonmesh/'>http://paulbourke.net/geometry/polygonmesh/</a>.
+	 *
+	 * @param polygon Polygon to test point against.
+	 * @param point   Point to test.
+	 *
+	 * @return {@code true} if the point is inside the polygon; {@code false}
+	 * otherwise.
+	 *
+	 * @throws NullPointerException if {@code polygon} is {@code null}.
+	 */
+	static isPointInsidePolygon2( polygon: AnyVector2D[], point: AnyVector2D ): boolean
+	{
+		let angle = 0;
+
+		let p1x: number;
+		let p1y: number;
+		let p2x = polygon[ polygon.length - 1 ].x - point.x;
+		let p2y = polygon[ polygon.length - 1 ].y - point.y;
+
+		for ( let i = 0, n = polygon.length; i < n; i++ )
+		{
+			p1x = p2x;
+			p1y = p2y;
+			p2x = polygon[ i ].x - point.x;
+			p2y = polygon[ i ].y - point.y;
+
+			let dtheta = Math.atan2( p2y, p2x ) - Math.atan2( p1y, p1x );
+			if ( dtheta > Math.PI )
+			{
+				dtheta -= TWO_PI;
+			}
+			else if ( dtheta < -Math.PI )
+			{
+				dtheta += TWO_PI;
+			}
+
+			angle += dtheta;
+		}
+
+		return Math.abs( angle ) >= Math.PI;
+	}
+
 	/**
 	 * Test if the specified values are 'almost' equal (the difference between
 	 * them approaches the value 0).

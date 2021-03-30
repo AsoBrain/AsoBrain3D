@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,19 @@
  */
 import GeometryTools from '../ab.j3d.geom/GeometryTools';
 
+export interface AnyVector3D
+{
+	readonly x: number;
+	readonly y: number;
+	readonly z: number;
+}
+
 /**
  * This class represents a 3D vector.
  *
  * @author Peter S. Heijnen
  */
-export default class Vector3D
+export default class Vector3D implements AnyVector3D
 {
 	/**
 	 * Zero-vector.
@@ -62,32 +69,29 @@ export default class Vector3D
 
 	/**
 	 * X component of 2D vector.
-	 * @type number
 	 */
-	x;
+	readonly x: number;
 
 	/**
 	 * Y component of 2D vector.
-	 * @type number
 	 */
-	y;
+	readonly y: number;
 
 	/**
 	 * Z component of 3D vector.
-	 * @type number
 	 */
-	z;
+	readonly z: number;
 
 	/**
 	 * Construct new vector.
 	 *
-	 * @param {number} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
 	 */
-	constructor( x, y, z )
+	constructor( x: number, y: number, z: number )
 	{
-		if ( typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number'  )
+		if ( typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number' )
 		{
 			throw new TypeError();
 		}
@@ -100,12 +104,12 @@ export default class Vector3D
 	/**
 	 * Get angle between this vector and another one specified as argument.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {number} angle between vectors in radians.
+	 * @return angle between vectors in radians.
 	 */
-	static angle( v1, v2 )
+	static angle( v1: AnyVector3D, v2: AnyVector3D ): number
 	{
 		return Math.acos( Vector3D.cosAngle( v1, v2 ) );
 	}
@@ -113,12 +117,12 @@ export default class Vector3D
 	/**
 	 * Test if two vectors are parallel to each other.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {boolean} {@code true} if the vectors are parallel; {@code false} if not.
+	 * @return {@code true} if the vectors are parallel; {@code false} if not.
 	 */
-	static areParallel( v1, v2 )
+	static areParallel( v1: AnyVector3D, v2: AnyVector3D ): boolean
 	{
 		return GeometryTools.almostEqual( Math.abs( Vector3D.cosAngle( v1, v2 ) ) - 1, 0 );
 	}
@@ -126,12 +130,12 @@ export default class Vector3D
 	/**
 	 * Test if two vectors define the same direction.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {boolean} {@code true} if the vectors define the same direction; {@code false} if not.
+	 * @return {@code true} if the vectors define the same direction; {@code false} if not.
 	 */
-	static areSameDirection( v1, v2 )
+	static areSameDirection( v1: AnyVector3D, v2: AnyVector3D ): boolean
 	{
 		return GeometryTools.almostEqual( Vector3D.cosAngle( v1, v2 ) - 1, 0 );
 	}
@@ -139,12 +143,12 @@ export default class Vector3D
 	/**
 	 * Test if two vectors are perpendicular to each other.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {boolean} {@code true} if the vectors are perpendicular; {@code false} if not.
+	 * @return {@code true} if the vectors are perpendicular; {@code false} if not.
 	 */
-	static arePerpendicular( v1, v2 )
+	static arePerpendicular( v1: AnyVector3D, v2: AnyVector3D ): boolean
 	{
 		return GeometryTools.almostEqual( Vector3D.dot( v1, v2 ), 0 );
 	}
@@ -152,14 +156,14 @@ export default class Vector3D
 	/**
 	 * Get cos(angle) between this vector and another one specified as argument.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {number} cos(angle) between vectors.
+	 * @return cos(angle) between vectors.
 	 */
-	static cosAngle( v1, v2 )
+	static cosAngle( v1: AnyVector3D, v2: AnyVector3D ): number
 	{
-		let l = v1.length() * v2.length();
+		let l = Vector3D._length( v1.x, v1.y, v1.z ) * Vector3D._length( v2.x, v2.y, v2.z );
 		return ( l === 0 ) ? 0 : Vector3D.dot( v1, v2 ) / l;
 	}
 
@@ -172,29 +176,29 @@ export default class Vector3D
 	 *
 	 * where &theta; denotes the angle between the two vectors.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	static cross( v1, v2 )
+	static cross( v1: AnyVector3D, v2: AnyVector3D ): Vector3D
 	{
 		return Vector3D.ZERO.set(
-				v1.y * v2.z - v1.z * v2.y,
-				v1.z * v2.x - v1.x * v2.z,
-				v1.x * v2.y - v1.y * v2.x
+			v1.y * v2.z - v1.z * v2.y,
+			v1.z * v2.x - v1.x * v2.z,
+			v1.x * v2.y - v1.y * v2.x
 		);
 	}
 
 	/**
 	 * Determine Z component of cross between two vectors.
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {number} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	static crossZ( v1, v2 )
+	static crossZ( v1: AnyVector3D, v2: AnyVector3D ): number
 	{
 		return v1.x * v2.y - v1.y * v2.x;
 	}
@@ -202,12 +206,12 @@ export default class Vector3D
 	/**
 	 * Calculate distance between two point vectors.
 	 *
-	 * @param {Vector3D} p1 First point vector to calculate the distance between.
-	 * @param {Vector3D} p2 Second point vector to calculate the distance between.
+	 * @param p1 First point vector to calculate the distance between.
+	 * @param p2 Second point vector to calculate the distance between.
 	 *
-	 * @return {number} Distance between this and the specified other vector.
+	 * @return Distance between this and the specified other vector.
 	 */
-	static distanceBetween( p1, p2 )
+	static distanceBetween( p1: Vector3D, p2: Vector3D ): number
 	{
 		return p1.distanceTo( p2 );
 	}
@@ -215,11 +219,11 @@ export default class Vector3D
 	/**
 	 * Calculate distance between this point vector and another.
 	 *
-	 * @param {Vector3D} other Point vector to calculate the distance to.
+	 * @param other Point vector to calculate the distance to.
 	 *
-	 * @return {number} Distance between this and the other vector.
+	 * @return Distance between this and the other vector.
 	 */
-	distanceTo( other )
+	distanceTo( other: Vector3D ): number
 	{
 		return other.minus( this ).length();
 	}
@@ -227,12 +231,12 @@ export default class Vector3D
 	/**
 	 * Get direction from one point to another point.
 	 *
-	 * @param {Vector3D} from Point vector for from-point.
-	 * @param {Vector3D} to   Point vector for to-point.
+	 * @param from Point vector for from-point.
+	 * @param to   Point vector for to-point.
 	 *
-	 * @return {Vector3D} Direction from from-point to to-point.
+	 * @return Direction from from-point to to-point.
 	 */
-	static direction( from, to )
+	static direction( from: AnyVector3D, to: Vector3D ): Vector3D
 	{
 		return to.minus( from ).normalize();
 	}
@@ -240,11 +244,11 @@ export default class Vector3D
 	/**
 	 * Get direction from this point vector to another.
 	 *
-	 * @param {Vector3D} other Point vector to calculate the direction to.
+	 * @param other Point vector to calculate the direction to.
 	 *
-	 * @return {Vector3D} Direction from this to the other vector.
+	 * @return Direction from this to the other vector.
 	 */
-	directionTo( other )
+	directionTo( other: Vector3D ): Vector3D
 	{
 		return Vector3D.direction( this, other );
 	}
@@ -252,12 +256,12 @@ export default class Vector3D
 	/**
 	 * Calculate average of two vectors (i.e. center between two point vectors).
 	 *
-	 * @param {Vector3D} v1 First vector.
-	 * @param {Vector3D} v2 Second vector.
+	 * @param v1 First vector.
+	 * @param v2 Second vector.
 	 *
-	 * @return {Vector3D} Average vector (i.e. center point).
+	 * @return Average vector (i.e. center point).
 	 */
-	static average( v1, v2 )
+	static average( v1: Vector3D, v2: AnyVector3D ): Vector3D
 	{
 		return v1.equals( v2 ) ? v1 : new Vector3D( 0.5 * ( v1.x + v2.x ), 0.5 * ( v1.y + v2.y ), 0.5 * ( v1.z + v2.z ) );
 	}
@@ -272,12 +276,12 @@ export default class Vector3D
 	 *
 	 * where &theta; denotes the angle between the two vectors.
 	 *
-	 * @param {Vector3D} v1 First vector operand.
-	 * @param {Vector3D} v2 Second vector operand.
+	 * @param v1 First vector operand.
+	 * @param v2 Second vector operand.
 	 *
-	 * @return {number} Dot product.
+	 * @return Dot product.
 	 */
-	static dot( v1, v2 )
+	static dot( v1: AnyVector3D, v2: AnyVector3D ): number
 	{
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 	}
@@ -292,16 +296,16 @@ export default class Vector3D
 	 *
 	 * where &theta; denotes the angle between the two vectors.
 	 *
-	 * @param {number} x1 X-coordinate of first vector operand.
-	 * @param {number} y1 Y-coordinate of first vector operand.
-	 * @param {number} z1 Z-coordinate of first vector operand.
-	 * @param {number} x2 X-coordinate of second vector operand.
-	 * @param {number} y2 Y-coordinate of second vector operand.
-	 * @param {number} z2 Z-coordinate of second vector operand.
+	 * @param x1 X-coordinate of first vector operand.
+	 * @param y1 Y-coordinate of first vector operand.
+	 * @param z1 Z-coordinate of first vector operand.
+	 * @param x2 X-coordinate of second vector operand.
+	 * @param y2 Y-coordinate of second vector operand.
+	 * @param z2 Z-coordinate of second vector operand.
 	 *
-	 * @return {number} Dot product.
+	 * @return Dot product.
 	 */
-	static dot6( x1, y1, z1, x2, y2, z2 )
+	static dot6( x1: number, y1: number, z1: number, x2: number, y2: number, z2: number ): number
 	{
 		return x1 * x2 + y1 * y2 + z1 * z2;
 	}
@@ -311,36 +315,36 @@ export default class Vector3D
 	 *
 	 * @param other Vector to compare with.
 	 *
-	 * @return {boolean} true if the objects are almost equal; {@code false} if not.
+	 * @return true if the objects are almost equal; {@code false} if not.
 	 *
 	 * @see GeometryTools#almostEqual
 	 */
-	almostEquals( other )
+	almostEquals( other: AnyVector3D ): boolean
 	{
 		return other === this ||
-			   GeometryTools.almostEqual( this.x, other.x ) &&
-			   GeometryTools.almostEqual( this.y, other.y ) &&
-			   GeometryTools.almostEqual( this.z, other.z );
+		       GeometryTools.almostEqual( this.x, other.x ) &&
+		       GeometryTools.almostEqual( this.y, other.y ) &&
+		       GeometryTools.almostEqual( this.z, other.z );
 	}
 
 	/**
 	 * Returns whether the given object is a vector equal to this.
 	 *
-	 * @param {*} other Object to compare with.
+	 * @param other Object to compare with.
 	 *
-	 * @returns {boolean} true if equal.
+	 * @returns true if equal.
 	 */
-	equals( other )
+	equals( other: any ): boolean
 	{
-		return ( this === other ) || ( other && ( this.x === other.x ) && ( this.y === other.y ) && ( this.z === other.z ) );
+		return ( this === other ) || ( typeof other === 'object' ) && other && ( this.x === other.x ) && ( this.y === other.y ) && ( this.z === other.z );
 	}
 
 	/**
 	 * Get inverse vector.
 	 *
-	 * @return {Vector3D} Inverse vector.
+	 * @return Inverse vector.
 	 */
-	inverse()
+	inverse(): Vector3D
 	{
 		return new Vector3D( -this.x, -this.y, -this.z );
 	}
@@ -351,9 +355,9 @@ export default class Vector3D
 	 * This will return {@code false} when all components of this vector are
 	 * zero or any component is NaN.
 	 *
-	 * @return {boolean} {@code true} if this is a non-zero vector.
+	 * @return {@code true} if this is a non-zero vector.
 	 */
-	isNonZero()
+	isNonZero(): boolean
 	{
 		return ( ( this.x !== 0 ) || ( this.y !== 0 ) || ( this.z !== 0 ) ) && ( this.x === this.x ) && ( this.y === this.y ) && ( this.z === this.z );
 	}
@@ -361,21 +365,35 @@ export default class Vector3D
 	/**
 	 * Calculate length of vector.
 	 *
-	 * @return {number} Length of vector.
+	 * @return Length of vector.
 	 */
-	length()
+	length(): number
 	{
-		return Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z );
+		return Vector3D._length( this.x, this.y, this.z );
+	}
+
+	/**
+	 * Calculate length of vector.
+	 *
+	 * @param x X-component of vector.
+	 * @param y Y-component of vector.
+	 * @param z Z-component of vector.
+	 *
+	 * @return Length of vector.
+	 */
+	static _length( x: number, y: number, z: number ): number
+	{
+		return Math.sqrt( x * x + y * y + z * z );
 	}
 
 	/**
 	 * Subtract another vector from this vector.
 	 *
-	 * @param {Vector3D} other Vector to subtract from this vector.
+	 * @param other Vector to subtract from this vector.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	minus( other )
+	minus( other: AnyVector3D ): Vector3D
 	{
 		return this.set( this.x - other.x, this.y - other.y, this.z - other.z );
 	}
@@ -383,11 +401,11 @@ export default class Vector3D
 	/**
 	 * Determine vector after scalar multiplication.
 	 *
-	 * @param {number} factor Scale multiplication factor.
+	 * @param factor Scale multiplication factor.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	multiply( factor )
+	multiply( factor: number ): Vector3D
 	{
 		return this.set( this.x * factor, this.y * factor, this.z * factor );
 	}
@@ -396,9 +414,9 @@ export default class Vector3D
 	 * Normalize this vector (make length 1). If the vector has length 0 or 1, it
 	 * will be returned as-is.
 	 *
-	 * @return {Vector3D} Normalized vector.
+	 * @return Normalized vector.
 	 */
-	normalize()
+	normalize(): Vector3D
 	{
 		let l = this.length();
 		return ( ( l === 0 ) || ( l === 1 ) ) ? this : this.set( this.x / l, this.y / l, this.z / l );
@@ -407,11 +425,11 @@ export default class Vector3D
 	/**
 	 * Add another vector to this vector.
 	 *
-	 * @param {Vector3D} other Vector to add to this vector.
+	 * @param other Vector to add to this vector.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	plus( other )
+	plus( other: AnyVector3D ): Vector3D
 	{
 		return this.set( this.x + other.x, this.y + other.y, this.z + other.z );
 	}
@@ -423,23 +441,23 @@ export default class Vector3D
 	 * @param y Y-coordinate of vector.
 	 * @param z Z-coordinate of vector.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	set( x, y, z )
+	set( x: number, y: number, z: number ): Vector3D
 	{
 		return new Vector3D(
-				x === undefined ? this.x : x,
-				y === undefined ? this.y : y,
-				z === undefined ? this.z : z
+			x === undefined ? this.x : x,
+			y === undefined ? this.y : y,
+			z === undefined ? this.z : z
 		);
 	}
 
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return {string} String representation of object.
+	 * @return String representation of object.
 	 */
-	toString()
+	toString(): string
 	{
 		return this.x + "," + this.y + ',' + this.z;
 	}
@@ -447,9 +465,9 @@ export default class Vector3D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return {string} String representation of object.
+	 * @return String representation of object.
 	 */
-	toFriendlyString()
+	toFriendlyString(): string
 	{
 		return '[ ' + this.x + ', ' + this.y + ', ' + this.z + ' ]';
 	}
@@ -462,10 +480,10 @@ export default class Vector3D
 		 * &theta;, &rho; )}, where r is radius, &theta; is the azimuth, and &rho; is
 	 * the zenith.
 	 *
-	 * @return {Vector3D} Polar coordinates (radius,azimuth,zenith) based on cartesian
+	 * @return Polar coordinates (radius,azimuth,zenith) based on cartesian
 	 *         coordinates defined by this vector.
 	 */
-	cartesianToPolar()
+	cartesianToPolar(): Vector3D
 	{
 		return Vector3D.cartesianToPolar( this.x, this.y, this.z );
 	}
@@ -484,14 +502,14 @@ export default class Vector3D
 	 * System Transformation</a> by <a href="http://astronomy.swin.edu.au/~pbourke/">Paul
 	 * Bourke</a>.
 	 *
-	 * @param {number} x Cartesian X coordinate.
-	 * @param {number} y Cartesian Y coordinate.
-	 * @param {number} z Cartesian Z coordinate.
+	 * @param x Cartesian X coordinate.
+	 * @param y Cartesian Y coordinate.
+	 * @param z Cartesian Z coordinate.
 	 *
-	 * @return {Vector3D} Polar coordinates (radius,azimuth,zenith) based on cartesian
+	 * @return Polar coordinates (radius,azimuth,zenith) based on cartesian
 	 *         coordinates defined by this vector.
 	 */
-	static cartesianToPolar( x, y, z )
+	static cartesianToPolar( x: number, y: number, z: number ): Vector3D
 	{
 		let result;
 
@@ -523,10 +541,10 @@ export default class Vector3D
 		 * &theta;, &rho; )}, where r is radius, &theta; is the azimuth, and &rho; is
 	 * the zenith.
 	 *
-	 * @return {Vector3D} Cartesian coordinates based on polar coordinates
+	 * @return Cartesian coordinates based on polar coordinates
 	 *         (radius,azimuth,zenith) defined by this vector.
 	 */
-	polarToCartesian()
+	polarToCartesian(): Vector3D
 	{
 		return Vector3D.polarToCartesian( this.x, this.y, this.z );
 	}
@@ -545,16 +563,14 @@ export default class Vector3D
 	 * System Transformation</a> by <a href="http://astronomy.swin.edu.au/~pbourke/">Paul
 	 * Bourke</a>.
 	 *
-	 * @param {number} radius  Radius of sphere.
-	 * @param {number} azimuth Angle measured from the x-axis in the XY-plane (0 => point on
-	 *                XZ-plane).
-	 * @param {number} zenith  Angle measured from the z-axis toward the XY-plane (0 =>
-	 *                point on Z-axis).
+	 * @param radius  Radius of sphere.
+	 * @param azimuth Angle measured from the x-axis in the XY-plane (0 => point on XZ-plane).
+	 * @param zenith  Angle measured from the z-axis toward the XY-plane (0 => point on Z-axis).
 	 *
-	 * @return {Vector3D} Cartesian coordinates based on polar coordinates
+	 * @return Cartesian coordinates based on polar coordinates
 	 *         (radius,azimuth,zenith) defined by this vector.
 	 */
-	static polarToCartesian( radius, azimuth, zenith )
+	static polarToCartesian( radius: number, azimuth: number, zenith: number ): Vector3D
 	{
 		let result;
 
@@ -567,9 +583,9 @@ export default class Vector3D
 			let radiusXY = radius * Math.sin( zenith );
 
 			result = new Vector3D(
-					radiusXY * Math.cos( azimuth ),
-					radiusXY * Math.sin( azimuth ),
-					radius * Math.cos( zenith )
+				radiusXY * Math.cos( azimuth ),
+				radiusXY * Math.sin( azimuth ),
+				radius * Math.cos( zenith )
 			);
 		}
 
