@@ -25,8 +25,8 @@ export { default as MathTools } from './lib/ab.j3d/MathTools';
 export { default as Matrix3D } from './lib/ab.j3d/Matrix3D';
 export { default as Scene } from './lib/ab.j3d/Scene';
 export { default as TextureMap } from './lib/ab.j3d/TextureMap';
-export { default as Vector2D } from './lib/ab.j3d/Vector2D';
-export { default as Vector3D } from './lib/ab.j3d/Vector3D';
+export { default as Vector2D, AnyVector2D } from './lib/ab.j3d/Vector2D';
+export { default as Vector3D, AnyVector3D } from './lib/ab.j3d/Vector3D';
 
 export { default as BoxUVMap } from './lib/ab.j3d.geom/BoxUVMap';
 export { default as Contour } from './lib/ab.j3d.geom/Contour';
