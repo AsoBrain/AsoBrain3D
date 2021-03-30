@@ -958,6 +958,11 @@ public class Object3DSlicer
 		final double d2 = objectVertexDistances.get( v2.vertexCoordinateIndex );
 		final double d3 = objectVertexDistances.get( v3.vertexCoordinateIndex );
 
+		// In the diagrams below, notice that the winding (clockwise or
+		// counter-clockwise) of triangle (v1,v2,v3) must always match the
+		// winding of triangle (i1,i2,vi). This gives the intersection edges
+		// a distinct direction, which is used to identify holes.
+
 		if ( d1 < 0.0 )
 		{
 			if ( d2 < 0.0 )
@@ -975,9 +980,9 @@ public class Object3DSlicer
 				}
 				else if ( intersect )
 				{
-					//           v3   above
-					// ----i1--i2---- intersection
-					//   v1  v2       below
+					//       v3       above
+					// ----i1--i2---> intersection
+					//   v1      v2   below
 					//
 					final Vertex3D i1 = calculateIntersectionVertex( v1, d1, v3, d3 );
 					final Vertex3D i2 = calculateIntersectionVertex( v2, d2, v3, d3 );
@@ -991,7 +996,7 @@ public class Object3DSlicer
 
 					if ( bottomFace != null )
 					{
-						addQuad( object, v1, v2, i2, i1, bottomObject, bottomFace, bottomObjectVertexMap );
+						addQuad( object, i2, i1, v1, v2, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -1000,43 +1005,43 @@ public class Object3DSlicer
 				if ( d3 < 0.0 )
 				{
 					//       v2       above
-					// ----i1--i2---- intersection
-					//   v1      v3   below
+					// ----i1--i2---> intersection
+					//   v3      v1   below
 					//
-					final Vertex3D i1 = calculateIntersectionVertex( v1, d1, v2, d2 );
-					final Vertex3D i2 = calculateIntersectionVertex( v2, d2, v3, d3 );
+					final Vertex3D i1 = calculateIntersectionVertex( v3, d3, v2, d2 );
+					final Vertex3D i2 = calculateIntersectionVertex( v1, d1, v2, d2 );
 
 					if ( topFace != null )
 					{
-						addTriangle( object, i1, v2, i2, topObject, topFace, topObjectVertexMap );
+						addTriangle( object, i1, i2, v2, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						addQuad( object, v1, i1, i2, v3, bottomObject, bottomFace, bottomObjectVertexMap );
+						addQuad( object, i2, i1, v3, v1, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 				else
 				{
-					//       v2  v3   above
-					// ----i1--i2---- intersection
-					//   v1           below
+					//   v3      v2   above
+					// ----i2--i1---> intersection
+					//       v1       below
 					//
 					final Vertex3D i1 = calculateIntersectionVertex( v1, d1, v2, d2 );
 					final Vertex3D i2 = calculateIntersectionVertex( v1, d1, v3, d3 );
 
 					if ( topFace != null )
 					{
-						addQuad( object, i1, v2, v3, i2, topObject, topFace, topObjectVertexMap );
+						addQuad( object, i2, i1, v2, v3, topObject, topFace, topObjectVertexMap );
 					}
 
-					addIntersectionEdge( i1.point, i2.point );
+					addIntersectionEdge( i2.point, i1.point );
 
 					if ( bottomFace != null )
 					{
-						addTriangle( object, v1, i1, i2, bottomObject, bottomFace, bottomObjectVertexMap );
+						addTriangle( object, i1, i2, v1, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -1058,19 +1063,19 @@ public class Object3DSlicer
 				}
 				else if ( intersect ) /* d3 < 0.0 */
 				{
-					//   v1  v2       above
-					// -----i1--i2-- intersection
-					//           v3   below
+					//   v2      v1   above
+					// ----i2--i1---> intersection
+					//       v3       below
 					//
 					final Vertex3D i1 = calculateIntersectionVertex( v1, d1, v3, d3 );
 					final Vertex3D i2 = calculateIntersectionVertex( v2, d2, v3, d3 );
 
 					if ( topFace != null )
 					{
-						addQuad( object, v1, v2, i2, i1, topObject, topFace, topObjectVertexMap );
+						addQuad( object, i2, i1, v1, v2, topObject, topFace, topObjectVertexMap );
 					}
 
-					addIntersectionEdge( i1.point, i2.point );
+					addIntersectionEdge( i2.point, i1.point );
 
 					if ( bottomFace != null )
 					{
@@ -1083,43 +1088,43 @@ public class Object3DSlicer
 				if ( d3 >= 0.0 )
 				{
 					//   v1      v3   above
-					// ----i1--i2---- intersection
+					// ----i2--i1---> intersection
 					//       v2       below
 					//
-					final Vertex3D i1 = calculateIntersectionVertex( v1, d1, v2, d2 );
-					final Vertex3D i2 = calculateIntersectionVertex( v2, d2, v3, d3 );
+					final Vertex3D i1 = calculateIntersectionVertex( v2, d2, v3, d3 );
+					final Vertex3D i2 = calculateIntersectionVertex( v2, d2, v1, d1 );
 
 					if ( topFace != null )
 					{
-						addQuad( object, v1, i1, i2, v3, topObject, topFace, topObjectVertexMap );
+						addQuad( object, i2, i1, v3, v1, topObject, topFace, topObjectVertexMap );
 					}
 
-					addIntersectionEdge( i1.point, i2.point );
+					addIntersectionEdge( i2.point, i1.point );
 
 					if ( bottomFace != null )
 					{
-						addTriangle( object, i1, v2, i2, bottomObject, bottomFace, bottomObjectVertexMap );
+						addTriangle( object, i1, i2, v2, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 				else /* d3 < 0.0 */
 				{
-					//   v1           above
-					// ----i1--i2---- intersection
-					//       v2  v3   below
+					//       v1       above
+					// ----i1--i2---> intersection
+					//   v2      v3   below
 					//
 					final Vertex3D i1 = calculateIntersectionVertex( v1, d1, v2, d2 );
 					final Vertex3D i2 = calculateIntersectionVertex( v1, d1, v3, d3 );
 
 					if ( topFace != null )
 					{
-						addTriangle( object, v1, i1, i2, topObject, topFace, topObjectVertexMap );
+						addTriangle( object, i1, i2, v1, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						addQuad( object, i1, v2, v3, i2, bottomObject, bottomFace, bottomObjectVertexMap );
+						addQuad( object, i2, i1, v2, v3, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -1873,7 +1878,6 @@ public class Object3DSlicer
 			if ( node1 != node2 )
 			{
 				node1.connectTo( node2 );
-				node2.connectTo( node1 );
 			}
 		}
 	}
@@ -1912,35 +1916,6 @@ public class Object3DSlicer
 		if ( !intersectionGraph.isEmpty() && ( _sliceEnabled || _topCapped || _bottomCapped ) )
 		{
 			final Collection<IntersectionNode> nodes = new ArrayList<>( intersectionGraph.values() );
-
-			/*
-			 * Remove all nodes that have only 1 connection or no connection at
-			 * all. Keep doing this until no removed nodes are found.
-			 */
-			boolean nodeRemoved;
-			do
-			{
-				nodeRemoved = false;
-
-				for ( final Iterator<IntersectionNode> it = nodes.iterator(); it.hasNext(); )
-				{
-					final IntersectionNode node = it.next();
-
-					final Set<IntersectionNode> connectedTo = node._connectedTo;
-					if ( connectedTo.size() < 2 )
-					{
-						for ( final IntersectionNode connectedNode : connectedTo )
-						{
-							connectedNode._connectedTo.remove( node );
-						}
-						connectedTo.clear();
-
-						nodeRemoved = true;
-						it.remove();
-					}
-				}
-			}
-			while ( nodeRemoved );
 
 			/*
 			 * Build mesh from connected nodes and build caps from this mesh.
@@ -2098,105 +2073,12 @@ public class Object3DSlicer
 	{
 		mesh.beginContour();
 
-		if ( isCounterClockwisePath( path, start, end ) )
+		for ( int i = start; i < end; i++ )
 		{
-			for ( int i = start; i < end; i++ )
-			{
-				mesh.addVertex( path.get( i )._planePoint );
-			}
-		}
-		else
-		{
-			for ( int i = end; --i >= start; )
-			{
-				mesh.addVertex( path.get( i )._planePoint );
-			}
+			mesh.addVertex( path.get( i )._planePoint );
 		}
 
 		mesh.endContour();
-	}
-
-	/**
-	 * Determine whether the given contour (closed path) has counter-clockwise
-	 * ordering or not. This is determined by calculating the total included
-	 * angle.
-	 *
-	 * @param path  List containing path points.
-	 * @param start Index of first point in list (inclusive).
-	 * @param end   Index of last point in list (exclusive).
-	 *
-	 * @return {@code true} if path is counter-clockwise; {@code false} if path
-	 * is clockwise.
-	 */
-	private boolean isCounterClockwisePath( final List<IntersectionNode> path, final int start, final int end )
-	{
-		Vector2D firstDir = null;
-		Vector2D prevPoint = path.get( end - 1 )._planePoint;
-		Vector2D prevDir = null;
-
-		double totalAngle = 0.0;
-
-		for ( int i = start; i < end; i++ )
-		{
-			final Vector2D point = path.get( i )._planePoint;
-			if ( ( point.x != prevPoint.x ) || ( point.y != prevPoint.y ) )
-			{
-				final Vector2D dir = Vector2D.direction( prevPoint, point );
-				if ( ( prevDir != null ) && !prevDir.equals( dir ) )
-				{
-					totalAngle += getAngle( prevDir, dir );
-				}
-
-				prevPoint = point;
-				prevDir = dir;
-
-				if ( firstDir == null )
-				{
-					firstDir = dir;
-				}
-			}
-		}
-
-		if ( ( firstDir != null ) && ( firstDir != prevDir ) )
-		{
-			totalAngle += getAngle( prevDir, firstDir );
-		}
-
-		return ( totalAngle >= 0.0 );
-	}
-
-	/**
-	 * Get angle between two direction vectors.
-	 *
-	 * @param dir1 First direction vector.
-	 * @param dir2 Second direction vector.
-	 *
-	 * @return Angle from first to second direction (ccw in radians).
-	 */
-	private static double getAngle( final Vector2D dir1, final Vector2D dir2 )
-	{
-		final double result;
-
-		// cos/sin values > 1.0 and < -1.0 occur due to rounding errors
-		final double cosAngle = dir1.getX() * dir2.getX() + dir1.getY() * dir2.getY();
-		if ( cosAngle >= 1.0 )
-		{
-			result = 0.0;
-		}
-		else
-		{
-			final double sinAngle = dir1.getX() * dir2.getY() - dir1.getY() * dir2.getX();
-			if ( cosAngle <= -1.0 )
-			{
-				result = ( sinAngle < 0.0 ) ? -Math.PI : Math.PI;
-			}
-			else
-			{
-				result = ( sinAngle < 0.0 ) ? -Math.acos( cosAngle ) : Math.acos( cosAngle );
-			}
-		}
-
-		return result;
 	}
 
 	/**
