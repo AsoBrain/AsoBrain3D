@@ -15,8 +15,8 @@
     "watch": "gulp watch",
     "test": "jest src"
   },
-  "main": "./module.js",
-  "module": "./module.js",
+  "main": "./lib/module.js",
+  "module": "./lib/module.js",
   "dependencies": {
     "@numdata/oss": "^1.1.0"
   },
