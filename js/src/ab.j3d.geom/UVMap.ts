@@ -18,11 +18,11 @@
  */
 
 import { BufferAttribute, BufferGeometry } from 'three'
-import { Appearance } from '@numdata/common';
 
 import TextureMap from '../ab.j3d/TextureMap';
 import Vector3D from '../ab.j3d/Vector3D';
 
+import Appearance from './Appearance';
 import UVGenerator from './UVGenerator';
 
 /**
