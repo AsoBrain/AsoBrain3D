@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 import Bounds3D from './Bounds3D';
+import Matrix3D from './Matrix3D';
 import Vector3D from './Vector3D';
 
 /**
@@ -29,75 +30,63 @@ export default class Bounds3DBuilder
 {
 	/**
 	 * Number of points that were added.
-	 * @type {number}
 	 */
-	_count;
+	_active: number;
 
 	/**
 	 * Minimum X value so far.
-	 * @type {number}
 	 */
-	_minX;
+	_minX: number;
 
 	/**
 	 * Minimum Y value so far.
-	 * @type {number}
 	 */
-	_minY;
+	_minY: number;
 
 	/**
 	 * Minimum Z value so far.
-	 * @type {number}
 	 */
-	_minZ;
+	_minZ: number;
 
 	/**
 	 * Maximum X value so far.
-	 * @type {number}
 	 */
-	_maxX;
+	_maxX: number;
 
 	/**
 	 * Maximum Y value so far.
-	 * @type {number}
 	 */
-	_maxY;
+	_maxY: number;
 
 	/**
 	 * Maximum Z value so far.
-	 * @type {number}
 	 */
-	_maxZ;
+	_maxZ: number;
 
 	/**
 	 * Summarized X values.
-	 * @type {number}
 	 */
-	_sumX;
+	_sumX: number;
 
 	/**
 	 * Summarized Y values.
-	 * @type {number}
 	 */
-	_sumY;
+	_sumY: number;
 
 	/**
 	 * Summarized Z values.
-	 * @type {number}
 	 */
-	_sumZ;
+	_sumZ: number;
 
 	/**
 	 * Cached average point.
-	 * @type {Vector3D}
 	 */
-	_average;
+	_average: Vector3D;
 
 	/**
 	 * Cached bounds.
-	 * @type {Bounds3D}
 	 */
-	_bounds;
+	_bounds: Bounds3D;
 
 	/**
 	 * Construct new {@link Bounds3D} builder.
@@ -124,15 +113,44 @@ export default class Bounds3DBuilder
 	/**
 	 * Add 3D bounds to the bounding box.
 	 *
-	 * @param {Matrix3D} [transform] Transformation to apply to bounds.
-	 * @param {number|Vector3D|Bounds3D} x1 First X coordinate of bounds, or the first coordinate as a vector, or the bounds.
-	 * @param {number|Vector3D} [y1] First Y coordinate of bounds, or the second coordinate as a vector.
-	 * @param {number} [z1] First Z coordinate of bounds.
-	 * @param {number} [x2] Second X coordinate of bounds.
-	 * @param {number} [y2] Second Y coordinate of bounds.
-	 * @param {number} [z2] Second Z coordinate of bounds.
+	 * @param bounds Bounds to add.
 	 */
-	addBounds( transform, x1, y1, z1, x2, y2, z2 )
+	addBounds( bounds: Bounds3D ): void;
+
+	/**
+	 * Add 3D bounds to the bounding box.
+	 *
+	 * @param x1 First X coordinate of bounds.
+	 * @param y1 First Y coordinate of bounds.
+	 * @param z1 First Z coordinate of bounds.
+	 * @param x2 Second X coordinate of bounds.
+	 * @param y2 Second Y coordinate of bounds.
+	 * @param z2 Second Z coordinate of bounds.
+	 */
+	addBounds( x1: number, y1: number, z1: number, x2: number, y2: number, z2: number ): void;
+
+	/**
+	 * Add 3D bounds to the bounding box.
+	 *
+	 * @param [transform] Transformation to apply to bounds.
+	 * @param bounds Bounds to add.
+	 */
+	addBounds( transform: Matrix3D, bounds: Bounds3D ): void;
+
+	/**
+	 * Add 3D bounds to the bounding box.
+	 *
+	 * @param [transform] Transformation to apply to bounds.
+	 * @param x1 First X coordinate of bounds.
+	 * @param y1 First Y coordinate of bounds.
+	 * @param z1 First Z coordinate of bounds.
+	 * @param x2 Second X coordinate of bounds.
+	 * @param y2 Second Y coordinate of bounds.
+	 * @param z2 Second Z coordinate of bounds.
+	 */
+	addBounds( transform: Matrix3D, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number ): void;
+
+	addBounds( transform: any, x1?: any, y1?: number, z1?: number, x2?: number, y2?: number, z2?: number )
 	{
 		if ( arguments.length === 1 )
 		{
@@ -174,14 +192,40 @@ export default class Bounds3DBuilder
 	}
 
 	/**
-	 * Add transformed point to the bounding box.
+	 * Add point to the bounding box.
 	 *
-	 * @param {Matrix3D} [transform] Transformation to apply to point.
-	 * @param {number|Vector3D} x X coordinate of point, or the point as a vector.
-	 * @param {number} [y] Y coordinate of point.
-	 * @param {number} [z] Z coordinate of point.
+	 * @param point Point to add.
 	 */
-	addPoint( transform, x, y, z )
+	addPoint( point: Vector3D ): void;
+
+	/**
+	 * Add point to the bounding box.
+	 *
+	 * @param x X coordinate of point.
+	 * @param y Y coordinate of point.
+	 * @param z Z coordinate of point.
+	 */
+	addPoint( x: number, y: number, z: number ): void;
+
+	/**
+	 * Add point to the bounding box.
+	 *
+	 * @param transform Transformation to apply to point.
+	 * @param point Point to add.
+	 */
+	addPoint( transform: Matrix3D, point: Vector3D ): void;
+
+	/**
+	 * Add point to the bounding box.
+	 *
+	 * @param transform Transformation to apply to point.
+	 * @param x X coordinate of point.
+	 * @param y Y coordinate of point.
+	 * @param z Z coordinate of point.
+	 */
+	addPoint( transform: Matrix3D, x: number, y: number, z: number ): void;
+
+	addPoint( transform: any, x?: any, y?: number, z?: number )
 	{
 		if ( arguments.length === 1 )
 		{
@@ -260,9 +304,9 @@ export default class Bounds3DBuilder
 	 * Get average point from this builder. If no points were added, this method
 	 * returns {@link Vector3D#ZERO}.
 	 *
-	 * @return {Vector3D} Average point.
+	 * @return Average point.
 	 */
-	getAveragePoint()
+	getAveragePoint(): Vector3D
 	{
 		let result;
 
@@ -285,9 +329,9 @@ export default class Bounds3DBuilder
 	 * Get center point from this builder. If no points were added, this method
 	 * returns {@link Vector3D#ZERO}.
 	 *
-	 * @return {Vector3D} Center point.
+	 * @return Center point.
 	 */
-	getCenterPoint()
+	getCenterPoint(): Vector3D
 	{
 		return ( this._active > 0 ) ? new Vector3D( 0.5 * ( this._minX + this._maxX ), 0.5 * ( this._minY + this._maxY ), 0.5 * ( this._minZ + this._maxZ ) ) : Vector3D.ZERO;
 	}
@@ -298,9 +342,9 @@ export default class Bounds3DBuilder
 	 * no points were added to this builder, then this method will return
 	 * {@code null} to indicate that no bounding box could be calculated.
 	 *
-	 * @return {Bounds3D} Bounding box as {@link Bounds3D} instance; {@code null} if no bounding box could be determined.
+	 * @return Bounding box as {@link Bounds3D} instance; {@code null} if no bounding box could be determined.
 	 */
-	getBounds()
+	getBounds(): Bounds3D
 	{
 		let result;
 

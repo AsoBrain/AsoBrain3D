@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,13 +29,13 @@ export default class MathTools
 	 * Test if the specified values are 'almost' equal (the difference between
 	 * them approaches the value 0).
 	 *
-	 * @param {number} value1 First value to compare.
-	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number).
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 * @param [epsilon] Tolerance (always a positive number).
 	 *
-	 * @return {boolean} {@code true} if the values are within a +/- 0.001 tolerance of each other; {@code false} otherwise.
+	 * @return {@code true} if the values are within a +/- 0.001 tolerance of each other; {@code false} otherwise.
 	 */
-	static almostEqual( value1, value2, epsilon = 0.001 )
+	static almostEqual( value1: number, value2: number, epsilon = 0.001 ): boolean
 	{
 		const delta = value1 - value2;
 		return ( delta <= epsilon ) && ( delta >= -epsilon );
@@ -45,13 +45,13 @@ export default class MathTools
 	 * Test if the first operand is less than the second operand or almost
 	 * equal (the difference between them approaches the value 0).
 	 *
-	 * @param {number} value1 First value to compare.
-	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number).
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 * @param [epsilon] Tolerance (always a positive number).
 	 *
-	 * @return {boolean} <code>true</code> is {@code value1} is less than or within a +/- 0.001 tolerance of {@code value2}; {@code false} otherwise.
+	 * @return <code>true</code> is {@code value1} is less than or within a +/- 0.001 tolerance of {@code value2}; {@code false} otherwise.
 	 */
-	static lessOrAlmostEqual( value1, value2, epsilon = 0.001 )
+	static lessOrAlmostEqual( value1: number, value2: number, epsilon = 0.001 ): boolean
 	{
 		return ( ( value1 - value2 ) <= epsilon );
 	}
@@ -60,13 +60,13 @@ export default class MathTools
 	 * Test if the first operand is greater than the second operand or almost
 	 * equal (the difference between them approaches the value 0).
 	 *
-	 * @param {number} value1 First value to compare.
-	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number).
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 * @param [epsilon] Tolerance (always a positive number).
 	 *
-	 * @return {boolean} <code>true</code> is {@code value1} is greater than or within the specified tolerance of {@code value2}; {@code false} otherwise.
+	 * @return <code>true</code> is {@code value1} is greater than or within the specified tolerance of {@code value2}; {@code false} otherwise.
 	 */
-	static greaterOrAlmostEqual( value1, value2, epsilon = 0.001 )
+	static greaterOrAlmostEqual( value1: number, value2: number, epsilon = 0.001 ): boolean
 	{
 		return ( ( value2 - value1 ) <= epsilon );
 	}
@@ -75,13 +75,13 @@ export default class MathTools
 	 * Test if the first operand is significantly less than the second operand
 	 * (the difference between them exceeds the specified tolerance).
 	 *
-	 * @param {number} value1 First value to compare.
-	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number).
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 * @param [epsilon] Tolerance (always a positive number).
 	 *
-	 * @return {boolean} <code>true</code> is {@code value1} is at least the specified tolerance less than {@code value2}; {@code false} otherwise.
+	 * @return <code>true</code> is {@code value1} is at least the specified tolerance less than {@code value2}; {@code false} otherwise.
 	 */
-	static significantlyLessThan( value1, value2, epsilon = 0.001 )
+	static significantlyLessThan( value1: number, value2: number, epsilon = 0.001 ): boolean
 	{
 		return ( ( value2 - value1 ) > epsilon );
 	}
@@ -90,13 +90,13 @@ export default class MathTools
 	 * Test if the first operand is significantly greater than the second operand
 	 * (the difference between them exceeds the specified tolerance).
 	 *
-	 * @param {number} value1 First value to compare.
-	 * @param {number} value2 Second value to compare.
-	 * @param {number} [epsilon] Tolerance (always a positive number).
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 * @param [epsilon] Tolerance (always a positive number).
 	 *
-	 * @return {boolean} <code>true</code> is {@code value1} is at least the specified tolerance greater than {@code value2}; {@code false} otherwise.
+	 * @return <code>true</code> is {@code value1} is at least the specified tolerance greater than {@code value2}; {@code false} otherwise.
 	 */
-	static significantlyGreaterThan( value1, value2, epsilon = 0.001 )
+	static significantlyGreaterThan( value1: number, value2: number, epsilon = 0.001 ): boolean
 	{
 		return ( ( value1 - value2 ) > epsilon );
 	}

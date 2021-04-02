@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,79 +42,66 @@ export default class Matrix3D
 {
 	/**
 	 * X quotient for X component.
-	 * @type {number}
 	 */
-	xx;
+	readonly xx: number;
 
 	/**
 	 * Y quotient for X component.
-	 * @type {number}
 	 */
-	xy;
+	readonly xy: number;
 
 	/**
 	 * Z quotient for X component.
-	 * @type {number}
 	 */
-	xz;
+	readonly xz: number;
 
 	/**
 	 * Translation of X component.
-	 * @type {number}
 	 */
-	xo;
+	readonly xo: number;
 
 	/**
 	 * X quotient for Y component.
-	 * @type {number}
 	 */
-	yx;
+	readonly yx: number;
 
 	/**
 	 * Y quotient for Y component.
-	 * @type {number}
 	 */
-	yy;
+	readonly yy: number;
 
 	/**
 	 * Z quotient for Y component.
-	 * @type {number}
 	 */
-	yz;
+	readonly yz: number;
 
 	/**
 	 * Translation of Y component.
-	 * @type {number}
 	 */
-	yo;
+	readonly yo: number;
 
 	/**
 	 * X quotient for Z component.
-	 * @type {number}
 	 */
-	zx;
+	readonly zx: number;
 
 	/**
 	 * Y quotient for Z component.
-	 * @type {number}
 	 */
-	zy;
+	readonly zy: number;
 
 	/**
 	 * Z quotient for Z component.
-	 * @type {number}
 	 */
-	zz;
+	readonly zz: number;
 
 	/**
 	 * Translation of Z component.
-	 * @type {number}
 	 */
-	zo;
+	readonly zo: number;
 
 	/**
 	 * Identity matrix.
-	 * @type {Matrix3D}
 	 */
 	static IDENTITY = new Matrix3D(
 		1.0, 0.0, 0.0, 0.0,
@@ -122,40 +109,34 @@ export default class Matrix3D
 		0.0, 0.0, 1.0, 0.0 );
 
 	/**
-	 * Regex pattern only consisting of comma character.
-	 * @private
-	 */
-	static COMMA = /,/;
-
-	/**
 	 * Construct a new matrix.
 	 *
-	 * @param {number} nxx X quotient for X component.
-	 * @param {number} nxy Y quotient for X component.
-	 * @param {number} nxz Z quotient for X component.
-	 * @param {number} nxo Translation of X component.
-	 * @param {number} nyx X quotient for Y component.
-	 * @param {number} nyy Y quotient for Y component.
-	 * @param {number} nyz Z quotient for Y component.
-	 * @param {number} nyo Translation of Y component.
-	 * @param {number} nzx X quotient for Z component.
-	 * @param {number} nzy Y quotient for Z component.
-	 * @param {number} nzz Z quotient for Z component.
-	 * @param {number} nzo Translation of Z component.
+	 * @param nxx X quotient for X component.
+	 * @param nxy Y quotient for X component.
+	 * @param nxz Z quotient for X component.
+	 * @param nxo Translation of X component.
+	 * @param nyx X quotient for Y component.
+	 * @param nyy Y quotient for Y component.
+	 * @param nyz Z quotient for Y component.
+	 * @param nyo Translation of Y component.
+	 * @param nzx X quotient for Z component.
+	 * @param nzy Y quotient for Z component.
+	 * @param nzz Z quotient for Z component.
+	 * @param nzo Translation of Z component.
 	 */
-	constructor( nxx, nxy, nxz, nxo,
-	             nyx, nyy, nyz, nyo,
-	             nzx, nzy, nzz, nzo )
+	constructor( nxx: number, nxy: number, nxz: number, nxo: number,
+	             nyx: number, nyy: number, nyz: number, nyo: number,
+	             nzx: number, nzy: number, nzz: number, nzo: number )
 	{
 		if ( !Number.isFinite( nxx ) || !Number.isFinite( nxy ) || !Number.isFinite( nxz ) || !Number.isFinite( nxo ) ||
 			 !Number.isFinite( nyx ) || !Number.isFinite( nyy ) || !Number.isFinite( nyz ) || !Number.isFinite( nyo ) ||
 			 !Number.isFinite( nzx ) || !Number.isFinite( nzy ) || !Number.isFinite( nzz ) || !Number.isFinite( nzo ) )
 		{
-			throw new TypeError( [
+			throw new TypeError( String( [
 				nxx, nxy, nxz, nxo,
 				nyx, nyy, nyz, nyo,
 				nzx, nzy, nzz, nzo
-			] );
+			] ) );
 		}
 
 		this.xx = nxx;
@@ -177,13 +158,13 @@ export default class Matrix3D
 	/**
 	 * Compare this matrix to another matrix.
 	 *
-	 * @param {Matrix3D} other Matrix to compare with.
+	 * @param other Matrix to compare with.
 	 *
-	 * @return {boolean} <code>true</code> if the objects are almost equal; <code>false</code> if not.
+	 * @return <code>true</code> if the objects are almost equal; <code>false</code> if not.
 	 *
 	 * @see GeometryTools#almostEqual
 	 */
-	almostEquals( other )
+	almostEquals( other: Matrix3D ): boolean
 	{
 		return other && (
 			( other === this ) ||
@@ -205,11 +186,11 @@ export default class Matrix3D
 	/**
 	 * Returns whether the given object is a matrix equal to this.
 	 *
-	 * @param {*} other Object to compare with.
+	 * @param other Object to compare with.
 	 *
-	 * @returns {boolean} true if equal.
+	 * @returns true if equal.
 	 */
-	equals( other )
+	equals( other: any ): boolean
 	{
 		return ( other === this ) ||
 			   ( other &&
@@ -223,16 +204,16 @@ export default class Matrix3D
 	 * and a translation vector. Starting with the identity matrix, rotation is
 	 * performed (Z,X,Y order), than the translation is set.
 	 *
-	 * @param {number} rx Rotation angle around X axis (degrees, <strong>clockwise</strong>).
-	 * @param {number} ry Rotation angle around Y axis (degrees, counter-clockwise).
-	 * @param {number} rz Rotation angle around Z axis (degrees, counter-clockwise).
-	 * @param {number} tx X component of translation vector.
-	 * @param {number} ty Y component of translation vector.
-	 * @param {number} tz Z component of translation vector.
+	 * @param rx Rotation angle around X axis (degrees, <strong>clockwise</strong>).
+	 * @param ry Rotation angle around Y axis (degrees, counter-clockwise).
+	 * @param rz Rotation angle around Z axis (degrees, counter-clockwise).
+	 * @param tx X component of translation vector.
+	 * @param ty Y component of translation vector.
+	 * @param tz Z component of translation vector.
 	 *
-	 * @return {Matrix3D} Transformation matrix.
+	 * @return Transformation matrix.
 	 */
-	static getTransform( rx, ry, rz, tx, ty, tz )
+	static getTransform( rx: number, ry: number, rz: number, tx: number, ty: number, tz: number ): Matrix3D
 	{
 		// FIXME: rx should be counter-clockwise!
 		let radX = toRadians( rx );
@@ -273,17 +254,17 @@ export default class Matrix3D
 	 * up-vector is used when possible, the secondary up-vector is used when the
 	 * from-to vector is parallel to the primary up-vector.
 	 *
-	 * @param {Vector3D} from        Point to look from.
-	 * @param {Vector3D} to          Point to look at.
-	 * @param {Vector3D} upPrimary   Primary up-vector (must be normalized).
-	 * @param {Vector3D} upSecondary Secondary up-vector (must be normalized).
+	 * @param from        Point to look from.
+	 * @param to          Point to look at.
+	 * @param upPrimary   Primary up-vector (must be normalized).
+	 * @param upSecondary Secondary up-vector (must be normalized).
 	 *
-	 * @return {Matrix3D} Transformation matrix.
+	 * @return Transformation matrix.
 	 *
 	 * @throws TypeError if any of the arguments is <code>null</code>.
 	 * @throws Error if the from and two points are too close.
 	 */
-	static getFromToTransform( from, to, upPrimary, upSecondary )
+	static getFromToTransform( from: Vector3D, to: Vector3D, upPrimary: Vector3D, upSecondary: Vector3D ): Matrix3D
 	{
 		if ( from.almostEquals( to ) )
 		{
@@ -355,13 +336,13 @@ export default class Matrix3D
 	 * A 0-vector multiplied with the resulting transform will match the
 	 * <code>origin</code>.
 	 *
-	 * @param {Vector3D} origin          Origin of plane.
-	 * @param {Vector3D} normal          Normal of plane.
-	 * @param {boolean} rightHanded     3D-space is right- vs. left-handed.
+	 * @param origin          Origin of plane.
+	 * @param normal          Normal of plane.
+	 * @param rightHanded     3D-space is right- vs. left-handed.
 	 *
-	 * @return {Matrix3D} Transformation matrix (translation set to 0-vector) to be used for extrusion of 2D shapes.
+	 * @return Transformation matrix (translation set to 0-vector) to be used for extrusion of 2D shapes.
 	 */
-	static getPlaneTransform( origin, normal, rightHanded )
+	static getPlaneTransform( origin: Vector3D, normal: Vector3D, rightHanded: boolean ): Matrix3D
 	{
 		return Matrix3D._getPlaneTransform( origin.x, origin.y, origin.z, normal.x, normal.y, normal.z, rightHanded );
 	}
@@ -380,17 +361,17 @@ export default class Matrix3D
 	 * A 0-vector multiplied with the resulting transform will match the
 	 * <code>origin</code>.
 	 *
-	 * @param {number} originX Origin X-coordinate of plane.
-	 * @param {number} originY Origin X-coordinate of plane.
-	 * @param {number} originZ Origin X-coordinate of plane.
-	 * @param {number} normalX X-component of normal vector of plane.
-	 * @param {number} normalY X-component of normal vector of plane.
-	 * @param {number} normalZ X-component of normal vector of plane.
-	 * @param {boolean} rightHanded 3D-space is right- vs. left-handed.
+	 * @param originX Origin X-coordinate of plane.
+	 * @param originY Origin X-coordinate of plane.
+	 * @param originZ Origin X-coordinate of plane.
+	 * @param normalX X-component of normal vector of plane.
+	 * @param normalY X-component of normal vector of plane.
+	 * @param normalZ X-component of normal vector of plane.
+	 * @param rightHanded 3D-space is right- vs. left-handed.
 	 *
-	 * @return {Matrix3D} Transformation matrix (translation set to 0-vector) to be used for extrusion of 2D shapes.
+	 * @return Transformation matrix (translation set to 0-vector) to be used for extrusion of 2D shapes.
 	 */
-	static _getPlaneTransform( originX, originY, originZ, normalX, normalY, normalZ, rightHanded )
+	static _getPlaneTransform( originX: number, originY: number, originZ: number, normalX: number, normalY: number, normalZ: number, rightHanded: boolean ): Matrix3D
 	{
 		/*
 		 * X-axis direction is perpendicular to the plane between the (local)
@@ -436,13 +417,13 @@ export default class Matrix3D
 	 * Get rotation matrix. This eliminates scaling and translation properties
 	 * from the current transformation matrix.
 	 *
-	 * @return {Matrix3D} Rotation material.
+	 * @return Rotation material.
 	 */
-	getRotation()
+	getRotation(): Matrix3D
 	{
-		let lx = new Vector3D( this.xx, this.xy, this.xz ).length;
-		let ly = new Vector3D( this.yx, this.yy, this.yz ).length;
-		let lz = new Vector3D( this.zx, this.zy, this.zz ).length;
+		let lx = new Vector3D( this.xx, this.xy, this.xz ).length();
+		let ly = new Vector3D( this.yx, this.yy, this.yz ).length();
+		let lz = new Vector3D( this.zx, this.zy, this.zz ).length();
 
 		return new Matrix3D( this.xx / lx, this.xy / lx, this.xz / lx, 0.0,
 		                     this.yx / ly, this.yy / ly, this.yz / ly, 0.0,
@@ -458,13 +439,13 @@ export default class Matrix3D
 	 * Also read <a href='http://www.cprogramming.com/tutorial/3d/rotation.html'>Rotation About an Arbitrary Axis</a>
 	 * (written by: Confuted, with a cameo by Silvercord (Charles Thibualt)).
 	 *
-	 * @param {Vector3D} pivot       Pivot point about which the rotation is performed.
-	 * @param {Vector3D} direction   Rotation axis direction (must be a unit vector).
-	 * @param {number} thetaRad    Rotate theta radians.
+	 * @param pivot       Pivot point about which the rotation is performed.
+	 * @param direction   Rotation axis direction (must be a unit vector).
+	 * @param thetaRad    Rotate theta radians.
 	 *
-	 * @return {Matrix3D} Transformation matrix with requested rotation.
+	 * @return Transformation matrix with requested rotation.
 	 */
-	static getRotationTransform( pivot, direction, thetaRad )
+	static getRotationTransform( pivot: Vector3D, direction: Vector3D, thetaRad: number ): Matrix3D
 	{
 		return Matrix3D._getRotationTransform( pivot.x, pivot.y, pivot.z, direction.x, direction.y, direction.z, thetaRad );
 	}
@@ -479,17 +460,17 @@ export default class Matrix3D
 	 * (written by Michael Lahanas) for a simple explanation of the problem and
 	 * solution.
 	 *
-	 * @param {number} pivotX      Pivot point about which the rotation is performed.
-	 * @param {number} pivotY      Pivot point about which the rotation is performed.
-	 * @param {number} pivotZ      Pivot point about which the rotation is performed.
-	 * @param {number} directionX  Rotation axis direction (must be a unit vector).
-	 * @param {number} directionY  Rotation axis direction (must be a unit vector).
-	 * @param {number} directionZ  Rotation axis direction (must be a unit vector).
-	 * @param {number} thetaRad    Rotate theta radians.
+	 * @param pivotX      Pivot point about which the rotation is performed.
+	 * @param pivotY      Pivot point about which the rotation is performed.
+	 * @param pivotZ      Pivot point about which the rotation is performed.
+	 * @param directionX  Rotation axis direction (must be a unit vector).
+	 * @param directionY  Rotation axis direction (must be a unit vector).
+	 * @param directionZ  Rotation axis direction (must be a unit vector).
+	 * @param thetaRad    Rotate theta radians.
 	 *
-	 * @return {Matrix3D} Transformation matrix with requested rotation.
+	 * @return Transformation matrix with requested rotation.
 	 */
-	static _getRotationTransform( pivotX, pivotY, pivotZ, directionX, directionY, directionZ, thetaRad )
+	static _getRotationTransform( pivotX: number, pivotY: number, pivotZ: number, directionX: number, directionY: number, directionZ: number, thetaRad: number ): Matrix3D
 	{
 		let cos = Math.cos( thetaRad );
 		let sin = Math.sin( thetaRad );
@@ -521,21 +502,14 @@ export default class Matrix3D
 	 * factors. If only one argument is given, a uniform scaling matrix is
 	 * created.
 	 *
-	 * @param {number} x Scaling factor for the x-axis.
-	 * @param {number} [y] Scaling factor for the y-axis.
-	 * @param {number} [z] Scaling factor for the z-axis.
+	 * @param x Scaling factor for the x-axis.
+	 * @param [y] Scaling factor for the y-axis.
+	 * @param [z] Scaling factor for the z-axis.
 	 *
-	 * @return {Matrix3D} Scaling matrix with the given factor.
+	 * @return Scaling matrix with the given factor.
 	 */
-	static getScaleTransform( x, y, z )
+	static getScaleTransform( x: number, y: number = x, z: number = x )
 	{
-		if ( arguments.length === 1 )
-		{
-			//noinspection JSSuspiciousNameCombination
-			y = x;
-			z = x;
-		}
-
 		return new Matrix3D(   x, 0.0, 0.0, 0.0,
 		                     0.0,   y, 0.0, 0.0,
 		                     0.0, 0.0,   z, 0.0 );
@@ -555,9 +529,9 @@ export default class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return {Matrix3D} Inverse matrix.
+	 * @return Inverse matrix.
 	 */
-	inverse()
+	inverse(): Matrix3D
 	{
 		return new Matrix3D( this.xx, this.yx, this.zx, this.inverseXo(),
 		                     this.xy, this.yy, this.zy, this.inverseYo(),
@@ -578,9 +552,9 @@ export default class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return {number} X-axis translation of inverse matrix.
+	 * @return X-axis translation of inverse matrix.
 	 */
-	inverseXo()
+	inverseXo(): number
 	{
 		return - this.xo * this.xx - this.yo * this.yx - this.zo * this.zx;
 	}
@@ -599,9 +573,9 @@ export default class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return {number} Y-axis translation of inverse matrix.
+	 * @return Y-axis translation of inverse matrix.
 	 */
-	inverseYo()
+	inverseYo(): number
 	{
 		return - this.xo * this.xy - this.yo * this.yy - this.zo * this.zy;
 	}
@@ -620,9 +594,9 @@ export default class Matrix3D
 	 *       | 0  0  0  1                  |
 	 * </pre>
 	 *
-	 * @return {number} Z-axis translation of inverse matrix.
+	 * @return Z-axis translation of inverse matrix.
 	 */
-	inverseZo()
+	inverseZo(): number
 	{
 		return - this.xo * this.xz - this.yo * this.yz - this.zo * this.zz;
 	}
@@ -630,13 +604,24 @@ export default class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector specifying the translation.
-	 * @param {number} [y] Y-coordinate of vector specifying the translation.
-	 * @param {number} [z] Z-coordinate of vector specifying the translation.
+	 * @param v Vector specifying the translation.
 	 *
-	 * @return {Matrix3D} new Matrix3D with translation
+	 * @return new Matrix3D with translation
 	 */
-	minus( x, y, z )
+	minus( v: Vector3D ): Matrix3D;
+
+	/**
+	 * Translate the transform by the specified vector.
+	 *
+	 * @param x X-coordinate of vector specifying the translation.
+	 * @param y Y-coordinate of vector specifying the translation.
+	 * @param z Z-coordinate of vector specifying the translation.
+	 *
+	 * @return new Matrix3D with translation
+	 */
+	minus( x: number, y: number, z: number ): Matrix3D;
+
+	minus( x: any, y?: number, z?: number ): Matrix3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -649,11 +634,11 @@ export default class Matrix3D
 	/**
 	 * Execute matrix multiplication between this and another matrix.
 	 *
-	 * @param {Matrix3D} other Matrix to multiply with.
+	 * @param other Matrix to multiply with.
 	 *
-	 * @return {Matrix3D} Resulting matrix.
+	 * @return Resulting matrix.
 	 */
-	multiply( other )
+	multiply( other: Matrix3D ): Matrix3D
 	{
 		if ( !( other instanceof Matrix3D ) )
 		{
@@ -670,40 +655,40 @@ export default class Matrix3D
 	/**
 	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param {number} xx1     X quotient for X component of first matrix.
-	 * @param {number} xy1     Y quotient for X component of first matrix.
-	 * @param {number} xz1     Z quotient for X component of first matrix.
-	 * @param {number} xo1     Translation of X component of first matrix.
-	 * @param {number} yx1     X quotient for Y component of first matrix.
-	 * @param {number} yy1     Y quotient for Y component of first matrix.
-	 * @param {number} yz1     Z quotient for Y component of first matrix.
-	 * @param {number} yo1     Translation of Y component of first matrix.
-	 * @param {number} zx1     X quotient for Z component of first matrix.
-	 * @param {number} zy1     Y quotient for Z component of first matrix.
-	 * @param {number} zz1     Z quotient for Z component of first matrix.
-	 * @param {number} zo1     Translation of Z component of first matrix.
-	 * @param {number} xx2     X quotient for X component of second matrix.
-	 * @param {number} xy2     Y quotient for X component of second matrix.
-	 * @param {number} xz2     Z quotient for X component of second matrix.
-	 * @param {number} xo2     Translation of X component of second matrix.
-	 * @param {number} yx2     X quotient for Y component of second matrix.
-	 * @param {number} yy2     Y quotient for Y component of second matrix.
-	 * @param {number} yz2     Z quotient for Y component of second matrix.
-	 * @param {number} yo2     Translation of Y component of second matrix.
-	 * @param {number} zx2     X quotient for Z component of second matrix.
-	 * @param {number} zy2     Y quotient for Z component of second matrix.
-	 * @param {number} zz2     Z quotient for Z component of second matrix.
-	 * @param {number} zo2     Translation of Z component of second matrix.
+	 * @param xx1     X quotient for X component of first matrix.
+	 * @param xy1     Y quotient for X component of first matrix.
+	 * @param xz1     Z quotient for X component of first matrix.
+	 * @param xo1     Translation of X component of first matrix.
+	 * @param yx1     X quotient for Y component of first matrix.
+	 * @param yy1     Y quotient for Y component of first matrix.
+	 * @param yz1     Z quotient for Y component of first matrix.
+	 * @param yo1     Translation of Y component of first matrix.
+	 * @param zx1     X quotient for Z component of first matrix.
+	 * @param zy1     Y quotient for Z component of first matrix.
+	 * @param zz1     Z quotient for Z component of first matrix.
+	 * @param zo1     Translation of Z component of first matrix.
+	 * @param xx2     X quotient for X component of second matrix.
+	 * @param xy2     Y quotient for X component of second matrix.
+	 * @param xz2     Z quotient for X component of second matrix.
+	 * @param xo2     Translation of X component of second matrix.
+	 * @param yx2     X quotient for Y component of second matrix.
+	 * @param yy2     Y quotient for Y component of second matrix.
+	 * @param yz2     Z quotient for Y component of second matrix.
+	 * @param yo2     Translation of Y component of second matrix.
+	 * @param zx2     X quotient for Z component of second matrix.
+	 * @param zy2     Y quotient for Z component of second matrix.
+	 * @param zz2     Z quotient for Z component of second matrix.
+	 * @param zo2     Translation of Z component of second matrix.
 	 *
-	 * @return {Matrix3D} Resulting matrix.
+	 * @return Resulting matrix.
 	 */
 	static _multiply(
-		xx1, xy1, xz1, xo1,
-		yx1, yy1, yz1, yo1,
-		zx1, zy1, zz1, zo1,
-		xx2, xy2, xz2, xo2,
-		yx2, yy2, yz2, yo2,
-		zx2, zy2, zz2, zo2 )
+		xx1: number, xy1: number, xz1: number, xo1: number,
+		yx1: number, yy1: number, yz1: number, yo1: number,
+		zx1: number, zy1: number, zz1: number, zo1: number,
+		xx2: number, xy2: number, xz2: number, xo2: number,
+		yx2: number, yy2: number, yz2: number, yo2: number,
+		zx2: number, zy2: number, zz2: number, zo2: number ): Matrix3D
 	{
 		return new Matrix3D( xx1 * xx2 + yx1 * xy2 + zx1 * xz2,
 		                     xy1 * xx2 + yy1 * xy2 + zy1 * xz2,
@@ -723,11 +708,11 @@ export default class Matrix3D
 	 * Execute matrix multiplication between this and the inverse of another
 	 * matrix.
 	 *
-	 * @param {Matrix3D} other   Matrix whose inverse to multiply with.
+	 * @param other   Matrix whose inverse to multiply with.
 	 *
-	 * @return {Matrix3D} Resulting matrix.
+	 * @return Resulting matrix.
 	 */
-	multiplyInverse( other )
+	multiplyInverse( other: Matrix3D ): Matrix3D
 	{
 		return Matrix3D._multiply(
 				this.xx, this.xy, this.xz, this.xo,
@@ -741,13 +726,24 @@ export default class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector specifying the translation.
-	 * @param {number} [y] Y-coordinate of vector specifying the translation.
-	 * @param {number} [z] Z-coordinate of vector specifying the translation.
+	 * @param v Vector specifying the translation.
 	 *
-	 * @return {Matrix3D} new Matrix3D with translation
+	 * @return new Matrix3D with translation
 	 */
-	plus( x, y, z )
+	plus( v: Vector3D ): Matrix3D;
+
+	/**
+	 * Translate the transform by the specified vector.
+	 *
+	 * @param x X-coordinate of vector specifying the translation.
+	 * @param y Y-coordinate of vector specifying the translation.
+	 * @param z Z-coordinate of vector specifying the translation.
+	 *
+	 * @return new Matrix3D with translation
+	 */
+	plus( x: number, y: number, z: number ): Matrix3D;
+
+	plus( x: any, y?: number, z?: number ): Matrix3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -769,11 +765,11 @@ export default class Matrix3D
 	 *    [   0    sin   cos  ]
 	 * </pre>
 	 *
-	 * @param {number} thetaRad Rotate theta radians about the X-axis
+	 * @param thetaRad Rotate theta radians about the X-axis
 	 *
-	 * @return {Matrix3D} Rotated matrix.
+	 * @return Rotated matrix.
 	 */
-	rotateX( thetaRad )
+	rotateX( thetaRad: number ): Matrix3D
 	{
 		let result;
 
@@ -806,11 +802,11 @@ export default class Matrix3D
 	 *    [ -sin    0    cos  ]
 	 * </pre>
 	 *
-	 * @param {number} thetaRad Rotate theta radians about the Y-axis
+	 * @param thetaRad Rotate theta radians about the Y-axis
 	 *
-	 * @return {Matrix3D} Rotated matrix.
+	 * @return Rotated matrix.
 	 */
-	rotateY( thetaRad )
+	rotateY( thetaRad: number ): Matrix3D
 	{
 		let result;
 
@@ -843,11 +839,11 @@ export default class Matrix3D
 	 *    [   0     0     1   ]
 	 * </pre>
 	 *
-	 * @param {number} thetaRad Rotate theta radians about the Z-axis
+	 * @param thetaRad Rotate theta radians about the Z-axis
 	 *
-	 * @return {Matrix3D} Rotated matrix.
+	 * @return Rotated matrix.
 	 */
-	rotateZ( thetaRad )
+	rotateZ( thetaRad: number ): Matrix3D
 	{
 		let result;
 
@@ -873,24 +869,24 @@ export default class Matrix3D
 	/**
 	 * Set all values in the matrix and return the resulting matrix.
 	 *
-	 * @param {number} nxx X quotient for X component.
-	 * @param {number} nxy Y quotient for X component.
-	 * @param {number} nxz Z quotient for X component.
-	 * @param {number} nxo Translation of X component.
-	 * @param {number} nyx X quotient for Y component.
-	 * @param {number} nyy Y quotient for Y component.
-	 * @param {number} nyz Z quotient for Y component.
-	 * @param {number} nyo Translation of Y component.
-	 * @param {number} nzx X quotient for Z component.
-	 * @param {number} nzy Y quotient for Z component.
-	 * @param {number} nzz Z quotient for Z component.
-	 * @param {number} nzo Translation of Z component.
+	 * @param nxx X quotient for X component.
+	 * @param nxy Y quotient for X component.
+	 * @param nxz Z quotient for X component.
+	 * @param nxo Translation of X component.
+	 * @param nyx X quotient for Y component.
+	 * @param nyy Y quotient for Y component.
+	 * @param nyz Z quotient for Y component.
+	 * @param nyo Translation of Y component.
+	 * @param nzx X quotient for Z component.
+	 * @param nzy Y quotient for Z component.
+	 * @param nzz Z quotient for Z component.
+	 * @param nzo Translation of Z component.
 	 *
-	 * @return {Matrix3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	set( nxx, nxy, nxz, nxo,
-		 nyx, nyy, nyz, nyo,
-		 nzx, nzy, nzz, nzo )
+	set( nxx: number, nxy: number, nxz: number, nxo: number,
+		 nyx: number, nyy: number, nyz: number, nyo: number,
+		 nzx: number, nzy: number, nzz: number, nzo: number ): Matrix3D
 	{
 		let lxx = isNaN( nxx ) ? this.xx : nxx;
 		let lxy = isNaN( nxy ) ? this.xy : nxy;
@@ -915,19 +911,27 @@ export default class Matrix3D
 	}
 
 	/**
+	 * Scale this matrix by the given factor.
+	 *
+	 * @param s Uniform scaling factor.
+	 *
+	 * @return This matrix scaled with the given factor.
+	 */
+	scale( s: number ): Matrix3D;
+
+	/**
 	 * Scale this matrix by the given factors.
 	 *
-	 * @param {number} x Scaling factor for the x-axis.
-	 * @param {number} [y] Scaling factor for the y-axis. (Default: x)
-	 * @param {number} [z] Scaling factor for the z-axis. (Default: x)
+	 * @param x Scaling factor for the x-axis.
+	 * @param y Scaling factor for the y-axis.
+	 * @param z Scaling factor for the z-axis.
 	 *
-	 * @return {Matrix3D} This matrix scaled  with the given factor.
+	 * @return This matrix scaled with the given factors.
 	 */
-	scale( x, y, z )
-	{
-		y = y === undefined ? x : y;
-		z = z === undefined ? x : z;
+	scale( x: number, y: number, z: number ): Matrix3D;
 
+	scale( x: any, y: number = x, z: number = x ): Matrix3D
+	{
 		return new Matrix3D(
 				x * this.xx, x * this.xy, x * this.xz, x * this.xo,
 				y * this.yx, y * this.yy, y * this.yz, y * this.yo,
@@ -937,9 +941,9 @@ export default class Matrix3D
 	/**
 	 * Get translation vector from this transform.
 	 *
-	 * @return {Vector3D} Translation vector.
+	 * @return Translation vector.
 	 */
-	getTranslation()
+	getTranslation(): Vector3D
 	{
 		return new Vector3D( this.xo, this.yo, this.zo );
 	}
@@ -947,13 +951,24 @@ export default class Matrix3D
 	/**
 	 * Get translation matrix from the specified translation vector.
 	 *
-	 * @param {number|Vector3D} x X-translation.
-	 * @param {number} [y] Y-translation.
-	 * @param {number} [z] Z-translation.
+	 * @param translation Translation vector.
 	 *
-	 * @return {Matrix3D} Translation matrix.
+	 * @return Translation matrix.
 	 */
-	static getTranslation( x, y, z )
+	static getTranslation( translation: Vector3D ): Matrix3D;
+
+	/**
+	 * Get translation matrix from the specified translation vector.
+	 *
+	 * @param x X-translation.
+	 * @param y Y-translation.
+	 * @param z Z-translation.
+	 *
+	 * @return Translation matrix.
+	 */
+	static getTranslation( x: number, y: number, z: number ): Matrix3D;
+
+	static getTranslation( x: any, y?: number, z?: number ): Matrix3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -976,13 +991,24 @@ export default class Matrix3D
 	/**
 	 * Set translation of a transform to the specified vector.
 	 *
-	 * @param {number|Vector3D} x X-value of vector.
-	 * @param {number} [y] Y-value of vector.
-	 * @param {number} [z] Z-value of vector.
+	 * @param v Translation vector.
 	 *
-	 * @return {Matrix3D} Resulting matrix.
+	 * @return Resulting matrix.
 	 */
-	setTranslation( x, y, z )
+	setTranslation( v: Vector3D ): Matrix3D;
+
+	/**
+	 * Set translation of a transform to the specified vector.
+	 *
+	 * @param x X-value of vector.
+	 * @param y Y-value of vector.
+	 * @param z Z-value of vector.
+	 *
+	 * @return Resulting matrix.
+	 */
+	setTranslation( x: number, y: number, z: number ): Matrix3D;
+
+	setTranslation( x: any, y?: number, z?: number ): Matrix3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -998,9 +1024,9 @@ export default class Matrix3D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return {string} String representation of object.
+	 * @return String representation of object.
 	 */
-	toString()
+	toString(): string
 	{
 		return this.xx + "," + this.xy + ',' + this.xz + ',' + this.xo + ',' +
 		       this.yx + ',' + this.yy + ',' + this.yz + ',' + this.yo + ',' +
@@ -1010,9 +1036,9 @@ export default class Matrix3D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return {string} String representation of object.
+	 * @return String representation of object.
 	 */
-	toFriendlyString()
+	toFriendlyString(): string
 	{
 		return "\n\t\t\t[ " + this.xx + ", " + this.xy + ', ' + this.xz + ', ' + this.xo + ' ]' +
 		       "\n\t\t\t[ " + this.yx + ', ' + this.yy + ', ' + this.yz + ', ' + this.yo + ' ]' +
@@ -1020,15 +1046,35 @@ export default class Matrix3D
 	}
 
 	/**
+	 * Transform a bounds using this transform.
+	 *
+	 * @param b Bounds to transform.
+	 *
+	 * @return Resulting vector.
+	 */
+	transform( b: Bounds3D ): Vector3D;
+
+	/**
 	 * Transform a vector using this transform.
 	 *
-	 * @param {number|Vector3D|Bounds3D} x X-value of vector.
-	 * @param {number} [y] Y-value of vector.
-	 * @param {number} [z] Z-value of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	transform( x, y, z )
+	transform( v: Vector3D ): Vector3D;
+
+	/**
+	 * Transform a vector using this transform.
+	 *
+	 * @param x X-value of vector.
+	 * @param y Y-value of vector.
+	 * @param z Z-value of vector.
+	 *
+	 * @return Resulting vector.
+	 */
+	transform( x: number, y: number, z: number ): Vector3D;
+
+	transform( x: any, y?: number, z?: number ): Vector3D
 	{
 		let result;
 
@@ -1056,16 +1102,16 @@ export default class Matrix3D
 	 * This function transforms a set of points. Point coordinates are supplied
 	 * using double arrays containing a triplet for each point.
 	 *
-	 * @param {number[]} source      Source array.
-	 * @param {number[]} dest        Destination array (may be <code>null</code> or too small to create new).
-	 * @param {number} pointCount  Number of vertices.
+	 * @param source      Source array.
+	 * @param dest        Destination array (may be <code>null</code> or too small to create new).
+	 * @param pointCount  Number of vertices.
 	 *
-	 * @return {number[]} Array to which the transformed coordinates were written (may be different from the <code>dest</code> argument).
+	 * @return Array to which the transformed coordinates were written (may be different from the <code>dest</code> argument).
 	 *
 	 * @see     #transform(double, double, double)
 	 * @see     #transform(Vector3D)
 	 */
-	transformArray( source, dest, pointCount )
+	transformArray( source: number[], dest: number[], pointCount: number ): number[]
 	{
 		let result = dest;
 
@@ -1140,13 +1186,24 @@ export default class Matrix3D
 	/**
 	 * Transform a vector to X-coordinate using this transform.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {number} Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
-	transformX( x, y, z )
+	transformX( v: Vector3D ): number;
+
+	/**
+	 * Transform a vector to X-coordinate using this transform.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting X coordinate.
+	 */
+	transformX( x: number, y: number, z: number ): number;
+
+	transformX( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1159,13 +1216,24 @@ export default class Matrix3D
 	/**
 	 * Transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {number} Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
-	transformY( x, y, z )
+	transformY( v: Vector3D ): number;
+
+	/**
+	 * Transform a vector to Y-coordinate using this transform.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting Y coordinate.
+	 */
+	transformY( x: number, y: number, z: number ): number;
+
+	transformY( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1175,16 +1243,28 @@ export default class Matrix3D
 		return x * this.yx + y * this.yy + z * this.yz + this.yo;
 	}
 
+
 	/**
 	 * Transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {number} Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
-	transformZ( x, y, z )
+	transformZ( v: Vector3D ): number;
+
+	/**
+	 * Transform a vector to Z-coordinate using this transform.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting Z coordinate.
+	 */
+	transformZ( x: number, y: number, z: number ): number;
+
+	transformZ( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1197,13 +1277,24 @@ export default class Matrix3D
 	/**
 	 * Transform a vector using the inverse of this transform.
 	 *
-	 * @param {number|Vector3D} x X-value of vector.
-	 * @param {number} [y] Y-value of vector.
-	 * @param {number} [z] Z-value of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	inverseTransform( x, y, z )
+	inverseTransform( v: Vector3D ): Vector3D;
+
+	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param x X-value of vector.
+	 * @param y Y-value o ector.
+	 * @param z Z-value o ector.
+	 *
+	 * @return Resulting vector.
+	 */
+	inverseTransform( x: number, y: number, z: number ): Vector3D;
+
+	inverseTransform( x: any, y?: number, z?: number ): Vector3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1219,16 +1310,28 @@ export default class Matrix3D
 		                     tx * this.xz + ty * this.yz + tz * this.zz );
 	}
 
+
 	/**
 	 * Inverse transform a vector to X-coordinate using this transform.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} [y] Y-coordinate of vector.
-	 * @param {number} [z] Z-coordinate of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {number} Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
-	inverseTransformX( x, y, z )
+	inverseTransformX( v: Vector3D ): number;
+
+	/**
+	 * Inverse transform a vector to X-coordinate using this transform.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting X coordinate.
+	 */
+	inverseTransformX( x: number, y: number, z: number ): number;
+
+	inverseTransformX( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1241,13 +1344,24 @@ export default class Matrix3D
 	/**
 	 * Inverse transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} [y] Y-coordinate of vector.
-	 * @param {number} [z] Z-coordinate of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {number} Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
-	inverseTransformY( x, y, z )
+	inverseTransformY( v: Vector3D ): number;
+
+	/**
+	 * Inverse transform a vector to Y-coordinate using this transform.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting Y coordinate.
+	 */
+	inverseTransformY( x: number, y: number, z: number ): number;
+
+	inverseTransformY( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1260,13 +1374,24 @@ export default class Matrix3D
 	/**
 	 * Inverse transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} [y] Y-coordinate of vector.
-	 * @param {number} [z] Z-coordinate of vector.
+	 * @param v Vector to transform.
 	 *
-	 * @return {number} Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
-	inverseTransformZ( x, y, z )
+	inverseTransformZ( v: Vector3D ): number;
+
+	/**
+	 * Inverse transform a vector to Z-coordinate using this transform.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting Z coordinate.
+	 */
+	inverseTransformZ( x: number, y: number, z: number ): number;
+
+	inverseTransformZ( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1276,17 +1401,30 @@ export default class Matrix3D
 		return ( x - this.xo ) * this.xz + ( y - this.yo ) * this.yz + ( z - this.zo ) * this.zz;
 	}
 
+
 	/**
 	 * Rotate a vector using this transform. This multiplies the vector with
 	 * this matrix, excluding the translational components.
 	 *
-	 * @param {number|Vector3D} x X component of directional vector to rotate.
-	 * @param {number} [y] Y component of directional vector to rotate.
-	 * @param {number} [z] Z component of directional vector to rotate.
+	 * @param v Vector to rotate.
 	 *
 	 * @return  Rotated vector.
 	 */
-	rotate( x, y, z )
+	rotate( v: Vector3D ): Vector3D;
+
+	/**
+	 * Rotate a vector using this transform. This multiplies the vector with
+	 * this matrix, excluding the translational components.
+	 *
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	rotate( x: number, y: number, z: number ): Vector3D;
+
+	rotate( x: any, y?: number, z?: number ): Vector3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1303,16 +1441,16 @@ export default class Matrix3D
 	 * set of vectors. Vectors are supplied using float arrays with a triplet for
 	 * each vector.
 	 *
-	 * @param {number[]} source Source array.
-	 * @param {number[]} dest Destination array (may be <code>null</code> or too small to create new).
-	 * @param {number} vectorCount Number of vertices.
+	 * @param source Source array.
+	 * @param dest Destination array (may be <code>null</code> or too small to create new).
+	 * @param vectorCount Number of vertices.
 	 *
-	 * @return {number[]} Array to which the transformed coordinates were written (may be different from the <code>dest</code> argument).
+	 * @return Array to which the transformed coordinates were written (may be different from the <code>dest</code> argument).
 	 *
 	 * @see     #transform(double, double, double)
 	 * @see     #transform(Vector3D)
 	 */
-	rotateArray( source, dest, vectorCount )
+	rotateArray( source: number[], dest: number[], vectorCount: number ): number[]
 	{
 		let result = dest;
 
@@ -1368,13 +1506,24 @@ export default class Matrix3D
 	/**
 	 * Rotate a vector to X-coordinate using this rotate.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param v Vector.
 	 *
-	 * @return {number} Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
-	rotateVectorX( x, y, z )
+	rotateVectorX( v: Vector3D ): number;
+
+	/**
+	 * Rotate a vector to X-coordinate using this rotate.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting X coordinate.
+	 */
+	rotateVectorX( x: number, y: number, z: number ): number;
+
+	rotateVectorX( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1387,13 +1536,24 @@ export default class Matrix3D
 	/**
 	 * Rotate a vector to Y-coordinate using this rotate.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param v Vector.
 	 *
-	 * @return {number} Resulting Y coordinate.
+	 * @return Resulting Y coordinate.
 	 */
-	rotateVectorY( x, y, z )
+	rotateVectorY( v: Vector3D ): number;
+
+	/**
+	 * Rotate a vector to Y-coordinate using this rotate.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting Y coordinate.
+	 */
+	rotateVectorY( x: number, y: number, z: number ): number;
+
+	rotateVectorY( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1406,13 +1566,24 @@ export default class Matrix3D
 	/**
 	 * Rotate a vector to Z-coordinate using this rotate.
 	 *
-	 * @param {number|Vector3D} x X-coordinate of vector.
-	 * @param {number} y Y-coordinate of vector.
-	 * @param {number} z Z-coordinate of vector.
+	 * @param v Vector.
 	 *
-	 * @return {number} Resulting Z coordinate.
+	 * @return Resulting Z coordinate.
 	 */
-	rotateVectorZ( x, y, z )
+	rotateVectorZ( v: Vector3D ): number;
+
+	/**
+	 * Rotate a vector to Z-coordinate using this rotate.
+	 *
+	 * @param x X-coordinate of vector.
+	 * @param y Y-coordinate of vector.
+	 * @param z Z-coordinate of vector.
+	 *
+	 * @return Resulting Z coordinate.
+	 */
+	rotateVectorZ( x: number, y: number, z: number ): number;
+
+	rotateVectorZ( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1427,13 +1598,26 @@ export default class Matrix3D
 	 * vector with the inverse of this matrix, excluding the translational
 	 * components.
 	 *
-	 * @param {number|Vector3D} x X component of directional vector to rotate.
-	 * @param {number} [y] Y component of directional vector to rotate.
-	 * @param {number} [z] Z component of directional vector to rotate.
+	 * @param v Vector to rotate.
 	 *
 	 * @return  Rotated vector.
 	 */
-	inverseRotate( x, y, z )
+	inverseRotate( v: Vector3D ): Vector3D;
+
+	/**
+	 * Rotate a vector using the inverse of this transform. This multiplies the
+	 * vector with the inverse of this matrix, excluding the translational
+	 * components.
+	 *
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	inverseRotate( x: number, y: number, z: number ): Vector3D;
+
+	inverseRotate( x: any, y?: number, z?: number ): Vector3D
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1449,13 +1633,25 @@ export default class Matrix3D
 	 * Calculates the X-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param {number|Vector3D} x X component of directional vector to rotate.
-	 * @param {number} [y] Y component of directional vector to rotate.
-	 * @param {number} [z] Z component of directional vector to rotate.
+	 * @param v Vector to rotate.
 	 *
-	 * @return {number} Resulting X coordinate.
+	 * @return Resulting X coordinate.
 	 */
-	inverseRotateX( x, y, z )
+	inverseRotateX( v: Vector3D ): number;
+
+	/**
+	 * Calculates the X-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
+	 *
+	 * @return Resulting X coordinate.
+	 */
+	inverseRotateX( x: number, y: number, z: number ): number;
+
+	inverseRotateX( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1469,13 +1665,25 @@ export default class Matrix3D
 	 * Calculates the Y-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param {number|Vector3D} x X component of directional vector to rotate.
-	 * @param {number} [y] Y component of directional vector to rotate.
-	 * @param {number} [z] Z component of directional vector to rotate.
+	 * @param v Vector to rotate.
 	 *
-	 * @return {number} Resulting Y-coordinate.
+	 * @return Resulting Y-coordinate.
 	 */
-	inverseRotateY( x, y, z )
+	inverseRotateY( v: Vector3D ): number;
+
+	/**
+	 * Calculates the Y-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
+	 *
+	 * @return Resulting Y-coordinate.
+	 */
+	inverseRotateY( x: number, y: number, z: number ): number;
+
+	inverseRotateY( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1489,13 +1697,25 @@ export default class Matrix3D
 	 * Calculates the Z-coordinate of the given vector when rotated with the
 	 * inverse of this matrix.
 	 *
-	 * @param {number|Vector3D} x X component of directional vector to rotate.
-	 * @param {number} [y] Y component of directional vector to rotate.
-	 * @param {number} [z] Z component of directional vector to rotate.
+	 * @param v Vector to rotate.
 	 *
-	 * @return {number} Resulting Z-coordinate.
+	 * @return Resulting Z-coordinate.
 	 */
-	inverseRotateZ( x, y, z )
+	inverseRotateZ( v: Vector3D ): number;
+
+	/**
+	 * Calculates the Z-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param x X component of directional vector to rotate.
+	 * @param y Y component of directional vector to rotate.
+	 * @param z Z component of directional vector to rotate.
+	 *
+	 * @return Resulting Z-coordinate.
+	 */
+	inverseRotateZ( x: number, y: number, z: number ): number;
+
+	inverseRotateZ( x: any, y?: number, z?: number ): number
 	{
 		if ( x instanceof Vector3D )
 		{
@@ -1509,9 +1729,9 @@ export default class Matrix3D
 	 * Returns whether the coordinate system represented by the matrix follows
 	 * the right-hand rule.
 	 *
-	 * @return {boolean} <code>true</code> if the coordinate system is right-handed.
+	 * @return <code>true</code> if the coordinate system is right-handed.
 	 */
-	isRighthanded()
+	isRighthanded(): boolean
 	{
 		// cross product of x-axis and y-axis -> derived z-axis (right-handed)
 		let crossX = this.yx * this.zy - this.zx * this.yy;
@@ -1525,11 +1745,11 @@ export default class Matrix3D
 	/**
 	 * Returns the determinant of the matrix.
 	 *
-	 * @return {number} Determinant of the matrix.
+	 * @return Determinant of the matrix.
 	 *
 	 * @see <a href="http://en.wikipedia.org/wiki/Determinant">Determinant (Wikipedia)</a>
 	 */
-	determinant()
+	determinant(): number
 	{
 		return this.xx * this.yy * this.zz -
 		       this.xx * this.yz * this.zy -
@@ -1542,9 +1762,9 @@ export default class Matrix3D
 	/**
 	 * Returns an array containing the elements of the matrix in row-major order.
 	 *
-	 * @returns {number[]} Elements of the matrix (row-major order).
+	 * @returns Elements of the matrix (row-major order).
 	 */
-	toArray()
+	toArray(): number[]
 	{
 		return [
 			this.xx, this.xy, this.xz, this.xo,
@@ -1557,9 +1777,9 @@ export default class Matrix3D
 	/**
 	 * Returns an array containing the elements of the matrix in row-major order.
 	 *
-	 * @returns {number[]} Elements of the matrix (row-major order).
+	 * @returns Elements of the matrix (row-major order).
 	 */
-	toColumnMajorArray()
+	toColumnMajorArray(): number[]
 	{
 		return [
 			this.xx, this.yx, this.zx, 0,

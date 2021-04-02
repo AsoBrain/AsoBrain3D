@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+import Matrix3D from './Matrix3D';
 import Vector3D from './Vector3D';
 import MathTools from './MathTools';
 
@@ -28,29 +29,26 @@ export default class Bounds3D
 {
 	/**
 	 * First vector component of box. Normally the minimum vector.
-	 * @type Vector3D
 	 */
-	v1;
+	v1: Vector3D;
 
 	/**
 	 * Second vector component of box. Normally the maximum vector.
-	 * @type Vector3D
 	 */
-	v2;
+	v2: Vector3D;
 
 	/**
 	 * Empty box defined by zero-vectors.
-	 * @type Bounds3D
 	 */
 	static EMPTY = new Bounds3D( Vector3D.ZERO, Vector3D.ZERO );
 
 	/**
 	 * Create a new box.
 	 *
-	 * @param {Vector3D} [v1] First vector of box.
-	 * @param {Vector3D} [v2] Second vector of box.
+	 * @param [v1] First vector of box.
+	 * @param [v2] Second vector of box.
 	 */
-	constructor( v1, v2 )
+	constructor( v1?: Vector3D, v2?: Vector3D )
 	{
 		if ( ( v1 !== undefined ) && !( v1 instanceof Vector3D ) )
 		{
@@ -69,9 +67,9 @@ export default class Bounds3D
 	/**
 	 * Get center point of these bounds.
 	 *
-	 * @return {Vector3D} Vector describing boundary center (average of coordinates).
+	 * @return Vector describing boundary center (average of coordinates).
 	 */
-	center()
+	center(): Vector3D
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -81,9 +79,9 @@ export default class Bounds3D
 	/**
 	 * Get center X.
 	 *
-	 * @return {number} Center X (avaerage of X coordinate of vector 1 and vector 2).
+	 * @return Center X (avaerage of X coordinate of vector 1 and vector 2).
 	 */
-	centerX()
+	centerX(): number
 	{
 		return 0.5 * ( this.v1.x + this.v2.x );
 	}
@@ -91,9 +89,9 @@ export default class Bounds3D
 	/**
 	 * Get center Y.
 	 *
-	 * @return {number} Center Y (avaerage of Y coordinate of vector 1 and vector 2).
+	 * @return Center Y (avaerage of Y coordinate of vector 1 and vector 2).
 	 */
-	centerY()
+	centerY(): number
 	{
 		return 0.5 * ( this.v1.y + this.v2.y );
 	}
@@ -101,9 +99,9 @@ export default class Bounds3D
 	/**
 	 * Get center Z.
 	 *
-	 * @return {number} Center Z (avaerage of Z coordinate of vector 1 and vector 2).
+	 * @return Center Z (avaerage of Z coordinate of vector 1 and vector 2).
 	 */
-	centerZ()
+	centerZ(): number
 	{
 		return 0.5 * ( this.v1.z + this.v2.z );
 	}
@@ -111,9 +109,9 @@ export default class Bounds3D
 	/**
 	 * Get delta X.
 	 *
-	 * @return {number} Delta X (X coordinate of vector 1 substracted from vector 2).
+	 * @return Delta X (X coordinate of vector 1 substracted from vector 2).
 	 */
-	deltaX()
+	deltaX(): number
 	{
 		return this.v2.x - this.v1.x;
 	}
@@ -121,9 +119,9 @@ export default class Bounds3D
 	/**
 	 * Get delta Y.
 	 *
-	 * @return {number} Delta Y (Y coordinate of vector 1 substracted from vector 2).
+	 * @return Delta Y (Y coordinate of vector 1 substracted from vector 2).
 	 */
-	deltaY()
+	deltaY(): number
 	{
 		return this.v2.y - this.v1.y;
 	}
@@ -131,9 +129,9 @@ export default class Bounds3D
 	/**
 	 * Get delta Z.
 	 *
-	 * @return {number} Delta Z (Z coordinate of vector 1 substracted from vector 2).
+	 * @return Delta Z (Z coordinate of vector 1 substracted from vector 2).
 	 */
-	deltaZ()
+	deltaZ(): number
 	{
 		return this.v2.z - this.v1.z;
 	}
@@ -141,9 +139,9 @@ export default class Bounds3D
 	/**
 	 * Get volume contained within these bounds.
 	 *
-	 * @return {number} Volume contained within these bounds.
+	 * @return Volume contained within these bounds.
 	 */
-	volume()
+	volume(): number
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -155,10 +153,10 @@ export default class Bounds3D
 	 * describe a zero-volume, meaning that any of the coordinates is equal for
 	 * both vectors.
 	 *
-	 * @return {boolean} <code>true</code> if the bounds are empty (zero volume);
-	 *          <code>false</code> if the bounds are not empty (non-zero volume).
+	 * @return <code>true</code> if the bounds are empty (zero volume);
+	 *         <code>false</code> if the bounds are not empty (non-zero volume).
 	 */
-	isEmpty()
+	isEmpty(): boolean
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -170,10 +168,10 @@ export default class Bounds3D
 	 * the first vector is lesser or equal to the same coordinate of the second
 	 * vector.
 	 *
-	 * @return {boolean} <code>true</code> if the bounds are sorted;
-	 *          <code>false</code> if the bounds are not sorted.
+	 * @return <code>true</code> if the bounds are sorted;
+	 *         <code>false</code> if the bounds are not sorted.
 	 */
-	isSorted()
+	isSorted(): boolean
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -183,12 +181,12 @@ export default class Bounds3D
 	/**
 	 * Test if this bounds contains the specified point.
 	 *
-	 * @param {Vector3D} point Point to test.
+	 * @param point Point to test.
 	 *
-	 * @return {boolean} <code>true</code> if this bounds contains the specified point;
-	 *          <code>false</code> if the point is outside these bounds.
+	 * @return <code>true</code> if this bounds contains the specified point;
+	 *         <code>false</code> if the point is outside these bounds.
 	 */
-	contains( point )
+	contains( point: Vector3D ): boolean
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -200,11 +198,11 @@ export default class Bounds3D
 	/**
 	 * Compare these bounds to the specified bounds.
 	 *
-	 * @param {Bounds3D} other Bounds to compare with.
+	 * @param other Bounds to compare with.
 	 *
-	 * @return {boolean} <code>true</code> if the bounds are equal, <code>false</code> if not.
+	 * @return <code>true</code> if the bounds are equal, <code>false</code> if not.
 	 */
-	equals( other )
+	equals( other: Bounds3D ): boolean
 	{
 		return ( this === other ) || ( other && this.v1.equals( other.v1 ) && this.v2.equals( other.v2 ) );
 	}
@@ -214,12 +212,12 @@ export default class Bounds3D
 	 * will have one or more negative factors for v2 - v1 when the bounding
 	 * boxes are disjunct.
 	 *
-	 * @param   {Bounds3D} bounds1     First object for intersection.
-	 * @param   {Bounds3D} bounds2     Seconds object for intersection.
+	 * @param bounds1 First object for intersection.
+	 * @param bounds2 Seconds object for intersection.
 	 *
-	 * @return  {Bounds3D} Bounds of intersection.
+	 * @return Bounds of intersection.
 	 */
-	static intersect( bounds1, bounds2 )
+	static intersect( bounds1: Bounds3D, bounds2: Bounds3D ): Bounds3D
 	{
 		return Bounds3D.rebuild( bounds1, bounds2,
 				bounds1.v1.set(
@@ -237,18 +235,18 @@ export default class Bounds3D
 	 * does not return <code>true</code> if the intersection along any axis is
 	 * less than the specified <code>epsilon</code> value.
 	 *
-	 * @param {Bounds3D} bounds1 First object for intersection test.
-	 * @param {Bounds3D} bounds2 Seconds object for intersection test.
-	 * @param {number} [epsilon] Tolerance (always a positive number).
+	 * @param bounds1 First object for intersection test.
+	 * @param bounds2 Seconds object for intersection test.
+	 * @param [epsilon] Tolerance (always a positive number).
 	 *
-	 * @return {boolean} <code>true</code> if the bounds intersect;
-	 *          <code>false</code> if the bounds are disjunct.
+	 * @return <code>true</code> if the bounds intersect;
+	 *         <code>false</code> if the bounds are disjunct.
 	 */
-	static intersects( bounds1, bounds2, epsilon )
+	static intersects( bounds1: Bounds3D, bounds2: Bounds3D, epsilon: number = 0 ): boolean
 	{
 		let result;
 
-		if ( epsilon === undefined || epsilon === 0 )
+		if ( !epsilon )
 		{
 			result = ( Math.min( bounds1.v1.x, bounds1.v2.x ) < Math.max( bounds2.v1.x, bounds2.v2.x ) ) &&
 					 ( Math.min( bounds2.v1.x, bounds2.v2.x ) < Math.max( bounds1.v1.x, bounds1.v2.x ) ) &&
@@ -273,15 +271,15 @@ export default class Bounds3D
 	/**
 	 * Calculate joined bounds of this and the given bounds or vector.
 	 *
-	 * @param  {Bounds3D|Vector3D} other Bounds or vector to join with.
+	 * @param other Bounds or vector to join with.
 	 *
-	 * @return {Bounds3D} Joined bounds.
+	 * @return Joined bounds.
 	 */
-	join( other )
+	join( other: Bounds3D | Vector3D ): Bounds3D
 	{
 		let result;
 
-		if ( other.v1 && other.v2 )
+		if ( other instanceof Bounds3D )
 		{
 			result = Bounds3D.rebuild( this, other,
 					this.v1.set(
@@ -318,9 +316,9 @@ export default class Bounds3D
 	/**
 	 * Determine maximum vector of box.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	max()
+	max(): Vector3D
 	{
 		let x = Math.max( this.v1.x, this.v2.x );
 		let y = Math.max( this.v1.y, this.v2.y );
@@ -331,9 +329,9 @@ export default class Bounds3D
 	/**
 	 * Determine maximum X coordinate of bounds.
 	 *
-	 * @return {number} Maximum X coordinate of bounds.
+	 * @return Maximum X coordinate of bounds.
 	 */
-	maxX()
+	maxX(): number
 	{
 		return Math.max( this.v1.x, this.v2.x );
 	}
@@ -341,9 +339,9 @@ export default class Bounds3D
 	/**
 	 * Determine maximum Y coordinate of bounds.
 	 *
-	 * @return {number} Maximum Y coordinate of bounds.
+	 * @return Maximum Y coordinate of bounds.
 	 */
-	maxY()
+	maxY(): number
 	{
 		return Math.max( this.v1.y, this.v2.y );
 	}
@@ -351,9 +349,9 @@ export default class Bounds3D
 	/**
 	 * Determine maximum Z coordinate of bounds.
 	 *
-	 * @return {number} Maximum Z coordinate of bounds.
+	 * @return Maximum Z coordinate of bounds.
 	 */
-	maxZ()
+	maxZ(): number
 	{
 		return Math.max( this.v1.z, this.v2.z );
 	}
@@ -361,9 +359,9 @@ export default class Bounds3D
 	/**
 	 * Determine minimum vector of bounds.
 	 *
-	 * @return {Vector3D} Resulting vector.
+	 * @return Resulting vector.
 	 */
-	min()
+	min(): Vector3D
 	{
 		let x = Math.min( this.v1.x, this.v2.x );
 		let y = Math.min( this.v1.y, this.v2.y );
@@ -374,9 +372,9 @@ export default class Bounds3D
 	/**
 	 * Determine minimum X coordinate of bounds.
 	 *
-	 * @return {number} Minimum X coordinate of bounds.
+	 * @return Minimum X coordinate of bounds.
 	 */
-	minX()
+	minX(): number
 	{
 		return Math.min( this.v1.x, this.v2.x );
 	}
@@ -384,9 +382,9 @@ export default class Bounds3D
 	/**
 	 * Determine minimum Y coordinate of bounds.
 	 *
-	 * @return {number} Minimum Y coordinate of bounds.
+	 * @return Minimum Y coordinate of bounds.
 	 */
-	minY()
+	minY(): number
 	{
 		return Math.min( this.v1.y, this.v2.y );
 	}
@@ -394,9 +392,9 @@ export default class Bounds3D
 	/**
 	 * Determine minimum Z coordinate of bounds.
 	 *
-	 * @return {number} Minimum Z coordinate of bounds.
+	 * @return Minimum Z coordinate of bounds.
 	 */
-	minZ()
+	minZ(): number
 	{
 		return Math.min( this.v1.z, this.v2.z );
 	}
@@ -404,11 +402,11 @@ export default class Bounds3D
 	/**
 	 * Subtract vector from bounds.
 	 *
-	 * @param {Vector3D} vector  Vector to subtract from bounds.
+	 * @param vector  Vector to subtract from bounds.
 	 *
-	 * @return {Bounds3D} Resulting bounds.
+	 * @return Resulting bounds.
 	 */
-	minus( vector )
+	minus( vector: Vector3D ): Bounds3D
 	{
 		return this.set( this.v1.minus( vector ), this.v2.minus( vector ) );
 	}
@@ -416,11 +414,11 @@ export default class Bounds3D
 	/**
 	 * Determine box after scalar multiplication.
 	 *
-	 * @param {number} factor Scale multiplication factor.
+	 * @param factor Scale multiplication factor.
 	 *
-	 * @return {Bounds3D} Resulting box.
+	 * @return Resulting box.
 	 */
-	multiply( factor )
+	multiply( factor: number ): Bounds3D
 	{
 		return this.set( this.v1.multiply( factor ), this.v2.multiply( factor ) );
 	}
@@ -428,11 +426,11 @@ export default class Bounds3D
 	/**
 	 * Add a vector to bounds.
 	 *
-	 * @param {Vector3D} vector Vector to add to bounds.
+	 * @param vector Vector to add to bounds.
 	 *
-	 * @return {Bounds3D} Resulting bounds.
+	 * @return Resulting bounds.
 	 */
-	plus( vector )
+	plus( vector: Vector3D ): Bounds3D
 	{
 		return this.set( this.v1.plus( vector ), this.v2.plus( vector ) );
 	}
@@ -441,14 +439,14 @@ export default class Bounds3D
 	 * Construct new box from the specified coordinates, and try to reuse
 	 * existing boxes.
 	 *
-	 * @param {Bounds3D} box1 Reusable box object.
-	 * @param {Bounds3D} box2 Reusable box object.
-	 * @param {Vector3D} v1 First vector of bounds to set.
-	 * @param {Vector3D} v2 Second vector of bounds to set.
+	 * @param box1 Reusable box object.
+	 * @param box2 Reusable box object.
+	 * @param v1 First vector of bounds to set.
+	 * @param v2 Second vector of bounds to set.
 	 *
-	 * @return {Bounds3D} Bounds3D object based on the desired coordinates.
+	 * @return Bounds3D object based on the desired coordinates.
 	 */
-	static rebuild( box1, box2, v1, v2 )
+	static rebuild( box1: Bounds3D, box2: Bounds3D, v1: Vector3D, v2: Vector3D ): Bounds3D
 	{
 		let result;
 
@@ -517,12 +515,12 @@ export default class Bounds3D
 	/**
 	 * Set bounds to the specified vectors.
 	 *
-	 * @param {Vector3D} [newV1] First vector of bounds to set.
-	 * @param {Vector3D} [newV2] Second vector of bounds to set.
+	 * @param [newV1] First vector of bounds to set.
+	 * @param [newV2] Second vector of bounds to set.
 	 *
-	 * @return {Bounds3D} Resulting bounds.
+	 * @return Resulting bounds.
 	 */
-	set( newV1, newV2 )
+	set( newV1?: Vector3D, newV2?: Vector3D ): Bounds3D
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -533,9 +531,9 @@ export default class Bounds3D
 	/**
 	 * Get size of these bounds.
 	 *
-	 * @return {Vector3D} Vector describing bound size (v2-v1).
+	 * @return Vector describing bound size (v2-v1).
 	 */
-	size()
+	size(): Vector3D
 	{
 		let v1 = this.v1;
 		let v2 = this.v2;
@@ -545,9 +543,9 @@ export default class Bounds3D
 	/**
 	 * Get size along X axis.
 	 *
-	 * @return {number} Size along X (distance between X coordinates of vector 1 and 2).
+	 * @return Size along X (distance between X coordinates of vector 1 and 2).
 	 */
-	sizeX()
+	sizeX(): number
 	{
 		return Math.abs( this.v2.x - this.v1.x );
 	}
@@ -555,9 +553,9 @@ export default class Bounds3D
 	/**
 	 * Get size along Y axis.
 	 *
-	 * @return {number} Size along Y (distance between Y coordinates of vector 1 and 2).
+	 * @return Size along Y (distance between Y coordinates of vector 1 and 2).
 	 */
-	sizeY()
+	sizeY(): number
 	{
 		return Math.abs( this.v2.y - this.v1.y );
 	}
@@ -565,9 +563,9 @@ export default class Bounds3D
 	/**
 	 * Get size along Z axis.
 	 *
-	 * @return {number} Size along Z (distance between Z coordinates of vector 1 and 2).
+	 * @return Size along Z (distance between Z coordinates of vector 1 and 2).
 	 */
-	sizeZ()
+	sizeZ(): number
 	{
 		return Math.abs( this.v2.z - this.v1.z );
 	}
@@ -577,9 +575,9 @@ export default class Bounds3D
 	 * components of {@link #v1} are always less or equal to the
 	 * matching components of {@link #v2}.
 	 *
-	 * @return {Bounds3D} Resulting bounds.
+	 * @return Resulting bounds.
 	 */
-	sorted()
+	sorted(): Bounds3D
 	{
 		return this.set( this.min(), this.max() );
 	}
@@ -588,11 +586,11 @@ export default class Bounds3D
 	 * Converts the bounds from an oriented bounding box (OBB) to an (world)
 	 * axis-aligned bounding box (AABB).
 	 *
-	 * @param {!Matrix3D} box2world Transforms box to world coordinates.
+	 * @param box2world Transforms box to world coordinates.
 	 *
-	 * @return {!Bounds3D} Axis-aligned bounding box.
+	 * @return Axis-aligned bounding box.
 	 */
-	convertObbToAabb( box2world )
+	convertObbToAabb( box2world: Matrix3D ): Bounds3D
 	{
 		const x1 = this.v1.x;
 		const y1 = this.v1.y;
