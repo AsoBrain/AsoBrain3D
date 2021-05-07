@@ -429,9 +429,30 @@ export default class Vector3D implements AnyVector3D
 	 *
 	 * @return Resulting vector.
 	 */
-	plus( other: AnyVector3D ): Vector3D
+	plus( other: AnyVector3D ): Vector3D;
+
+	/**
+	 * Add another vector to this vector.
+	 *
+	 * @param otherX X-coordinate of vector.
+	 * @param otherY Y-coordinate of vector.
+	 * @param otherZ Z-coordinate of vector.
+	 *
+	 * @return Resulting vector.
+	 */
+	plus( x: number, y: number, z: number ): Vector3D;
+
+	/**
+	 * Add another vector to this vector.
+	 *
+	 * @param other Vector to add to this vector.
+	 *
+	 * @return Resulting vector.
+	 */
+	plus( x: number | AnyVector3D, y?: number, z?: number ): Vector3D
 	{
-		return this.set( this.x + other.x, this.y + other.y, this.z + other.z );
+		return ( typeof x === 'object' ) ? this.set( this.x + x.x, this.y + x.y, this.z + x.z )
+		                                 : this.set( this.x + x, this.y + y, this.z + z );
 	}
 
 	/**

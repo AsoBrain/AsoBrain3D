@@ -19,7 +19,7 @@
 
 import Bounds3D from '../ab.j3d/Bounds3D';
 import Matrix3D from '../ab.j3d/Matrix3D';
-import { AnyVector2D } from '../ab.j3d/Vector2D';
+import Vector2D, { AnyVector2D } from '../ab.j3d/Vector2D';
 import Vector3D, { AnyVector3D } from '../ab.j3d/Vector3D';
 
 /**
@@ -35,6 +35,71 @@ const TWO_PI = 2 * Math.PI;
  */
 export default class GeometryTools
 {
+	/**
+	 * Get intersection of two lines.
+	 *
+	 * @param p1 First point on line 1.
+	 * @param p2 Second point on line 1
+	 * @param p3 First point on line 2.
+	 * @param p4 Second point on line 2
+	 *
+	 * @return Point of intersection; {@code null} if no intersection exists
+	 * (parallel lines).
+	 */
+	static getIntersectionBetweenLines( p1: AnyVector2D, p2: AnyVector2D, p3: AnyVector2D, p4: AnyVector2D ): Vector2D | null
+
+	/**
+	 * Get intersection of two lines.
+	 *
+	 * @param x1 First point on line 1.
+	 * @param y1 First point on line 1
+	 * @param x2 Second point on line 1
+	 * @param y2 Second point on line 1
+	 * @param x3 First point on line 2.
+	 * @param y3 First point on line 2
+	 * @param x4 Second point on line 2
+	 * @param y4 Second point on line 2
+	 *
+	 * @return Point of intersection; {@code null} if no intersection exists
+	 * (parallel lines).
+	 */
+	static getIntersectionBetweenLines( x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number ): Vector2D | null;
+
+	static getIntersectionBetweenLines( x1: number | AnyVector2D, y1: number | AnyVector2D, x2: number | AnyVector2D, y2: number | AnyVector2D, x3?: number, y3?: number, x4?: number, y4?: number ): Vector2D | null
+	{
+		if ( arguments.length === 4 )
+		{
+			x3 = ( x2 as AnyVector2D ).x;
+			y3 = ( x2 as AnyVector2D ).y;
+			x4 = ( y2 as AnyVector2D ).x;
+			y4 = ( y2 as AnyVector2D ).y;
+			x2 = ( y1 as AnyVector2D ).x;
+			y2 = ( y1 as AnyVector2D ).y;
+			y1 = ( x1 as AnyVector2D ).y;
+			x1 = ( x1 as AnyVector2D ).x;
+		}
+
+		let result: Vector2D = null;
+
+		// @ts-ignore
+		const d = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
+		if ( !this.almostEqual( d, 0.0 ) ) /* are not parallel, so they intersect at some point */
+		{
+			// @ts-ignore
+			const n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
+			const ua = n1 / d;
+
+			// @ts-ignore
+			const x = x1 + ua * ( x2 - x1 );
+			// @ts-ignore
+			const y = y1 + ua * ( y2 - y1 );
+
+			result = new Vector2D( x, y );
+		}
+
+		return result;
+	}
+
 	/**
 	 * Test if the specified point is 'inside' the specified 3D polygon. Points
 	 * on the edges and vertices are also considered 'inside'. <dl>
@@ -215,7 +280,7 @@ export default class GeometryTools
 	/**
 	 * Test if the first operand is significantly greater than the second
 	 * operand (the difference between them exceeds a tolerance of {@link
-	 * #EPSILON}).
+		* #EPSILON}).
 	 *
 	 * @param {number} value1 First value to compare.
 	 * @param {number} value2 Second value to compare.
@@ -300,21 +365,21 @@ export default class GeometryTools
 		const absZZ = Math.abs( from2to1.zz );
 
 		const result =
-		/* Test 1 X axis */ GeometryTools.significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot6( extents2X, extents2Y, extents2Z, absXX, absXY, absXZ ) ) &&
-		/* Test 1 Y axis */ GeometryTools.significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot6( extents2X, extents2Y, extents2Z, absYX, absYY, absYZ ) ) &&
-		/* Test 1 Z axis */ GeometryTools.significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot6( extents2X, extents2Y, extents2Z, absZX, absZY, absZZ ) ) &&
-		/* Test 2 X axis */ GeometryTools.significantlyLessThan( Math.abs( Vector3D.dot6( from2to1.xx, from2to1.yx, from2to1.zx, separationX, separationY, separationZ ) ), Vector3D.dot6( extents1X, extents1Y, extents1Z, absXX, absYX, absZX ) + extents2X ) &&
-		/* Test 2 Y axis */ GeometryTools.significantlyLessThan( Math.abs( Vector3D.dot6( from2to1.xy, from2to1.yy, from2to1.zy, separationX, separationY, separationZ ) ), Vector3D.dot6( extents1X, extents1Y, extents1Z, absXY, absYY, absZY ) + extents2Y ) &&
-		/* Test 2 Z axis */ GeometryTools.significantlyLessThan( Math.abs( Vector3D.dot6( from2to1.xz, from2to1.yz, from2to1.zz, separationX, separationY, separationZ ) ), Vector3D.dot6( extents1X, extents1Y, extents1Z, absXZ, absYZ, absZZ ) + extents2Z ) &&
-		/* Test 3 case 1 */ ( Math.abs( separationZ * from2to1.yx - separationY * from2to1.zx ) <= extents1Y * absZX + extents1Z * absYX + extents2Y * absXZ + extents2Z * absXY ) &&
-		/* Test 3 case 2 */ ( Math.abs( separationZ * from2to1.yy - separationY * from2to1.zy ) <= extents1Y * absZY + extents1Z * absYY + extents2X * absXZ + extents2Z * absXX ) &&
-		/* Test 3 case 3 */ ( Math.abs( separationZ * from2to1.yz - separationY * from2to1.zz ) <= extents1Y * absZZ + extents1Z * absYZ + extents2X * absXY + extents2Y * absXX ) &&
-		/* Test 3 case 4 */ ( Math.abs( separationX * from2to1.zx - separationZ * from2to1.xx ) <= extents1X * absZX + extents1Z * absXX + extents2Y * absYZ + extents2Z * absYY ) &&
-		/* Test 3 case 5 */ ( Math.abs( separationX * from2to1.zy - separationZ * from2to1.xy ) <= extents1X * absZY + extents1Z * absXY + extents2X * absYZ + extents2Z * absYX ) &&
-		/* Test 3 case 6 */ ( Math.abs( separationX * from2to1.zz - separationZ * from2to1.xz ) <= extents1X * absZZ + extents1Z * absXZ + extents2X * absYY + extents2Y * absYX ) &&
-		/* Test 3 case 7 */ ( Math.abs( separationY * from2to1.xx - separationX * from2to1.yx ) <= extents1X * absYX + extents1Y * absXX + extents2Y * absZZ + extents2Z * absZY ) &&
-		/* Test 3 case 8 */ ( Math.abs( separationY * from2to1.xy - separationX * from2to1.yy ) <= extents1X * absYY + extents1Y * absXY + extents2X * absZZ + extents2Z * absZX ) &&
-		/* Test 3 case 9 */ ( Math.abs( separationY * from2to1.xz - separationX * from2to1.yz ) <= extents1X * absYZ + extents1Y * absXZ + extents2X * absZY + extents2Y * absZX );
+			/* Test 1 X axis */ GeometryTools.significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot6( extents2X, extents2Y, extents2Z, absXX, absXY, absXZ ) ) &&
+			                    /* Test 1 Y axis */ GeometryTools.significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot6( extents2X, extents2Y, extents2Z, absYX, absYY, absYZ ) ) &&
+			                    /* Test 1 Z axis */ GeometryTools.significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot6( extents2X, extents2Y, extents2Z, absZX, absZY, absZZ ) ) &&
+			                    /* Test 2 X axis */ GeometryTools.significantlyLessThan( Math.abs( Vector3D.dot6( from2to1.xx, from2to1.yx, from2to1.zx, separationX, separationY, separationZ ) ), Vector3D.dot6( extents1X, extents1Y, extents1Z, absXX, absYX, absZX ) + extents2X ) &&
+			                    /* Test 2 Y axis */ GeometryTools.significantlyLessThan( Math.abs( Vector3D.dot6( from2to1.xy, from2to1.yy, from2to1.zy, separationX, separationY, separationZ ) ), Vector3D.dot6( extents1X, extents1Y, extents1Z, absXY, absYY, absZY ) + extents2Y ) &&
+			                    /* Test 2 Z axis */ GeometryTools.significantlyLessThan( Math.abs( Vector3D.dot6( from2to1.xz, from2to1.yz, from2to1.zz, separationX, separationY, separationZ ) ), Vector3D.dot6( extents1X, extents1Y, extents1Z, absXZ, absYZ, absZZ ) + extents2Z ) &&
+			                    /* Test 3 case 1 */ ( Math.abs( separationZ * from2to1.yx - separationY * from2to1.zx ) <= extents1Y * absZX + extents1Z * absYX + extents2Y * absXZ + extents2Z * absXY ) &&
+			                    /* Test 3 case 2 */ ( Math.abs( separationZ * from2to1.yy - separationY * from2to1.zy ) <= extents1Y * absZY + extents1Z * absYY + extents2X * absXZ + extents2Z * absXX ) &&
+			                    /* Test 3 case 3 */ ( Math.abs( separationZ * from2to1.yz - separationY * from2to1.zz ) <= extents1Y * absZZ + extents1Z * absYZ + extents2X * absXY + extents2Y * absXX ) &&
+			                    /* Test 3 case 4 */ ( Math.abs( separationX * from2to1.zx - separationZ * from2to1.xx ) <= extents1X * absZX + extents1Z * absXX + extents2Y * absYZ + extents2Z * absYY ) &&
+			                    /* Test 3 case 5 */ ( Math.abs( separationX * from2to1.zy - separationZ * from2to1.xy ) <= extents1X * absZY + extents1Z * absXY + extents2X * absYZ + extents2Z * absYX ) &&
+			                    /* Test 3 case 6 */ ( Math.abs( separationX * from2to1.zz - separationZ * from2to1.xz ) <= extents1X * absZZ + extents1Z * absXZ + extents2X * absYY + extents2Y * absYX ) &&
+			                    /* Test 3 case 7 */ ( Math.abs( separationY * from2to1.xx - separationX * from2to1.yx ) <= extents1X * absYX + extents1Y * absXX + extents2Y * absZZ + extents2Z * absZY ) &&
+			                    /* Test 3 case 8 */ ( Math.abs( separationY * from2to1.xy - separationX * from2to1.yy ) <= extents1X * absYY + extents1Y * absXY + extents2X * absZZ + extents2Z * absZX ) &&
+			                    /* Test 3 case 9 */ ( Math.abs( separationY * from2to1.xz - separationX * from2to1.yz ) <= extents1X * absYZ + extents1Y * absXZ + extents2X * absZY + extents2Y * absZX );
 		/* No separating axes => we have intersection */
 		return result;
 	}
