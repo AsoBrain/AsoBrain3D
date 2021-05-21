@@ -98,6 +98,17 @@ public class Object3DBuilder
 	 */
 	public void addObject( @NotNull final Object3D object )
 	{
+		addObject( object, null );
+	}
+
+	/**
+	 * Add {@link Object3D} content to this object.
+	 *
+	 * @param object    Object to add to this object.
+	 * @param transform Transformation to apply to each vertex.
+	 */
+	public void addObject( @NotNull final Object3D object, final @Nullable Matrix3D transform )
+	{
 		for ( final FaceGroup originalFaceGroup : object.getFaceGroups() )
 		{
 			// try to reuse existing 'FaceGroup'; create new one if necessary
@@ -127,7 +138,20 @@ public class Object3DBuilder
 				final List<Vertex3D> vertices = new ArrayList<>( originalVertices.size() );
 				for ( final Vertex3D originalVertex : originalVertices )
 				{
-					vertices.add( new Vertex3D( originalVertex.point, originalVertex.normal, _target.getVertexIndex( originalVertex.point ), originalVertex.colorMapU, originalVertex.colorMapV ) );
+					Vector3D point = originalVertex.point;
+					Vector3D normal = originalVertex.normal;
+
+					if ( transform != null )
+					{
+						point = transform.transform( point );
+						if ( normal != null )
+						{
+							normal = transform.rotate( normal );
+						}
+					}
+
+					final Vertex3D vertex = new Vertex3D( point, normal, _target.getVertexIndex( point ), originalVertex.colorMapU, originalVertex.colorMapV );
+					vertices.add( vertex );
 				}
 
 				faceGroup.addFace( new Face3D( originalFace.getNormal(), originalFace.getDistance(), vertices, originalFace.getTessellation() ) );
