@@ -1,7 +1,6 @@
 /*
- * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2018 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,12 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.junit;
 
 import ab.j3d.*;
-import junit.framework.*;
+import org.junit.*;
 
 /**
  * JUnit unit tool class to help with testing {@link Matrix3D} objects.
@@ -31,12 +29,11 @@ import junit.framework.*;
 public class Matrix3DTester
 {
 	/**
-	 *
 	 * Constant to specify a negative direction.
 	 *
-	 * @see     #assertRelativeDirectionX
-	 * @see     #assertRelativeDirectionY
-	 * @see     #assertRelativeDirectionZ
+	 * @see #assertRelativeDirectionX
+	 * @see #assertRelativeDirectionY
+	 * @see #assertRelativeDirectionZ
 	 */
 	public static final int LESS = -1;
 
@@ -83,19 +80,19 @@ public class Matrix3DTester
 	 * @param   expectedDistance    Expected distance between the matrices.
 	 * @param   delta               Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 */
-	public static void assertDistance( final String messagePrefix , final Matrix3D matrix1 , final Matrix3D matrix2 , final double expectedDistance , final double delta )
+	public static void assertDistance( final String messagePrefix, final Matrix3D matrix1, final Matrix3D matrix2, final double expectedDistance, final double delta )
 	{
-		final double dx            = matrix2.xo - matrix1.xo;
-		final double dy            = matrix2.yo - matrix1.yo;
-		final double dz            = matrix2.zo - matrix1.zo;
-		final double distance      = Math.sqrt( dx * dx + dy * dy + dz * dz );
-		final String actualPrefix  = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final double dx = matrix2.xo - matrix1.xo;
+		final double dy = matrix2.yo - matrix1.yo;
+		final double dz = matrix2.zo - matrix1.zo;
+		final double distance = Math.sqrt( dx * dx + dy * dy + dz * dz );
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
 		final String messageSuffix = "\n\nmatrix1 =\n" + matrix1.toFriendlyString()
-		                           + "\n\nmatrix2 =\n" + matrix2.toFriendlyString();
+		                             + "\n\nmatrix2 =\n" + matrix2.toFriendlyString();
 
-		Assert.assertEquals( actualPrefix + "Has incorrect distance." + messageSuffix , expectedDistance , distance , delta );
+		Assert.assertEquals( actualPrefix + "Has incorrect distance." + messageSuffix, expectedDistance, distance, delta );
 	}
 
 	/**
@@ -119,19 +116,19 @@ public class Matrix3DTester
 	 * @param   expectedZ       Expected z distance between the two matrices.
 	 * @param   delta           Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 */
-	public static void assertRelativePosition( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final double expectedX , final double expectedY , final double expectedZ , final double delta )
+	public static void assertRelativePosition( final String messagePrefix, final Matrix3D relativeTo, final Matrix3D matrix, final double expectedX, final double expectedY, final double expectedZ, final double delta )
 	{
 		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
-		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
-		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
-		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
-		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String messageSuffix = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                             + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                             + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		Assert.assertEquals( actualPrefix + "Incorrect relative X-value." + messageSuffix , expectedX , relativeMatrix.xo , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect relative Y-value." + messageSuffix , expectedY , relativeMatrix.yo , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect relative Z-value." + messageSuffix , expectedZ , relativeMatrix.zo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect relative X-value." + messageSuffix, expectedX, relativeMatrix.xo, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect relative Y-value." + messageSuffix, expectedY, relativeMatrix.yo, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect relative Z-value." + messageSuffix, expectedZ, relativeMatrix.zo, delta );
 	}
 
 	/**
@@ -158,19 +155,19 @@ public class Matrix3DTester
 	 * @param   direction       Relative direction to test (see method comment).
 	 * @param   delta           Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 *
 	 * @see     #LESS
 	 * @see     #EQUAL
 	 * @see     #GREATER
 	 */
-	public static void assertRelativeDirectionX( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final int direction , final double delta )
+	public static void assertRelativeDirectionX( final String messagePrefix, final Matrix3D relativeTo, final Matrix3D matrix, final int direction, final double delta )
 	{
 		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
-		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
-		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
-		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
-		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String messageSuffix = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                             + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                             + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
 		if ( direction < 0 )
 		{
@@ -210,19 +207,19 @@ public class Matrix3DTester
 	 * @param   direction       Relative direction to test (see method comment).
 	 * @param   delta           Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 *
 	 * @see     #LESS
 	 * @see     #EQUAL
 	 * @see     #GREATER
 	 */
-	public static void assertRelativeDirectionY( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final int direction , final double delta )
+	public static void assertRelativeDirectionY( final String messagePrefix, final Matrix3D relativeTo, final Matrix3D matrix, final int direction, final double delta )
 	{
 		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
-		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
-		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
-		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
-		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String messageSuffix = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                             + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                             + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
 		if ( direction < 0 )
 		{
@@ -262,19 +259,19 @@ public class Matrix3DTester
 	 * @param   direction       Relative direction to test (see method comment).
 	 * @param   delta           Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 *
 	 * @see     #LESS
 	 * @see     #EQUAL
 	 * @see     #GREATER
 	 */
-	public static void assertRelativeDirectionZ( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final int direction , final double delta )
+	public static void assertRelativeDirectionZ( final String messagePrefix, final Matrix3D relativeTo, final Matrix3D matrix, final int direction, final double delta )
 	{
 		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
-		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
-		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
-		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
-		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String messageSuffix = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                             + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                             + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
 		if ( direction < 0 )
 		{
@@ -308,23 +305,23 @@ public class Matrix3DTester
 	 * @param   actual          Actual matrix value.
 	 * @param   delta           Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 */
-	public static void assertEqualOrientation( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
+	public static void assertEqualOrientation( final String messagePrefix, final Matrix3D expected, final Matrix3D actual, final double delta )
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xx' value.", expected.xx, actual.xx, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xy' value.", expected.xy, actual.xy, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xz' value.", expected.xz, actual.xz, delta );
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yx' value.", expected.yx, actual.yx, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yy' value.", expected.yy, actual.yy, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yz' value.", expected.yz, actual.yz, delta );
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zx' value.", expected.zx, actual.zx, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zy' value.", expected.zy, actual.zy, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zz' value.", expected.zz, actual.zz, delta );
 	}
 
 	/**
@@ -345,44 +342,44 @@ public class Matrix3DTester
 	 * @param   actual          Actual matrix value.
 	 * @param   delta           Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 */
-	public static void assertEqualTranslation( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
+	public static void assertEqualTranslation( final String messagePrefix, final Matrix3D expected, final Matrix3D actual, final double delta )
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xo' value.", expected.xo, actual.xo, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yo' value.", expected.yo, actual.yo, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zo' value.", expected.zo, actual.zo, delta );
 	}
 
 	/**
 	 * Asserts that one matrix is equal to another matrix.
 	 *
-	 * @param   messagePrefix   Prefix to failure messages.
-	 * @param   expected        Expected matrix value.
-	 * @param   actual          Actual matrix value.
-	 * @param   delta           Delta value to limit the acceptable value range.
+	 * @param messagePrefix Prefix to failure messages.
+	 * @param expected      Expected matrix value.
+	 * @param actual        Actual matrix value.
+	 * @param delta         Delta value to limit the acceptable value range.
 	 *
-	 * @throws  AssertionFailedError is the assertion fails.
+	 * @throws AssertionError is the assertion fails.
 	 */
-	public static void assertEquals( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
+	public static void assertEquals( final String messagePrefix, final Matrix3D expected, final Matrix3D actual, final double delta )
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xx' value.", expected.xx, actual.xx, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xy' value.", expected.xy, actual.xy, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xz' value.", expected.xz, actual.xz, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xo' value.", expected.xo, actual.xo, delta );
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yx' value.", expected.yx, actual.yx, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yy' value.", expected.yy, actual.yy, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yz' value.", expected.yz, actual.yz, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yo' value.", expected.yo, actual.yo, delta );
 
-		Assert.assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
-		Assert.assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zx' value.", expected.zx, actual.zx, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zy' value.", expected.zy, actual.zy, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zz' value.", expected.zz, actual.zz, delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zo' value.", expected.zo, actual.zo, delta );
 	}
 }
