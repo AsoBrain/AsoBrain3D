@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>com.asobrain.ab3d</groupId>
 		<artifactId>ab3d</artifactId>
-		<version>1.18-SNAPSHOT</version>
+		<version>1.19-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ab3d-examples</artifactId>
 	<description>AsoBrain examples.</description>
-	<version>1.18-SNAPSHOT</version>
+	<version>1.19-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>
