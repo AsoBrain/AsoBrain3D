@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@ import org.jetbrains.annotations.*;
 /**
  * Provides loading and caching of textures for JOGL-based rendering.
  *
- * @author G. Meinders
+ * @author Gerrit Meinders
  */
 public class TextureCache
 {
@@ -127,7 +127,8 @@ public class TextureCache
 		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE, maxTextureSizeBuffer, 0 );
 
 		_maximumTextureSize = Math.max( 64, maxTextureSizeBuffer[ 0 ] );
-		_nonPowerOfTwo = gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" );
+		final boolean mac = "Mac OS X".equals( System.getProperty( "os.name" ) );
+		_nonPowerOfTwo = !mac && gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" );
 		_isOpenGL12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
 
 		/*
