@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 package ab.j3d.pov;
 
 import java.io.*;
+import java.text.*;
+import java.util.*;
 
 import ab.j3d.awt.view.*;
 import org.jetbrains.annotations.*;
@@ -27,11 +29,35 @@ import org.jetbrains.annotations.*;
  * This writer is used for POV-Ray files. It provides simple indentation and
  * line termination support.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class PovWriter
 	extends FilterWriter
 {
+	/**
+	 * Number format to format numeric as floating-point values.
+	 */
+	private final NumberFormat _floatFormat;
+	{
+		final NumberFormat floatFormat = NumberFormat.getNumberInstance( Locale.US );
+		floatFormat.setMinimumFractionDigits( 1 );
+		floatFormat.setMaximumFractionDigits( 5 );
+		floatFormat.setGroupingUsed( false );
+		_floatFormat = floatFormat;
+	}
+
+	/**
+	 * Number format to format numeric as floating-point values.
+	 */
+	private final NumberFormat _doubleFormat;
+	{
+		final NumberFormat doubleFormat = NumberFormat.getNumberInstance( Locale.US );
+		doubleFormat.setMinimumFractionDigits( 1 );
+		doubleFormat.setMaximumFractionDigits( 16 );
+		doubleFormat.setGroupingUsed( false );
+		_doubleFormat = doubleFormat;
+	}
+
 	/**
 	 * Flag to indicate that output is a the beginning of a new line.
 	 */
@@ -195,5 +221,29 @@ public class PovWriter
 	{
 		write( s );
 		newLine();
+	}
+
+	/**
+	 * Format float-point value.
+	 *
+	 * @param value Floating-point value.
+	 *
+	 * @return Formatted string.
+	 */
+	protected String format( final double value )
+	{
+		return _floatFormat.format( value + 0.0 ); // Prevent negative zero.
+	}
+
+	/**
+	 * Format float-point value.
+	 *
+	 * @param value Floating-point value.
+	 *
+	 * @return Formatted string.
+	 */
+	protected String formatPrecise( final double value )
+	{
+		return _doubleFormat.format( value + 0.0 ); // Prevent negative zero.
 	}
 }

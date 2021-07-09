@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@ package ab.j3d.pov;
 
 import java.io.*;
 
-
 /**
  * Pov Light source.
  * <pre>
@@ -32,8 +31,7 @@ import java.io.*;
  * }
  * </pre>
  *
- * @author  Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
+ * @author Sjoerd Bouwman
  */
 public final class PovLight
 	extends PovGeometry
@@ -438,21 +436,21 @@ public final class PovLight
 			if ( _radius != 30.0 )
 			{
 				out.write( "radius " );
-				out.write( format( _radius ) );
+				out.write( out.format( _radius ) );
 				out.newLine();
 			}
 
 			if ( _fallOff != 45.0 )
 			{
 				out.write( "falloff " );
-				out.write( format( _fallOff ) );
+				out.write( out.format( _fallOff ) );
 				out.newLine();
 			}
 
 			if ( _tightness != 0.0 )
 			{
 				out.write( "tightness " );
-				out.write( format( _tightness ) );
+				out.write( out.format( _tightness ) );
 				out.newLine();
 			}
 
@@ -491,7 +489,7 @@ public final class PovLight
 		if ( _fadePower != FADE_NONE )
 		{
 			out.write( "fade_distance " );
-			out.write( format( _fadeDistance ) );
+			out.write( out.format( _fadeDistance ) );
 			out.newLine();
 			out.write( "fade_power " );
 			out.write( Integer.toString( _fadePower ) );

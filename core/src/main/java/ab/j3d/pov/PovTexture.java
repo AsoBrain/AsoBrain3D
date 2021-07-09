@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -941,14 +941,14 @@ extends PovObject
 			if ( filter != 0.0 )
 			{
 				out.write( "filter all " );
-				out.write( format( filter ) );
+				out.write( out.format( filter ) );
 				out.newLine();
 			}
 
 			if ( transmit != 0.0 )
 			{
 				out.write( "transmit all " );
-				out.write( format( transmit ) );
+				out.write( out.format( transmit ) );
 				out.newLine();
 			}
 
@@ -966,7 +966,7 @@ extends PovObject
 			if ( filter != 0.0 )
 			{
 				out.write( "filter     " );
-				out.write( format( filter ) );
+				out.write( out.format( filter ) );
 				out.newLine();
 			}
 
@@ -974,7 +974,7 @@ extends PovObject
 			if ( transmit != 0.0 )
 			{
 				out.write( "transmit   " );
-				out.write( format( transmit ) );
+				out.write( out.format( transmit ) );
 				out.newLine();
 			}
 		}
@@ -997,7 +997,7 @@ extends PovObject
 			}
 			else
 			{
-				out.write( format( ambient.getX() ) );
+				out.write( out.format( ambient.getX() ) );
 			}
 			out.newLine();
 		}
@@ -1006,7 +1006,7 @@ extends PovObject
 		if ( diffuse > 0.0 )
 		{
 			out.write( "diffuse    " );
-			out.writeln( format( diffuse ) );
+			out.writeln( out.format( diffuse ) );
 		}
 
 		if ( hasImageMap() && !isWhite() )
@@ -1053,13 +1053,13 @@ extends PovObject
 		if ( phong > 0.0 )
 		{
 			out.write( "phong      " );
-			out.writeln( format( phong ) );
+			out.writeln( out.format( phong ) );
 
 			final double phongSize = getPhongSize();
 			if ( phongSize > 0.0 )
 			{
 				out.write( "phong_size " );
-				out.writeln( format( phongSize ) );
+				out.writeln( out.format( phongSize ) );
 			}
 		}
 
@@ -1067,7 +1067,7 @@ extends PovObject
 		if ( specular > 0.0 )
 		{
 			out.write( "specular   " );
-			out.writeln( format( specular ) );
+			out.writeln( out.format( specular ) );
 		}
 
 		final boolean metallic = isMetallic();
@@ -1151,7 +1151,7 @@ extends PovObject
 			}
 			else
 			{
-				out.write( format( ambient.getX() ) );
+				out.write( out.format( ambient.getX() ) );
 			}
 			out.newLine();
 		}
@@ -1160,28 +1160,28 @@ extends PovObject
 		if ( diffuse > 0.0 )
 		{
 			out.write( "diffuse    " );
-			out.writeln( format( diffuse ) );
+			out.writeln( out.format( diffuse ) );
 		}
 
 		final double phong = getPhong();
 		if ( phong > 0.0 )
 		{
 			out.write( "phong      " );
-			out.writeln( format( phong ) );
+			out.writeln( out.format( phong ) );
 		}
 
 		final double phongSize = getPhongSize();
 		if ( phongSize > 0.0 )
 		{
 			out.write( "phong_size " );
-			out.writeln( format( phongSize ) );
+			out.writeln( out.format( phongSize ) );
 		}
 
 		final double specular = getSpecular();
 		if ( specular > 0.0 )
 		{
 			out.write( "specular   " );
-			out.writeln( format( specular ) );
+			out.writeln( out.format( specular ) );
 		}
 
 		final boolean metallic = isMetallic();
@@ -1259,7 +1259,7 @@ extends PovObject
 			if ( filter != 0.0 )
 			{
 				out.write( "filter all " );
-				out.write( format( filter ) );
+				out.write( out.format( filter ) );
 				out.newLine();
 			}
 
@@ -1267,7 +1267,7 @@ extends PovObject
 			if ( transmit != 0.0 )
 			{
 				out.write( "transmit all " );
-				out.write( format( transmit ) );
+				out.write( out.format( transmit ) );
 				out.newLine();
 			}
 		}
@@ -1304,7 +1304,7 @@ extends PovObject
 		if ( filter != 0.0 )
 		{
 			out.write( "filter     " );
-			out.write( format( filter ) );
+			out.write( out.format( filter ) );
 			out.newLine();
 		}
 
@@ -1312,7 +1312,7 @@ extends PovObject
 		if ( transmit != 0.0 )
 		{
 			out.write( "transmit   " );
-			out.write( format( transmit ) );
+			out.write( out.format( transmit ) );
 			out.newLine();
 		}
 

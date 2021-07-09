@@ -702,9 +702,9 @@ public class PovMesh2
 
 				writeElementSeparator( out, 3, i );
 				out.write( '<' );
-				out.write( format( vector.getX() ) );
+				out.write( out.format( vector.getX() ) );
 				out.write( ',' );
-				out.write( format( vector.getY() ) );
+				out.write( out.format( vector.getY() ) );
 				out.write( '>' );
 			}
 

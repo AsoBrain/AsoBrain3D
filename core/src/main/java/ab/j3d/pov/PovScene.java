@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,9 +27,9 @@ import org.jetbrains.annotations.*;
 /**
  * World/Scene contains all geometry and predefined textures.
  *
- * FIXME   Improve geometry declaration (could be done in one class)
+ * FIXME: Improve geometry declaration (could be done in one class)
  *
- * @author  Sjoerd Bouwman
+ * @author Sjoerd Bouwman
  */
 public class PovScene
 {
@@ -576,7 +576,7 @@ public class PovScene
 		_ambientLight.write( out );
 		out.newLine();
 		out.write( "assumed_gamma " );
-		out.writeln( PovObject.getFloatFormat().format( getAssumedGamma() ) );
+		out.writeln( out.format( getAssumedGamma() ) );
 
 		if ( _radiosity )
 		{

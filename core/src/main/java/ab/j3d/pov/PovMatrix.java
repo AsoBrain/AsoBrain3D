@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,6 @@
 package ab.j3d.pov;
 
 import java.io.*;
-import java.text.*;
-import java.util.*;
 
 import ab.j3d.*;
 
@@ -33,25 +31,11 @@ import ab.j3d.*;
  *   xo, yo, zo &gt;     // Translation
  * </pre>
  *
- * @author  Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
+ * @author Sjoerd Bouwman
  */
 public class PovMatrix
 	extends PovObject
 {
-	/**
-	 * Number format to format numeric as floating-point values.
-	 */
-	private final NumberFormat _doubleFormat;
-
-	{
-		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
-		nf.setMinimumFractionDigits( 1 );
-		nf.setMaximumFractionDigits( 16 );
-		nf.setGroupingUsed( false );
-		_doubleFormat = nf;
-	}
-
 	/**
 	 * Matrix data as a <code>double</code>-array. This data is organized as
 	 * follows:
@@ -132,19 +116,6 @@ public class PovMatrix
 			data[  2 ], data[  5 ], data[  8 ], data[ 11 ] );
 	}
 
-	/**
-	 * Format float-point value.
-	 *
-	 * @param value Floating-point value.
-	 *
-	 * @return Formatted string.
-	 */
-	@Override
-	protected String format( final double value )
-	{
-		return _doubleFormat.format( value + 0.0 ); // Prevent negative zero.
-	}
-
 	@Override
 	public void write( final PovWriter out )
 		throws IOException
@@ -152,27 +123,27 @@ public class PovMatrix
 		final double[]     data        = _data;
 
 		out.write( "matrix < " );
-		out.write( format( data[  0 ] ) ); out.write( ", " );
-		out.write( format( data[  1 ] ) ); out.write( ", " );
-		out.write( format( data[  2 ] ) ); out.write( ","  );
+		out.write( out.formatPrecise( data[ 0 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 1 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 2 ] ) ); out.write( ","  );
 		out.newLine();
 
 		out.write( "         " );
-		out.write( format( data[  3 ] ) ); out.write( ", " );
-		out.write( format( data[  4 ] ) ); out.write( ", " );
-		out.write( format( data[  5 ] ) ); out.write( ","  );
+		out.write( out.formatPrecise( data[ 3 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 4 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 5 ] ) ); out.write( ","  );
 		out.newLine();
 
 		out.write( "         " );
-		out.write( format( data[  6 ] ) ); out.write( ", " );
-		out.write( format( data[  7 ] ) ); out.write( ", " );
-		out.write( format( data[  8 ] ) ); out.write( ","  );
+		out.write( out.formatPrecise( data[ 6 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 7 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 8 ] ) ); out.write( ","  );
 		out.newLine();
 
 		out.write( "         " );
-		out.write( format( data[  9 ] ) ); out.write( ", " );
-		out.write( format( data[ 10 ] ) ); out.write( ", " );
-		out.write( format( data[ 11 ] ) ); out.write( " >"  );
+		out.write( out.formatPrecise( data[ 9 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 10 ] ) ); out.write( ", " );
+		out.write( out.formatPrecise( data[ 11 ] ) ); out.write( " >"  );
 		out.newLine();
 	}
 
@@ -189,18 +160,18 @@ public class PovMatrix
 		final double[] data = _data;
 
 		out.write( (int)'<' );
-		out.write( format( data[  0 ] ) ); out.write( (int)',' );
-		out.write( format( data[  1 ] ) ); out.write( (int)',' );
-		out.write( format( data[  2 ] ) ); out.write( ",    "  );
-		out.write( format( data[  3 ] ) ); out.write( (int)',' );
-		out.write( format( data[  4 ] ) ); out.write( (int)',' );
-		out.write( format( data[  5 ] ) ); out.write( ",    "  );
-		out.write( format( data[  6 ] ) ); out.write( (int)',' );
-		out.write( format( data[  7 ] ) ); out.write( (int)',' );
-		out.write( format( data[  8 ] ) ); out.write( ",    "  );
-		out.write( format( data[  9 ] ) ); out.write( (int)',' );
-		out.write( format( data[ 10 ] ) ); out.write( (int)',' );
-		out.write( format( data[ 11 ] ) );
+		out.write( out.formatPrecise( data[ 0 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 1 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 2 ] ) ); out.write( ",    "  );
+		out.write( out.formatPrecise( data[ 3 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 4 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 5 ] ) ); out.write( ",    "  );
+		out.write( out.formatPrecise( data[ 6 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 7 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 8 ] ) ); out.write( ",    "  );
+		out.write( out.formatPrecise( data[ 9 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 10 ] ) ); out.write( (int)',' );
+		out.write( out.formatPrecise( data[ 11 ] ) );
 		out.write( (int)'>' );
 	}
 }
