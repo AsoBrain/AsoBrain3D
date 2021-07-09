@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,9 @@ package ab.j3d.pov;
 
 import java.io.*;
 import java.util.*;
+
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class represents a POV-Ray mesh2 object. All lists are zero-based
@@ -98,8 +101,7 @@ import java.util.*;
  *  <tr><td>texture { TEX } </td><td>Applied to all faces that have not been textured yet.    </td></tr>
  * </table>
  *
- * @author  Rob Veneberg
- * @version $Revision$ $Date$
+ * @author Rob Veneberg
  */
 public class PovMesh2
 	extends PovGeometry
@@ -108,31 +110,31 @@ public class PovMesh2
 	 * List containing {@link PovVector}s describing all vertices of the mesh.
 	 * The list contains no duplicates.
 	 */
-	private final List<PovVector> _vertexVectors = new ArrayList<PovVector>();
+	private final HashList<PovVector> _vertexVectors = new HashList<>();
 
 	/**
 	 * List containing {@link PovVector}s describing all U/V-vectors of the
 	 * mesh. The list contains no duplicates.
 	 */
-	private final List<PovVector> _uvVectors = new ArrayList<PovVector>();
+	private final HashList<PovVector> _uvVectors = new HashList<>();
 
 	/**
 	 * List containing {@link PovVector}s describing all normals of the mesh.
 	 * The list contains no duplicates.
 	 */
-	private final List<PovVector> _normalVectors = new ArrayList<PovVector>();
+	private final HashList<PovVector> _normalVectors = new HashList<>();
 
 	/**
 	 * List containing all used textures. The duplicates are filtered in the
 	 * write method. The reason for this is that a face index can also have an
 	 * index into the texture list [textureNr].
 	 */
-	private final List<PovTexture> _textureList = new ArrayList<PovTexture>();
+	private final HashList<PovTexture> _textureList = new HashList<>();
 
 	/**
 	 * List containing all triangle in this mesh.
 	 */
-	private final List<Triangle> _triangles = new ArrayList<Triangle>();
+	private final List<Triangle> _triangles = new ArrayList<>();
 
 	/**
 	 * Whether {@link #_triangles} is sorted.
@@ -289,10 +291,10 @@ public class PovMesh2
 	 * Get index for the specified vertex vector in the list of vertex vectors.
 	 *
 	 * @param   vertex          Vertex vector whose index to determine
-	 *                          (<code>null</code> => will return -1).
+	 *                          ({@code null} => will return -1).
 	 *
 	 * @return  Index of vertex;
-	 *          -1 if <code>vertex</code> is <code>null</code>.
+	 *          -1 if {@code vertex} is {@code null}.
 	 */
 	int getOrAddVertexVectorIndex( final PovVector vertex )
 	{
@@ -303,10 +305,10 @@ public class PovMesh2
 	 * Get index for the specified U/V vector in the list of U/V vectors.
 	 *
 	 * @param   uvVector        U/V vector whose index to determine
-	 *                          (<code>null</code> => will return -1).
+	 *                          ({@code null} => will return -1).
 	 *
 	 * @return  Index of uv;
-	 *          -1 if <code>uvVector</code> is <code>null</code>.
+	 *          -1 if {@code uvVector} is {@code null}.
 	 */
 	int getOrAddUvVectorIndex( final PovVector uvVector )
 	{
@@ -317,10 +319,10 @@ public class PovMesh2
 	 * Get index for the specified normal vector in the list of normal vectors.
 	 *
 	 * @param   normalVector    Normal vector whose index to determine
-	 *                          (<code>null</code> => will return -1).
+	 *                          ({@code null} => will return -1).
 	 *
 	 * @return  Index of normal vector;
-	 *          -1 if <code>normalVector</code> is <code>null</code>.
+	 *          -1 if {@code normalVector} is {@code null}.
 	 */
 	int getOrAddNormalVectorIndex( final PovVector normalVector )
 	{
@@ -331,10 +333,10 @@ public class PovMesh2
 	 * Get index for the specified texture in the list of textures.
 	 *
 	 * @param   texture    Texture whose index to determine
-	 *                          (<code>null</code> => will return -1).
+	 *                          ({@code null} => will return -1).
 	 *
 	 * @return  Index of texture;
-	 *          -1 if <code>texture</code> is <code>null</code>.
+	 *          -1 if {@code texture} is {@code null}.
 	 */
 	int getOrAddTextureIndex( final PovTexture texture )
 	{
@@ -348,46 +350,30 @@ public class PovMesh2
 	 *
 	 * @param   list        List of elements.
 	 * @param   element     Element whose index to determine
-	 *                      (<code>null</code> => will return -1).
+	 *                      ({@code null} => will return -1).
 	 *
 	 * @return  Index of element in list;
-	 *          -1 if <code>element</code> is <code>null</code>.
+	 *          -1 if {@code element} is {@code null}.
 	 *
-	 * @throws  NullPointerException if <code>list</code> is <code>null</code>.
+	 * @throws  NullPointerException if {@code list} is {@code null}.
 	 */
-	private static <T> int getOrAddElementIndex( final List<T> list, final T element )
+	private static <T> int getOrAddElementIndex( final @NotNull HashList<T> list, final @Nullable T element )
 	{
-		int result;
-
-		if ( element != null )
-		{
-			result = list.indexOf( element );
-			if ( result < 0 )
-			{
-				result = list.size();
-				list.add( element );
-			}
-		}
-		else
-		{
-			result = -1;
-		}
-
-		return result;
+		return element == null ? -1 : list.indexOfOrAdd( element );
 	}
 
 	/**
 	 * Add a new triangle to the mesh.
 	 *
 	 * @param   v1          First vertex' vector.
-	 * @param   uv1         First vertex' U/V-vectors in texture (<code>null</code> => no texture mapping).
-	 * @param   vn1         First vertex' vertex normal (<code>null</code> => no smoothing).
+	 * @param   uv1         First vertex' U/V-vectors in texture ({@code null} => no texture mapping).
+	 * @param   vn1         First vertex' vertex normal ({@code null} => no smoothing).
 	 * @param   v2          Second vertex' vector.
-	 * @param   uv2         Second vertex' U/V-vectors in texture (<code>null</code> => no texture mapping).
-	 * @param   vn2         Second vertex' vertex normal (<code>null</code> => no smoothing).
+	 * @param   uv2         Second vertex' U/V-vectors in texture ({@code null} => no texture mapping).
+	 * @param   vn2         Second vertex' vertex normal ({@code null} => no smoothing).
 	 * @param   v3          Thrid vertex' vector.
-	 * @param   uv3         Thrid vertex' UV-vectors in texture (<code>null</code> => no texture mapping).
-	 * @param   vn3         Thrid vertex' vertex normal (<code>null</code> => no smoothing).
+	 * @param   uv3         Thrid vertex' UV-vectors in texture ({@code null} => no texture mapping).
+	 * @param   vn3         Thrid vertex' vertex normal ({@code null} => no smoothing).
 	 * @param   texture     Texture for this face.
 	 */
 	public void addTriangle(
@@ -407,14 +393,14 @@ public class PovMesh2
 	 * Add a new triangle to the mesh.
 	 *
 	 * @param   v1          First vertex' vector index.
-	 * @param   uv1         First vertex' U/V vectors index (<code>-1</code> => no texture mapping).
-	 * @param   vn1         First vertex' vertex normal index (<code>-1</code> => no smoothing).
+	 * @param   uv1         First vertex' U/V vectors index ({@code -1} => no texture mapping).
+	 * @param   vn1         First vertex' vertex normal index ({@code -1} => no smoothing).
 	 * @param   v2          Second vertex' vector index.
-	 * @param   uv2         Second vertex' U/V vectors index (<code>-1</code> => no texture mapping).
-	 * @param   vn2         Second vertex' vertex normal index (<code>-1</code> => no smoothing).
+	 * @param   uv2         Second vertex' U/V vectors index ({@code -1} => no texture mapping).
+	 * @param   vn2         Second vertex' vertex normal index ({@code -1} => no smoothing).
 	 * @param   v3          Thrid vertex' vector index.
-	 * @param   uv3         Thrid vertex' U/V vectors index (<code>-1</code> => no texture mapping).
-	 * @param   vn3         Thrid vertex' vertex normal index (<code>-1</code> => no smoothing).
+	 * @param   uv3         Thrid vertex' U/V vectors index ({@code -1} => no texture mapping).
+	 * @param   vn3         Thrid vertex' vertex normal index ({@code -1} => no smoothing).
 	 * @param   texture     Texture index for this face.
 	 */
 	public void addTriangle(
@@ -623,7 +609,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>vertex_vectors</code>' section to the specified writer.
+	 * Write '{@code vertex_vectors}' section to the specified writer.
 	 * <pre>
 	 * vertex_vectors
 	 * {
@@ -666,7 +652,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>uv_vectors</code>' section to the specified writer.
+	 * Write '{@code uv_vectors}' section to the specified writer.
 	 * <pre>
 	 * uv_vectors
 	 * {
@@ -716,7 +702,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>normal_vectors</code>' section to the specified writer.
+	 * Write '{@code normal_vectors}' section to the specified writer.
 	 * <pre>
 	 * normal_vectors
 	 * {
@@ -762,7 +748,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>texture_list</code>' section to the specified writer.
+	 * Write '{@code texture_list}' section to the specified writer.
 	 * <pre>
 	 * texture_list
 	 * {
@@ -804,7 +790,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>face_indices</code>' section to the specified writer.
+	 * Write '{@code face_indices}' section to the specified writer.
 	 * <pre>
 	 * face_indices
 	 * {
@@ -845,7 +831,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>uv_indices</code>' section to the specified writer.
+	 * Write '{@code uv_indices}' section to the specified writer.
 	 * <pre>
 	 * uv_indices
 	 * {
@@ -887,7 +873,7 @@ public class PovMesh2
 	}
 
 	/**
-	 * Write '<code>normal_indices</code>' section to the specified writer.
+	 * Write '{@code normal_indices}' section to the specified writer.
 	 * <pre>
 	 * normal_indices
 	 * {
