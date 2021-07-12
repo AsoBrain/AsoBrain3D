@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d;
 
@@ -29,13 +27,13 @@ import org.jetbrains.annotations.*;
  * and {@link #indexOf} lookups. Modifications are rather costly, especially
  * adding/removing any element other than the element at the end of the list.
  *
- * @param   <E>     Element type.
+ * @param <E> Element type.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @author Peter S. Heijnen
  */
+@SuppressWarnings( "ClassExtendsConcreteCollection" )
 public class HashList<E>
-	extends ArrayList<E>
+extends ArrayList<E>
 {
 	/**
 	 * Serialize data version.
@@ -45,7 +43,7 @@ public class HashList<E>
 	/**
 	 * Maps {@link Object#hashCode()} to {@link TreeSet}s with element indices.
 	 */
-	private final Map<Integer,TreeSet<Integer>> _indexHashmap = new HashMap<Integer,TreeSet<Integer>>();
+	private final Map<Integer, TreeSet<Integer>> _indexHashmap = new HashMap<>();
 
 	/**
 	 * Construct empty list.
@@ -57,7 +55,7 @@ public class HashList<E>
 	/**
 	 * Construct list will all contents from the specified collection.
 	 *
-	 * @param   collection  Collection with initial contents.
+	 * @param collection Collection with initial contents.
 	 */
 	public HashList( final Collection<? extends E> collection )
 	{
@@ -73,20 +71,20 @@ public class HashList<E>
 
 	/**
 	 * Convenience method to implement common application of {@link HashList}:
-	 * get index of <code>element</code> in list if it already exists or add it
-	 * to the end of the list, and return the index of the <code>element</code>
+	 * get index of {@code element} in list if it already exists or add it
+	 * to the end of the list, and return the index of the {@code element}
 	 * in the list.
 	 *
-	 * @param   element  Element to get index of or add to end of the list.
+	 * @param element Element to get index of or add to end of the list.
 	 *
-	 * @return  Index of object in list.
+	 * @return Index of object in list.
 	 */
 	public int indexOfOrAdd( @NotNull final E element )
 	{
 		int result = -1;
 
-		final Map<Integer,TreeSet<Integer>> indexHashmap = _indexHashmap;
-		final Integer hashCode = Integer.valueOf( element.hashCode() );
+		final Map<Integer, TreeSet<Integer>> indexHashmap = _indexHashmap;
+		final Integer hashCode = element.hashCode();
 
 		TreeSet<Integer> indices = indexHashmap.get( hashCode );
 		if ( indices != null )
@@ -108,12 +106,12 @@ public class HashList<E>
 			 */
 			if ( indices == null )
 			{
-				indices = new TreeSet<Integer>();
+				indices = new TreeSet<>();
 				indexHashmap.put( hashCode, indices );
 			}
 
 			final int size = size();
-			indices.add( Integer.valueOf( size ) );
+			indices.add( size );
 			super.add( size, element );
 			result = size;
 		}
@@ -124,22 +122,22 @@ public class HashList<E>
 	@Override
 	public void add( final int index, final E element )
 	{
-		final Map<Integer,TreeSet<Integer>> indexHashmap = _indexHashmap;
+		final Map<Integer, TreeSet<Integer>> indexHashmap = _indexHashmap;
 
 		/*
 		 * Increment index of all trailing elements.
 		 */
 		if ( index < size() )
 		{
-			for ( final Map.Entry<Integer,TreeSet<Integer>> entry : indexHashmap.entrySet() )
+			for ( final Map.Entry<Integer, TreeSet<Integer>> entry : indexHashmap.entrySet() )
 			{
-				final TreeSet<Integer> newIndices = new TreeSet<Integer>();
+				final TreeSet<Integer> newIndices = new TreeSet<>();
 
 				for ( final Integer i : entry.getValue() )
 				{
 					if ( i >= index )
 					{
-						newIndices.add( Integer.valueOf( i + 1 ) );
+						newIndices.add( i + 1 );
 					}
 					else
 					{
@@ -154,16 +152,11 @@ public class HashList<E>
 		/*
 		 * Add index to map.
 		 */
-		final Integer hashCode = Integer.valueOf( element.hashCode() );
+		final Integer hashCode = element.hashCode();
 
-		TreeSet<Integer> indices = indexHashmap.get( hashCode );
-		if ( indices == null )
-		{
-			indices = new TreeSet<Integer>();
-			indexHashmap.put( hashCode, indices );
-		}
+		final TreeSet<Integer> indices = indexHashmap.computeIfAbsent( hashCode, k -> new TreeSet<>() );
 
-		indices.add( Integer.valueOf( index ) );
+		indices.add( index );
 		super.add( index, element );
 	}
 
@@ -222,19 +215,22 @@ public class HashList<E>
 	}
 
 	@Override
-	public int indexOf( final Object object )
+	public int indexOf( final @Nullable Object object )
 	{
 		int result = -1;
 
-		final TreeSet<Integer> indices = _indexHashmap.get( Integer.valueOf( object.hashCode() ) );
-		if ( indices != null )
+		if ( object != null )
 		{
-			for ( final int index : indices )
+			final TreeSet<Integer> indices = _indexHashmap.get( object.hashCode() );
+			if ( indices != null )
 			{
-				if ( object.equals( get( index ) ) )
+				for ( final int index : indices )
 				{
-					result = index;
-					break;
+					if ( object.equals( get( index ) ) )
+					{
+						result = index;
+						break;
+					}
 				}
 			}
 		}
@@ -247,7 +243,7 @@ public class HashList<E>
 	{
 		int result = -1;
 
-		final TreeSet<Integer> indices = _indexHashmap.get( Integer.valueOf( object.hashCode() ) );
+		final TreeSet<Integer> indices = _indexHashmap.get( object.hashCode() );
 		if ( indices != null )
 		{
 			for ( final int index : indices.descendingSet() )
@@ -264,7 +260,7 @@ public class HashList<E>
 	}
 
 	@Override
-	public ListIterator<E> listIterator()
+	public @NotNull ListIterator<E> listIterator()
 	{
 		return new HashListIterator();
 	}
@@ -274,17 +270,17 @@ public class HashList<E>
 	{
 		final E element = super.remove( index );
 
-		final Map<Integer,TreeSet<Integer>> indexHashmap = _indexHashmap;
+		final Map<Integer, TreeSet<Integer>> indexHashmap = _indexHashmap;
 
 		/*
 		 * Remove index from map.
 		 */
-		final Integer hashCode = Integer.valueOf( element.hashCode() );
+		final Integer hashCode = element.hashCode();
 
 		final TreeSet<Integer> indices = indexHashmap.get( hashCode );
 		if ( indices.size() > 1 )
 		{
-			indices.remove( Integer.valueOf( index ) );
+			indices.remove( index );
 		}
 		else
 		{
@@ -294,17 +290,17 @@ public class HashList<E>
 		/*
 		 * Decrement index of all trailing elements.
 		 */
-		if ( index < size() - 1 )
+		if ( index < size() )
 		{
-			for ( final Map.Entry<Integer,TreeSet<Integer>> entry : indexHashmap.entrySet() )
+			for ( final Map.Entry<Integer, TreeSet<Integer>> entry : indexHashmap.entrySet() )
 			{
-				final TreeSet<Integer> newIndices = new TreeSet<Integer>();
+				final TreeSet<Integer> newIndices = new TreeSet<>();
 
 				for ( final Integer i : entry.getValue() )
 				{
 					if ( i > index )
 					{
-						newIndices.add( Integer.valueOf( i - 1 ) );
+						newIndices.add( i - 1 );
 					}
 					else
 					{
@@ -343,11 +339,18 @@ public class HashList<E>
 	{
 		boolean result = false;
 
-		for ( final Object element : collection )
+		int index = 0;
+		while ( index < size() )
 		{
-			if ( remove( element ) )
+			final E element = get( index );
+			if ( collection.contains( element ) )
 			{
+				remove( index );
 				result = true;
+			}
+			else
+			{
+				index++;
 			}
 		}
 
@@ -380,7 +383,7 @@ public class HashList<E>
 	@Override
 	protected void removeRange( final int fromIndex, final int toIndex )
 	{
-		for ( int toRemove = toIndex - fromIndex ; toRemove > 0 ; toRemove-- )
+		for ( int toRemove = toIndex - fromIndex; toRemove > 0; toRemove-- )
 		{
 			remove( fromIndex );
 		}
@@ -393,11 +396,11 @@ public class HashList<E>
 
 		if ( element != oldElement )
 		{
-			final Map<Integer,TreeSet<Integer>> indexHashmap = _indexHashmap;
+			final Map<Integer, TreeSet<Integer>> indexHashmap = _indexHashmap;
 
-			final Integer indexValue = Integer.valueOf( index );
+			final Integer indexValue = index;
 
-			Integer hashCode = Integer.valueOf( oldElement.hashCode() );
+			Integer hashCode = oldElement.hashCode();
 
 			TreeSet<Integer> indices = indexHashmap.get( hashCode );
 			if ( indices.size() > 1 )
@@ -409,14 +412,9 @@ public class HashList<E>
 				indexHashmap.remove( hashCode );
 			}
 
-			hashCode = Integer.valueOf( element.hashCode() );
+			hashCode = element.hashCode();
 
-			indices = indexHashmap.get( hashCode );
-			if ( indices == null )
-			{
-				indices = new TreeSet<Integer>();
-				indexHashmap.put( hashCode, indices );
-			}
+			indices = indexHashmap.computeIfAbsent( hashCode, k -> new TreeSet<>() );
 
 			indices.add( indexValue );
 		}
@@ -431,7 +429,7 @@ public class HashList<E>
 	 * {@link #remove} methods.
 	 */
 	private class HashListIterator
-		implements ListIterator<E>
+	implements ListIterator<E>
 	{
 		/**
 		 * Index of current element.
