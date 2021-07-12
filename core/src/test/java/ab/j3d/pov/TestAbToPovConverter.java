@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,15 +21,16 @@ package ab.j3d.pov;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import junit.framework.*;
+import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  * This class tests the conversion of a {@link AbPovTestModel test model} to
@@ -38,7 +39,6 @@ import junit.framework.*;
  * @author Rob Veneberg
  */
 public class TestAbToPovConverter
-extends TestCase
 {
 	/**
 	 * This method tests if the needed texture declarations are generated. All
@@ -46,6 +46,7 @@ extends TestCase
 	 *
 	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testDeclarations()
 	throws Exception
 	{
@@ -69,7 +70,7 @@ extends TestCase
 		 * definition part is needed.
 		 */
 		final int texturesStart = povScript.indexOf( " * Texture definitions" ) - 3;
-		final int declaredGeometryStart = povScript.indexOf( " * Geometry" ) - 3;
+		final int declaredGeometryStart = povScript.indexOf( " * Declared geometry" ) - 3;
 		final String actual = povScript.substring( texturesStart, declaredGeometryStart );
 
 		final String expected =
@@ -541,6 +542,7 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testView3DToPovCamera()
 	throws IOException
 	{
@@ -578,13 +580,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testRedXRotatedBox3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Box3D abObject = testModel.getRedXRotatedBox3D();
-		final PovGeometry povObject = converter.convertBox3D( Matrix3D.getTransform( -10.0, 0.0, 0.0, -200.0, 0.0, -250.0 ), abObject );
+		final PovGeometry povObject = converter.convertBox3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTransform( -10.0, 0.0, 0.0, -200.0, 0.0, -250.0 ) ) );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 1, expectedTextures.size() );
@@ -616,13 +621,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testGreenYRotatedBox3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Box3D abObject = testModel.getGreenYRotatedBox3D();
-		final PovGeometry povObject = converter.convertBox3D( Matrix3D.getTransform( 0.0, 10.0, 0.0, -50.0, 0.0, -250.0 ), abObject );
+		final PovGeometry povObject = converter.convertBox3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTransform( 0.0, 10.0, 0.0, -50.0, 0.0, -250.0 ) ) );
 		final String actual = getWrittenOutput( povObject );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
@@ -651,13 +659,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testBlueZRotatedBox3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Box3D abObject = testModel.getBlueZRotatedBox3D();
-		final PovGeometry povObject = converter.convertBox3D( Matrix3D.getTransform( 0.0, 0.0, 10.0, 200.0, 0.0, -250.0 ), abObject );
+		final PovGeometry povObject = converter.convertBox3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTransform( 0.0, 0.0, 10.0, 200.0, 0.0, -250.0 ) ) );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 1, expectedTextures.size() );
@@ -687,13 +698,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testTexturedBox3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Box3D abObject = testModel.getTexturedBox3D();
-		final PovMesh2 povObject = converter.convertObject3D( Matrix3D.getTransform( 0.0, 0.0, 45.0, -350.0, 0.0, 0.0 ), abObject );
+		final PovMesh2 povObject = converter.convertObject3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTransform( 0.0, 0.0, 45.0, -350.0, 0.0, 0.0 ) ) );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 2, expectedTextures.size() );
@@ -701,44 +715,48 @@ extends TestCase
 		final String texture2 = expectedTextures.get( 1 );
 
 		final String expected =
-		"mesh2\n"
-		+ "{\n"
-		+ "\tvertex_vectors\n"
-		+ "\t{\n"
-		+ "\t\t8,\n"
-		+ "\t\t<-350.0,0.0,0.0>, <-208.57864,141.42136,0.0>, <-215.64971,148.49242,0.0>,\n"
-		+ "\t\t<-357.07107,7.07107,0.0>, <-350.0,0.0,200.0>, <-208.57864,141.42136,200.0>,\n"
-		+ "\t\t<-215.64971,148.49242,200.0>, <-357.07107,7.07107,200.0>\n"
-		+ "\t}\n"
-		+ "\tuv_vectors\n"
-		+ "\t{\n"
-		+ "\t\t13,\n"
-		+ "\t\t<1.0,0.0>, <1.0,1.0>, <0.0,1.0>,\n"
-		+ "\t\t<0.0,0.0>, <-1.0,1.0>, <-1.0,0.0>,\n"
-		+ "\t\t<0.05,0.0>, <0.05,1.0>, <-0.05,1.0>,\n"
-		+ "\t\t<-0.05,0.0>, <1.0,0.05>, <0.0,0.05>,\n"
-		+ "\t\t<-1.0,0.05>\n"
-		+ "\t}\n"
-		+ "\ttexture_list\n"
-		+ "\t{\n"
-		+ "\t\t2,\n"
-		+ "\t\ttexture { TEX_" + texture1 + " }\n"
-		+ "\t\ttexture { TEX_" + texture2 + " }\n"
-		+ "\t}\n"
-		+ "\tface_indices\n"
-		+ "\t{\n"
-		+ "\t\t12,\n"
-		+ "\t\t<1,5,4>,0, <1,4,0>,0, <3,7,6>,0, <3,6,2>,0, <2,6,5>,1, <2,5,1>,1,\n"
-		+ "\t\t<0,4,7>,1, <0,7,3>,1, <5,6,7>,1, <5,7,4>,1, <0,3,2>,1, <0,2,1>,1\n"
-		+ "\t}\n"
-		+ "\tuv_indices\n"
-		+ "\t{\n"
-		+ "\t\t12,\n"
-		+ "\t\t<0,1,2>, <0,2,3>, <3,2,4>, <3,4,5>, <6,7,2>, <6,2,3>,\n"
-		+ "\t\t<3,2,8>, <3,8,9>, <0,10,11>, <0,11,3>, <3,11,12>, <3,12,5>\n"
-		+ "\t}\n"
-		+ "\tuv_mapping\n"
-		+ "}\n";
+		"mesh2\n" +
+		"{\n" +
+		"\tvertex_vectors\n" +
+		"\t{\n" +
+		"\t\t8,\n" +
+		"\t\t<0.0,0.0,0.0>, <200.0,0.0,0.0>, <200.0,10.0,0.0>,\n" +
+		"\t\t<0.0,10.0,0.0>, <0.0,0.0,200.0>, <200.0,0.0,200.0>,\n" +
+		"\t\t<200.0,10.0,200.0>, <0.0,10.0,200.0>\n" +
+		"\t}\n" +
+		"\tuv_vectors\n" +
+		"\t{\n" +
+		"\t\t13,\n" +
+		"\t\t<1.0,0.0>, <1.0,1.0>, <0.0,1.0>,\n" +
+		"\t\t<0.0,0.0>, <-1.0,1.0>, <-1.0,0.0>,\n" +
+		"\t\t<0.05,0.0>, <0.05,1.0>, <-0.05,1.0>,\n" +
+		"\t\t<-0.05,0.0>, <1.0,0.05>, <0.0,0.05>,\n" +
+		"\t\t<-1.0,0.05>\n" +
+		"\t}\n" +
+		"\ttexture_list\n" +
+		"\t{\n" +
+		"\t\t2,\n" +
+		"\t\ttexture { TEX_" + texture1 + " }\n" +
+		"\t\ttexture { TEX_" + texture2 + " }\n" +
+		"\t}\n" +
+		"\tface_indices\n" +
+		"\t{\n" +
+		"\t\t12,\n" +
+		"\t\t<1,5,4>,0, <1,4,0>,0, <3,7,6>,0, <3,6,2>,0, <2,6,5>,1, <2,5,1>,1,\n" +
+		"\t\t<0,4,7>,1, <0,7,3>,1, <5,6,7>,1, <5,7,4>,1, <0,3,2>,1, <0,2,1>,1\n" +
+		"\t}\n" +
+		"\tuv_indices\n" +
+		"\t{\n" +
+		"\t\t12,\n" +
+		"\t\t<0,1,2>, <0,2,3>, <3,2,4>, <3,4,5>, <6,7,2>, <6,2,3>,\n" +
+		"\t\t<3,2,8>, <3,8,9>, <0,10,11>, <0,11,3>, <3,11,12>, <3,12,5>\n" +
+		"\t}\n" +
+		"\tuv_mapping\n" +
+		"\tmatrix < 0.7071067811865476, 0.7071067811865475, 0.0,\n" +
+		"\t         -0.7071067811865475, 0.7071067811865476, 0.0,\n" +
+		"\t         0.0, 0.0, 1.0,\n" +
+		"\t         -350.0, 0.0, 0.0 >\n" +
+		"}\n";
 
 		final String actual = getWrittenOutput( povObject );
 
@@ -752,13 +770,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testSphere3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Sphere3D abObject = testModel.getSphere3D();
-		final PovGeometry povObject = converter.convertSphere3D( Matrix3D.getTranslation( 0.0, 300.0, -200.0 ), abObject );
+		final PovGeometry povObject = converter.convertSphere3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTranslation( 0.0, 300.0, -200.0 ) ) );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 1, expectedTextures.size() );
@@ -787,13 +808,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testCylinder3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Cylinder3D abObject = testModel.getCylinder3D();
-		final PovGeometry povObject = converter.convertCylinder3D( Matrix3D.getTranslation( 0.0, 0.0, 150.0 ), abObject );
+		final PovGeometry povObject = converter.convertCylinder3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTranslation( 0.0, 0.0, 150.0 ) ) );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 1, expectedTextures.size() );
@@ -823,13 +847,16 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testCone3DToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Cone3D abObject = testModel.getCone3D();
-		final PovGeometry povObject = converter.convertCone3D( Matrix3D.getTransform( -45.0, 0.0, 0.0, 250.0, 0.0, 0.0 ), abObject );
+		final PovGeometry povObject = converter.convertCone3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+		povObject.setTransform( new PovMatrix( Matrix3D.getTransform( -45.0, 0.0, 0.0, 250.0, 0.0, 0.0 ) ) );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 1, expectedTextures.size() );
@@ -859,13 +886,15 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testColorCubeToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Object3D abObject = testModel.getColorCube();
-		final PovGeometry povObject = converter.convertObject3D( Matrix3D.IDENTITY, abObject );
+		final PovGeometry povObject = converter.convertObject3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 6, expectedTextures.size() );
@@ -923,13 +952,15 @@ extends TestCase
 	 * @throws IOException When there was a problem writing to the {@link
 	 * PovWriter}.
 	 */
+	@Test
 	public void testTexturedColorCubeToPov()
 	throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Object3D abObject = testModel.getTexturedColorCube();
-		final PovGeometry povObject = converter.convertObject3D( Matrix3D.IDENTITY, abObject );
+		final PovGeometry povObject = converter.convertObject3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
 
 		final List<String> expectedTextures = getTextureNames( abObject );
 		assertEquals( "Unexpected number of textures", 6, expectedTextures.size() );
@@ -984,14 +1015,16 @@ extends TestCase
 	 * This method tests the conversion of an extruded {@link java.awt.Shape} to a
 	 * {@link PovMesh2}.
 	 */
+	@Test
 	public void testExtrudedObject2DAToPov()
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 		final Object3D abObject = testModel.getExtrudedObject2DA();
-		final PovMesh2 povObject = converter.convertObject3D( Matrix3D.IDENTITY, abObject );
+		final PovMesh2 povObject = converter.convertObject3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
 
-		final List<Vector3D[]> expectedTriangles = new ArrayList<Vector3D[]>( Arrays.asList(
+		final List<Vector3D[]> expectedTriangles = new ArrayList<>( Arrays.asList(
 		new Vector3D[] { new Vector3D( -300.0, 0.0, -250.0 ), new Vector3D( -300.0, 100.0, -150.0 ), new Vector3D( -400.0, 100.0, -150.0 ) },
 		new Vector3D[] { new Vector3D( -300.0, 0.0, -250.0 ), new Vector3D( -400.0, 100.0, -150.0 ), new Vector3D( -400.0, 0.0, -250.0 ) },
 		new Vector3D[] { new Vector3D( -300.0, 100.0, -250.0 ), new Vector3D( -300.0, 200.0, -150.0 ), new Vector3D( -300.0, 100.0, -150.0 ) },
@@ -1017,15 +1050,17 @@ extends TestCase
 	 * This method tests the conversion of an extruded {@link java.awt.Shape} to a
 	 * {@link PovMesh2}.
 	 */
+	@Test
 	public void testExtrudedObject2DBToPov()
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final AbToPovConverter converter = new AbToPovConverter();
 
 		final Object3D abObject = testModel.getExtrudedObject2DB();
-		final PovMesh2 povObject = converter.convertObject3D( Matrix3D.IDENTITY, abObject );
+		final PovMesh2 povObject = converter.convertObject3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
 
-		final List<Vector3D[]> expectedTriangles = new ArrayList<Vector3D[]>( Arrays.asList(
+		final List<Vector3D[]> expectedTriangles = new ArrayList<>( Arrays.asList(
 		new Vector3D[] { new Vector3D( -400.0, 100.0, -300.0 ), new Vector3D( -300.0, 100.0, -300.0 ), new Vector3D( -300.0, 0.0, -300.0 ) },
 		new Vector3D[] { new Vector3D( -400.0, 100.0, -300.0 ), new Vector3D( -300.0, 0.0, -300.0 ), new Vector3D( -400.0, 0.0, -300.0 ) },
 		new Vector3D[] { new Vector3D( -400.0, 0.0, -250.0 ), new Vector3D( -400.0, 0.0, -300.0 ), new Vector3D( -300.0, 0.0, -300.0 ) },
@@ -1054,6 +1089,7 @@ extends TestCase
 	 *
 	 * @throws Exception if the test fails.
 	 */
+	@Test
 	public void testLight3DToPov()
 	throws Exception
 	{
@@ -1109,12 +1145,7 @@ extends TestCase
 			final File file = new File( url.toURI() );
 			return file.getPath() + File.separator;
 		}
-		catch ( MalformedURLException e )
-		{
-			/* should not happen */
-			throw new AssertionError( e );
-		}
-		catch ( URISyntaxException e )
+		catch ( final MalformedURLException | URISyntaxException e )
 		{
 			/* should not happen */
 			throw new AssertionError( e );
@@ -1131,8 +1162,8 @@ extends TestCase
 	{
 		final List<PovVector> vertices = actual.getVertexVectors();
 
-		final List<PovMesh2.Triangle> unexpected = new ArrayList<PovMesh2.Triangle>();
-		final List<Vector3D[]> missing = new ArrayList<Vector3D[]>( expected );
+		final List<PovMesh2.Triangle> unexpected = new ArrayList<>();
+		final List<Vector3D[]> missing = new ArrayList<>( expected );
 
 		for ( final PovMesh2.Triangle actualTriangle : actual.getTriangles() )
 		{
@@ -1141,7 +1172,7 @@ extends TestCase
 			final PovVector actualVertex3 = vertices.get( actualTriangle._vertexIndex3 );
 
 			boolean found = false;
-			for ( Iterator<Vector3D[]> iterator = missing.iterator(); iterator.hasNext(); )
+			for ( final Iterator<Vector3D[]> iterator = missing.iterator(); iterator.hasNext(); )
 			{
 				final Vector3D[] expectedTriangle = iterator.next();
 				if ( isSameTriangle( expectedTriangle, actualVertex1, actualVertex2, actualVertex3 ) )
@@ -1201,7 +1232,7 @@ extends TestCase
 	 * @param actualVertex2    Vertex coordinate 2 of the actual triangle.
 	 * @param actualVertex3    Vertex coordinate 3 of the actual triangle.
 	 *
-	 * @return <code>true</code> if the triangles are the same.
+	 * @return {@code true} if the triangles are the same.
 	 */
 	private static boolean isSameTriangle( final Vector3D[] expectedTriangle, final PovVector actualVertex1, final PovVector actualVertex2, final PovVector actualVertex3 )
 	{
@@ -1231,7 +1262,7 @@ extends TestCase
 
 	private static List<String> getTextureNames( final Object3D abObject )
 	{
-		final List<String> expectedTextures = new ArrayList<String>();
+		final List<String> expectedTextures = new ArrayList<>();
 		for ( final FaceGroup faceGroup : abObject.getFaceGroups() )
 		{
 			final Appearance appearance = faceGroup.getAppearance();

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,7 @@ public class AbToPovConverter
 	 * @param object The {@link Object3D} to inspect.
 	 *
 	 * @return {@code true} if the {@link Object3D} contains multiple materials
-	 *         and/or maps; {@code false} otherwise.
+	 * and/or maps; {@code false} otherwise.
 	 */
 	private static boolean containsMultipleMaterialsOrMaps( final Object3D object )
 	{
@@ -100,19 +100,18 @@ public class AbToPovConverter
 	/**
 	 * This method constructs a {@link PovBox} from a {@link Box3D} object.
 	 *
-	 * @param box2wcs Transform to apply to node.
-	 * @param box     The {@link Box3D} to be converted.
+	 * @param box The {@link Box3D} to be converted.
 	 *
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
-	 *         did not produce any geometry.
+	 * did not produce any geometry.
 	 */
-	public PovGeometry convertBox3D( final Matrix3D box2wcs, final Box3D box )
+	public PovGeometry convertBox3D( final Box3D box )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( box ) )
 		{
-			result = convertObject3D( box2wcs, box );
+			result = convertObject3D( box );
 		}
 		else
 		{
@@ -127,7 +126,6 @@ public class AbToPovConverter
 				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
 				result = new PovBox( name, v1, v2, texture );
-				result.setTransform( new PovMatrix( box2wcs ) );
 			}
 			else
 			{
@@ -141,19 +139,18 @@ public class AbToPovConverter
 	/**
 	 * This method constructs a {@link PovCylinder} from a {@link Cone3D} object.
 	 *
-	 * @param transform Transform to apply to node.
-	 * @param cone      The {@link Cone3D} to be converted.
+	 * @param cone The {@link Cone3D} to be converted.
 	 *
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
-	 *         did not produce any geometry.
+	 * did not produce any geometry.
 	 */
-	public PovGeometry convertCone3D( final Matrix3D transform, final Cone3D cone )
+	public PovGeometry convertCone3D( final Cone3D cone )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( cone ) )
 		{
-			result = convertObject3D( transform, cone );
+			result = convertObject3D( cone );
 		}
 		else
 		{
@@ -166,7 +163,6 @@ public class AbToPovConverter
 				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
 				result = new PovCylinder( name, 0.0, 0.0, 0.0, cone.height, cone.radiusBottom, cone.radiusTop, texture );
-				result.setTransform( new PovMatrix( transform ) );
 			}
 			else
 			{
@@ -181,19 +177,18 @@ public class AbToPovConverter
 	 * This method constructs a {@link PovCylinder} from a {@link Cylinder3D}
 	 * object.
 	 *
-	 * @param transform Transform to apply to node.
-	 * @param cylinder  The {@link Cylinder3D} to be converted.
+	 * @param cylinder The {@link Cylinder3D} to be converted.
 	 *
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
-	 *         did not produce any geometry.
+	 * did not produce any geometry.
 	 */
-	public PovGeometry convertCylinder3D( final Matrix3D transform, final Cylinder3D cylinder )
+	public PovGeometry convertCylinder3D( final Cylinder3D cylinder )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( cylinder ) )
 		{
-			result = convertObject3D( transform, cylinder );
+			result = convertObject3D( cylinder );
 		}
 		else
 		{
@@ -206,7 +201,6 @@ public class AbToPovConverter
 				final PovTexture texture = convertMaterialToPovTexture( appearance );
 
 				result = new PovCylinder( name, 0.0, 0.0, 0.0, cylinder.getHeight(), cylinder.getRadius(), cylinder.getRadius(), texture );
-				result.setTransform( new PovMatrix( transform ) );
 			}
 			else
 			{
@@ -302,13 +296,12 @@ public class AbToPovConverter
 	 * </pre>
 	 * Triangle 1: ( 0, 1, 2 )<br> Triangle 2: ( 0, 2, 3 )
 	 *
-	 * @param transform Transform to apply to node.
-	 * @param object    The {@link Object3D} to be converted.
+	 * @param object The {@link Object3D} to be converted.
 	 *
 	 * @return The resulting {@link PovMesh2} object; {@code null} if the object
-	 *         did not produce any geometry.
+	 * did not produce any geometry.
 	 */
-	public PovMesh2 convertObject3D( final Matrix3D transform, final Object3D object )
+	public PovMesh2 convertObject3D( final Object3D object )
 	{
 		PovMesh2 result = null;
 
@@ -338,10 +331,10 @@ public class AbToPovConverter
 
 			final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
 
-			final List<PovVector> vertexVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
+			final List<PovVector> vertexVectors = new ArrayList<>( vertexCoordinates.size() );
 			for ( final Vector3D point : vertexCoordinates )
 			{
-				vertexVectors.add( new PovVector( transform.transform( point ) ) );
+				vertexVectors.add( new PovVector( point ) );
 			}
 
 			mesh.setVertexVectors( vertexVectors );
@@ -415,9 +408,9 @@ public class AbToPovConverter
 
 								if ( smooth )
 								{
-									vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j ] ) ) ) );
-									vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j + 1 ] ) ) ) );
-									vertexNormals.add( new PovVector( transform.rotate( face.getVertexNormal( triangles[ j + 2 ] ) ) ) );
+									vertexNormals.add( new PovVector( face.getVertexNormal( triangles[ j ] ) ) );
+									vertexNormals.add( new PovVector( face.getVertexNormal( triangles[ j + 1 ] ) ) );
+									vertexNormals.add( new PovVector( face.getVertexNormal( triangles[ j + 2 ] ) ) );
 								}
 
 								mesh.addTriangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, textureIndex );
@@ -444,19 +437,18 @@ public class AbToPovConverter
 	/**
 	 * This method constructs a {@link PovSphere} from a {@link Sphere3D} object.
 	 *
-	 * @param transform Transform to apply to node.
-	 * @param sphere    The {@link Sphere3D} to be converted.
+	 * @param sphere The {@link Sphere3D} to be converted.
 	 *
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
-	 *         did not produce any geometry.
+	 * did not produce any geometry.
 	 */
-	public PovGeometry convertSphere3D( final Matrix3D transform, final Sphere3D sphere )
+	public PovGeometry convertSphere3D( final Sphere3D sphere )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( sphere ) )
 		{
-			result = convertObject3D( transform, sphere );
+			result = convertObject3D( sphere );
 		}
 		else
 		{
@@ -466,9 +458,7 @@ public class AbToPovConverter
 			if ( appearance != null )
 			{
 				final PovTexture texture = convertMaterialToPovTexture( appearance );
-
 				result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.ZERO, sphere.getRadius(), texture );
-				result.setTransform( new PovMatrix( transform ) );
 			}
 			else
 			{
@@ -511,6 +501,11 @@ public class AbToPovConverter
 	private class ConvertingVisitor
 	implements Node3DVisitor
 	{
+		/**
+		 * Keeps track of previously declared objects.
+		 */
+		private final Map<Node3D, String> _declaredNodes = new HashMap<>();
+
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();
@@ -519,54 +514,50 @@ public class AbToPovConverter
 
 			if ( node instanceof Light3D )
 			{
-				final PovLight light = convertLight3D( path.getTransform(), (Light3D)node );
-				if ( light != null )
-				{
-					scene.add( light );
-				}
+				scene.add( convertLight3D( path.getTransform(), (Light3D)node ) );
 			}
-			else if ( node instanceof Box3D )
+			else
 			{
-				final PovGeometry geometry = convertBox3D( path.getTransform(), (Box3D)node );
-				if ( geometry != null )
+				final String name = _declaredNodes.computeIfAbsent( node, n -> {
+					String result = null;
+
+					PovGeometry geometry = null;
+					if ( node instanceof Box3D )
+					{
+						geometry = convertBox3D( (Box3D)node );
+					}
+					else if ( node instanceof Cone3D )
+					{
+						geometry = convertCone3D( (Cone3D)node );
+					}
+					else if ( node instanceof Cylinder3D )
+					{
+						geometry = convertCylinder3D( (Cylinder3D)node );
+					}
+					else if ( node instanceof Sphere3D )
+					{
+						geometry = convertSphere3D( (Sphere3D)node );
+					}
+					else if ( node instanceof Object3D )
+					{
+						geometry = convertObject3D( (Object3D)node );
+					}
+
+					if ( geometry != null )
+					{
+						result = "geometry" + _declaredNodes.size();
+						geometry.setName( result );
+						scene.declare( geometry );
+					}
+
+					return result;
+				} );
+
+				if ( name != null )
 				{
-					scene.add( geometry );
-				}
-			}
-			else if ( node instanceof Cone3D )
-			{
-				final PovGeometry geometry = convertCone3D( path.getTransform(), (Cone3D)node );
-				if ( geometry != null )
-				{
-					scene.add( geometry );
-				}
-			}
-			else if ( node instanceof Cylinder3D )
-			{
-				final PovGeometry geometry = convertCylinder3D( path.getTransform(), (Cylinder3D)node );
-				if ( geometry != null )
-				{
-					scene.add( geometry );
-				}
-			}
-			else if ( node instanceof Sphere3D )
-			{
-				final PovGeometry geometry = convertSphere3D( path.getTransform(), (Sphere3D)node );
-				if ( geometry != null )
-				{
-					scene.add( geometry );
-				}
-			}
-//			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
-//			{
-//				scene.add( convertExtrudedObject2D( path.getTransform(), (ExtrudedObject2D)node ) );
-//			}
-			else if ( node instanceof Object3D )
-			{
-				final PovMesh2 geometry = convertObject3D( path.getTransform(), (Object3D)node );
-				if ( geometry != null )
-				{
-					scene.add( geometry );
+					final PovDeclared object = new PovDeclared( name );
+					object.setTransform( new PovMatrix( path.getTransform() ) );
+					scene.add( object );
 				}
 			}
 
