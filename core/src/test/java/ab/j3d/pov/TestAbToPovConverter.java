@@ -946,6 +946,88 @@ public class TestAbToPovConverter
 	}
 
 	/**
+	 * This method tests the conversion of a smooth {@link Object3D} (a colored
+	 * cube with a different texture per face) to a {@link PovMesh2}.
+	 *
+	 * @throws IOException When there was a problem writing to the {@link
+	 * PovWriter}.
+	 */
+	@Test
+	public void testSmoothColorCubeToPov()
+	throws IOException
+	{
+		final AbPovTestModel testModel = new AbPovTestModel();
+		final AbToPovConverter converter = new AbToPovConverter();
+		final Object3D abObject = testModel.getColorCube();
+		abObject.smooth( 180, 180, false );
+		final PovGeometry povObject = converter.convertObject3D( abObject );
+		assertNotNull( "Missing geometry", povObject );
+
+		final List<String> expectedTextures = getTextureNames( abObject );
+		assertEquals( "Unexpected number of textures", 6, expectedTextures.size() );
+
+		final String expected =
+		"mesh2\n"
+		+ "{\n"
+		+ "\tvertex_vectors\n"
+		+ "\t{\n"
+		+ "\t\t8,\n"
+		+ "\t\t<-100.0,-100.0,100.0>, <-100.0,100.0,100.0>, <100.0,100.0,100.0>,\n"
+		+ "\t\t<100.0,-100.0,100.0>, <-100.0,100.0,-100.0>, <-100.0,-100.0,-100.0>,\n"
+		+ "\t\t<100.0,-100.0,-100.0>, <100.0,100.0,-100.0>\n"
+		+ "\t}\n"
+		+ "\tuv_vectors\n"
+		+ "\t{\n"
+		+ "\t\t4,\n"
+		+ "\t\t<0.0,1.0>, <1.0,1.0>, <1.0,0.0>,\n"
+		+ "\t\t<0.0,0.0>\n"
+		+ "\t}\n"
+		+ "\tnormal_vectors\n"
+		+ "\t{\n"
+		+ "\t\t8,\n"
+		+ "\t\t<0.57735,-0.57735,0.57735>, <0.57735,0.57735,0.57735>, <-0.57735,0.57735,0.57735>,\n"
+		+ "\t\t<-0.57735,-0.57735,0.57735>, <0.57735,0.57735,-0.57735>, <0.57735,-0.57735,-0.57735>,\n"
+		+ "\t\t<-0.57735,-0.57735,-0.57735>, <-0.57735,0.57735,-0.57735>\n"
+		+ "\t}\n"
+		+ "\ttexture_list\n"
+		+ "\t{\n"
+		+ "\t\t6,\n"
+		+ "\t\ttexture { TEX_" + expectedTextures.get( 0 ) + " }\n"
+		+ "\t\ttexture { TEX_" + expectedTextures.get( 1 ) + " }\n"
+		+ "\t\ttexture { TEX_" + expectedTextures.get( 2 ) + " }\n"
+		+ "\t\ttexture { TEX_" + expectedTextures.get( 3 ) + " }\n"
+		+ "\t\ttexture { TEX_" + expectedTextures.get( 4 ) + " }\n"
+		+ "\t\ttexture { TEX_" + expectedTextures.get( 5 ) + " }\n"
+		+ "\t}\n"
+		+ "\tface_indices\n"
+		+ "\t{\n"
+		+ "\t\t12,\n"
+		+ "\t\t<3,2,1>,0, <3,1,0>,0, <7,6,5>,1, <7,5,4>,1, <6,3,0>,2, <6,0,5>,2,\n"
+		+ "\t\t<4,1,2>,3, <4,2,7>,3, <5,0,1>,4, <5,1,4>,4, <7,2,3>,5, <7,3,6>,5\n"
+		+ "\t}\n"
+		+ "\tuv_indices\n"
+		+ "\t{\n"
+		+ "\t\t12,\n"
+		+ "\t\t<0,1,2>, <0,2,3>, <0,1,2>, <0,2,3>, <0,1,2>, <0,2,3>,\n"
+		+ "\t\t<0,1,2>, <0,2,3>, <0,1,2>, <0,2,3>, <0,1,2>, <0,2,3>\n"
+		+ "\t}\n"
+		+ "\tnormal_indices\n"
+		+ "\t{\n"
+		+ "\t\t12,\n"
+		+ "\t\t<0,1,2>, <0,2,3>, <4,5,6>,\n"
+		+ "\t\t<4,6,7>, <5,0,3>, <5,3,6>,\n"
+		+ "\t\t<7,2,1>, <7,1,4>, <6,3,2>,\n"
+		+ "\t\t<6,2,7>, <4,1,0>, <4,0,5>\n"
+		+ "\t}\n"
+		+ "\tuv_mapping\n"
+		+ "}\n";
+
+		final String actual = getWrittenOutput( povObject );
+
+		assertEquals( "ColorCube3D to pov conversion error", expected, actual );
+	}
+
+	/**
 	 * This method tests the conversion of an {@link Object3D} (a colored cube with
 	 * a different texture per face) to a {@link PovMesh2}.
 	 *

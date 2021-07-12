@@ -37,16 +37,7 @@ public class AbToPovConverter
 	/**
 	 * Variable that will hold the converted scene.
 	 */
-	private final PovScene _scene;
-
-	/**
-	 * Construct new converter and set the image map directory.
-	 */
-	public AbToPovConverter()
-	{
-
-		_scene = new PovScene();
-	}
+	private final @NotNull PovScene _scene = new PovScene();
 
 	/**
 	 * Method to check if an {@link Object3D} contains multiple materials and/or
@@ -57,7 +48,7 @@ public class AbToPovConverter
 	 * @return {@code true} if the {@link Object3D} contains multiple materials
 	 * and/or maps; {@code false} otherwise.
 	 */
-	private static boolean containsMultipleMaterialsOrMaps( final Object3D object )
+	private static boolean containsMultipleMaterialsOrMaps( final @NotNull Object3D object )
 	{
 		boolean result = false;
 
@@ -89,10 +80,10 @@ public class AbToPovConverter
 	 *
 	 * @return The resulting {@link PovScene} object.
 	 */
-	public PovScene convert( final Scene scene )
+	public @NotNull PovScene convert( final @NotNull Scene scene )
 	{
 		final PovScene povScene = _scene;
-		povScene.setAmbientLight( new PovVector( (double)scene.getAmbientRed(), (double)scene.getAmbientGreen(), (double)scene.getAmbientBlue() ) );
+		povScene.setAmbientLight( new PovVector( scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue() ) );
 		scene.walk( new ConvertingVisitor() );
 		return povScene;
 	}
@@ -105,7 +96,7 @@ public class AbToPovConverter
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
 	 * did not produce any geometry.
 	 */
-	public PovGeometry convertBox3D( final Box3D box )
+	public @Nullable PovGeometry convertBox3D( final @NotNull Box3D box )
 	{
 		final PovGeometry result;
 
@@ -144,7 +135,7 @@ public class AbToPovConverter
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
 	 * did not produce any geometry.
 	 */
-	public PovGeometry convertCone3D( final Cone3D cone )
+	public @Nullable PovGeometry convertCone3D( final @NotNull Cone3D cone )
 	{
 		final PovGeometry result;
 
@@ -182,7 +173,7 @@ public class AbToPovConverter
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
 	 * did not produce any geometry.
 	 */
-	public PovGeometry convertCylinder3D( final Cylinder3D cylinder )
+	public @Nullable PovGeometry convertCylinder3D( final @NotNull Cylinder3D cylinder )
 	{
 		final PovGeometry result;
 
@@ -219,11 +210,11 @@ public class AbToPovConverter
 	 *
 	 * @return The resulting {@link PovLight} object.
 	 */
-	public static PovLight convertLight3D( final Matrix3D transform, final Light3D light )
+	public static @NotNull PovLight convertLight3D( final @NotNull Matrix3D transform, final @NotNull Light3D light )
 	{
 		final String name = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
 
-		final PovVector color = new PovVector( (double)light.getDiffuseRed(), (double)light.getDiffuseGreen(), (double)light.getDiffuseBlue() );
+		final PovVector color = new PovVector( light.getDiffuseRed(), light.getDiffuseGreen(), light.getDiffuseBlue() );
 		final PovLight result = new PovLight( name, transform.xo, transform.yo, transform.zo, color, true );
 
 		if ( light instanceof DirectionalLight3D )
@@ -246,9 +237,9 @@ public class AbToPovConverter
 
 				result.setSpotlight( true );
 				result.setPointAt( new PovVector( pointAt ) );
-				result.setFallOff( (double)spotLight.getSpreadAngle() );
-				result.setRadius( (double)spotLight.getSpreadAngle() );
-				result.setTightness( (double)spotLight.getConcentration() / 128.0 * 100.0 );
+				result.setFallOff( spotLight.getSpreadAngle() );
+				result.setRadius( spotLight.getSpreadAngle() );
+				result.setTightness( spotLight.getConcentration() / 128.0 * 100.0 );
 			}
 			// else: regular point light
 
@@ -259,12 +250,12 @@ public class AbToPovConverter
 			}
 			else if ( light.getQuadraticAttenuation() > 0.0f )
 			{
-				result.setFadeDistance( (double)light.getFullIntensityDistance() );
+				result.setFadeDistance( light.getFullIntensityDistance() );
 				result.setFadePower( PovLight.FADE_QUADRATIC );
 			}
 			else if ( light.getLinearAttenuation() > 0.0f )
 			{
-				result.setFadeDistance( (double)light.getFullIntensityDistance() );
+				result.setFadeDistance( light.getFullIntensityDistance() );
 				result.setFadePower( PovLight.FADE_LINEAR );
 			}
 			else
@@ -301,7 +292,7 @@ public class AbToPovConverter
 	 * @return The resulting {@link PovMesh2} object; {@code null} if the object
 	 * did not produce any geometry.
 	 */
-	public PovMesh2 convertObject3D( final Object3D object )
+	public @Nullable PovMesh2 convertObject3D( final @NotNull Object3D object )
 	{
 		PovMesh2 result = null;
 
@@ -339,30 +330,11 @@ public class AbToPovConverter
 
 			mesh.setVertexVectors( vertexVectors );
 
-			List<PovVector> vertexNormals = null;
 			int textureIndex = 0;
 			boolean uvMapping = false;
 
-			int smoothVertexCount = 0;
-			for ( final FaceGroup faceGroup : object.getFaceGroups() )
-			{
-				if ( faceGroup.isSmooth() )
-				{
-					for ( final Face3D face : faceGroup.getFaces() )
-					{
-						smoothVertexCount += face.getVertexCount();
-					}
-				}
-			}
-
-			if ( smoothVertexCount > 0 )
-			{
-				vertexNormals = new ArrayList<PovVector>( smoothVertexCount );
-			}
-
 			Appearance lastAppearance = null;
 
-			int normalIndex = 0;
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
 			{
 				final Appearance appearance = faceGroup.getAppearance();
@@ -393,25 +365,18 @@ public class AbToPovConverter
 							{
 								final Vertex3D vertex0 = face.getVertex( triangles[ j ] );
 								final int v1 = vertex0.vertexCoordinateIndex;
-								final int vn1 = smooth ? normalIndex++ : 0;
-								final int uv1 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
+								final int vn1 = smooth ? mesh.getOrAddNormalVectorIndex( new PovVector( face.getVertexNormal( triangles[ j ] ) ) ) : 0;
+								final int uv1 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( vertex0.colorMapU, vertex0.colorMapV, 0.0 ) ) : -1;
 
 								final Vertex3D vertex1 = face.getVertex( triangles[ j + 1 ] );
 								final int v2 = vertex1.vertexCoordinateIndex;
-								final int vn2 = smooth ? normalIndex++ : 0;
-								final int uv2 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
+								final int vn2 = smooth ? mesh.getOrAddNormalVectorIndex( new PovVector( face.getVertexNormal( triangles[ j + 1 ] ) ) ) : 0;
+								final int uv2 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( vertex1.colorMapU, vertex1.colorMapV, 0.0 ) ) : -1;
 
 								final Vertex3D vertex2 = face.getVertex( triangles[ j + 2 ] );
 								final int v3 = vertex2.vertexCoordinateIndex;
-								final int vn3 = smooth ? normalIndex++ : 0;
-								final int uv3 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( (double)vertex2.colorMapU, (double)vertex2.colorMapV, 0.0 ) ) : -1;
-
-								if ( smooth )
-								{
-									vertexNormals.add( new PovVector( face.getVertexNormal( triangles[ j ] ) ) );
-									vertexNormals.add( new PovVector( face.getVertexNormal( triangles[ j + 1 ] ) ) );
-									vertexNormals.add( new PovVector( face.getVertexNormal( triangles[ j + 2 ] ) ) );
-								}
+								final int vn3 = smooth ? mesh.getOrAddNormalVectorIndex( new PovVector( face.getVertexNormal( triangles[ j + 2 ] ) ) ) : 0;
+								final int uv3 = uvMapping ? mesh.getOrAddUvVectorIndex( new PovVector( vertex2.colorMapU, vertex2.colorMapV, 0.0 ) ) : -1;
 
 								mesh.addTriangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, textureIndex );
 								hasFaces = true;
@@ -423,10 +388,6 @@ public class AbToPovConverter
 
 			if ( hasFaces )
 			{
-				if ( vertexNormals != null )
-				{
-					mesh.setNormalVectors( vertexNormals );
-				}
 				result = mesh;
 			}
 		}
@@ -442,7 +403,7 @@ public class AbToPovConverter
 	 * @return The resulting {@link PovGeometry} object; {@code null} if the object
 	 * did not produce any geometry.
 	 */
-	public PovGeometry convertSphere3D( final Sphere3D sphere )
+	public @Nullable PovGeometry convertSphere3D( final @NotNull Sphere3D sphere )
 	{
 		final PovGeometry result;
 
@@ -476,8 +437,7 @@ public class AbToPovConverter
 	 *
 	 * @return The resulting {@link PovTexture}.
 	 */
-	@Nullable
-	private PovTexture convertMaterialToPovTexture( final Appearance appearance )
+	private @NotNull PovTexture convertMaterialToPovTexture( final @NotNull Appearance appearance )
 	{
 		final String textureName = PovTexture.getName( appearance );
 
@@ -506,7 +466,7 @@ public class AbToPovConverter
 		 */
 		private final Map<Node3D, String> _declaredNodes = new HashMap<>();
 
-		public boolean visitNode( @NotNull final Node3DPath path )
+		public boolean visitNode( final @NotNull Node3DPath path )
 		{
 			final Node3D node = path.getNode();
 
