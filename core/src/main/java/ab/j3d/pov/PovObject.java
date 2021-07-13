@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,39 +19,14 @@
 package ab.j3d.pov;
 
 import java.io.*;
-import java.text.*;
-import java.util.*;
-
-import org.jetbrains.annotations.*;
 
 /**
  * Base class for each object pov object.
  *
- * @author  Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
+ * @author Sjoerd Bouwman
  */
 public abstract class PovObject
 {
-	/**
-	 * Returns a number format for floats.
-	 *
-	 * @return Number format.
-	 */
-	@NotNull
-	static NumberFormat getFloatFormat()
-	{
-		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
-		nf.setMinimumFractionDigits( 1 );
-		nf.setMaximumFractionDigits( 5 );
-		nf.setGroupingUsed( false );
-		return nf;
-	}
-
-	/**
-	 * Number format to format numeric as floating-point values.
-	 */
-	private final NumberFormat _floatFormat = getFloatFormat();
-
 	/**
 	 * Writes the PovObject to the specified writer.
 	 * <p>
@@ -64,16 +39,4 @@ public abstract class PovObject
 	 */
 	public abstract void write( final PovWriter out )
 	throws IOException;
-
-	/**
-	 * Format float-point value.
-	 *
-	 * @param value Floating-point value.
-	 *
-	 * @return Formatted string.
-	 */
-	protected String format( final double value )
-	{
-		return _floatFormat.format( value + 0.0 ); // Prevent negative zero.
-	}
 }

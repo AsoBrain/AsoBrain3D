@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,12 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.pov;
 
 import java.io.*;
-
 
 /**
  * Pov cylinder.
@@ -36,8 +33,7 @@ import java.io.*;
  * }
  * </pre>
  *
- * @author  Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
+ * @author Sjoerd Bouwman
  */
 public class PovCylinder
 	extends PovGeometry
@@ -232,13 +228,13 @@ public class PovCylinder
 		final PovVector p1 = getP1();
 		p1.write( out );
 		out.write( (int)',' );
-		out.write( format( getR1() ) );
+		out.write( out.format( getR1() ) );
 		out.newLine();
 
 		final PovVector p2 = getP2();
 		p2.write( out );
 		out.write( (int)',' );
-		out.write( format( getR2() ) );
+		out.write( out.format( getR2() ) );
 		out.newLine();
 
 		writeModifiers( out );
