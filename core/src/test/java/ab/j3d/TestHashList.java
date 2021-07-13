@@ -350,6 +350,36 @@ public class TestHashList
 	}
 
 	@Test
+	public void testRemoveIndex()
+	{
+		final List<String> list = _list;
+		list.add( "a" );
+		list.add( "b" );
+		list.add( "c" );
+		list.add( "a" );
+		list.add( "b" );
+		list.add( "c" );
+
+		assertEquals( "Unexpected element.", "c", list.remove( 2 ) );
+		assertEquals( "Unexpected elements.", asList( "a", "b", "a", "b", "c" ), list );
+		assertEquals( "Unexpected index.", 0, list.indexOf( "a" ) );
+		assertEquals( "Unexpected index.", 1, list.indexOf( "b" ) );
+		assertEquals( "Unexpected index.", 4, list.indexOf( "c" ) );
+		assertEquals( "Unexpected index.", 2, list.lastIndexOf( "a" ) );
+		assertEquals( "Unexpected index.", 3, list.lastIndexOf( "b" ) );
+		assertEquals( "Unexpected index.", 4, list.lastIndexOf( "c" ) );
+
+		assertEquals( "Unexpected element.", "c", list.remove( 4 ) );
+		assertEquals( "Unexpected elements.", asList( "a", "b", "a", "b" ), list );
+		assertEquals( "Unexpected index.", 0, list.indexOf( "a" ) );
+		assertEquals( "Unexpected index.", 1, list.indexOf( "b" ) );
+		assertEquals( "Unexpected index.", -1, list.indexOf( "c" ) );
+		assertEquals( "Unexpected index.", 2, list.lastIndexOf( "a" ) );
+		assertEquals( "Unexpected index.", 3, list.lastIndexOf( "b" ) );
+		assertEquals( "Unexpected index.", -1, list.lastIndexOf( "c" ) );
+	}
+
+	@Test
 	public void testRemoveAll()
 	{
 		final List<String> list = _list;
