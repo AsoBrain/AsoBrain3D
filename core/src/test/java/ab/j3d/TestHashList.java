@@ -50,6 +50,13 @@ public class TestHashList
 	}
 
 	@Test
+	public void testCopyConstructor()
+	{
+		final HashList<String> list = new HashList<>( asList( "a", "b", "c" ) );
+		assertEquals( "Unexpected elements.", asList( "a", "b", "c" ), list );
+	}
+
+	@Test
 	public void testAdd()
 	{
 		final List<String> list = _list;
@@ -69,6 +76,9 @@ public class TestHashList
 		list.add( "b" );
 		list.addAll( asList( "b", "c" ) );
 		assertEquals( "Unexpected elements.", asList( "a", "b", "b", "c" ), list );
+
+		list.addAll( 3, asList( "c", "b", "a" ) );
+		assertEquals( "Unexpected elements.", asList( "a", "b", "b", "c", "b", "a", "c" ), list );
 	}
 
 	@Test
@@ -148,6 +158,8 @@ public class TestHashList
 		assertEquals( "Unexpected index.", 2, list.indexOf( "a" ) );
 		assertEquals( "Unexpected index.", 1, list.indexOf( "b" ) );
 		assertEquals( "Unexpected index.", 0, list.indexOf( "c" ) );
+
+		assertEquals( "Unexpected index.", -1, list.indexOf( null ) );
 	}
 
 	@Test
@@ -195,7 +207,72 @@ public class TestHashList
 	@Test
 	public void testListIterator()
 	{
+		final List<String> list = _list;
+		final ListIterator<String> iterator = list.listIterator();
 
+		assertFalse( "Expected no next element.", iterator.hasNext() );
+		assertThrows( NoSuchElementException.class, iterator::next );
+
+		iterator.add( "a" );
+		iterator.add( "b" );
+		assertEquals( "Unexpected elements.", asList( "a", "b" ), list );
+		assertEquals( "Unexpected index.", 0, list.indexOf( "a" ) );
+		assertEquals( "Unexpected index.", 1, list.indexOf( "b" ) );
+		assertThrows( "Remove is not possible after add.", IllegalStateException.class, iterator::remove );
+		assertThrows( "Set is not possible after add.", IllegalStateException.class, () -> iterator.set( "c" ) );
+
+		assertFalse( "Add should insert before cursor.", iterator.hasNext() );
+		assertTrue( "Add should insert before cursor.", iterator.hasPrevious() );
+		assertEquals( "Add should insert before cursor.", 2, iterator.nextIndex() );
+		assertEquals( "Add should insert before cursor.", 1, iterator.previousIndex() );
+
+		assertEquals( "Unexpected previous element.", "b", iterator.previous() );
+		assertEquals( "Unexpected previous element.", "a", iterator.previous() );
+		assertThrows( NoSuchElementException.class, iterator::previous );
+
+		assertEquals( "Unexpected next element.", "a", iterator.next() );
+		assertEquals( "Unexpected next element.", "b", iterator.next() );
+		assertThrows( NoSuchElementException.class, iterator::next );
+
+		iterator.add( "c" );
+		assertEquals( "Unexpected next index.", 3, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 2, iterator.previousIndex() );
+		assertEquals( "Unexpected previous element.", "c", iterator.previous() );
+		assertEquals( "Unexpected next index.", 2, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 1, iterator.previousIndex() );
+		assertEquals( "Unexpected previous element.", "b", iterator.previous() );
+		assertEquals( "Unexpected next index.", 1, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 0, iterator.previousIndex() );
+		assertEquals( "Unexpected next element.", "b", iterator.next() );
+		assertEquals( "Unexpected next index.", 2, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 1, iterator.previousIndex() );
+		iterator.remove();
+		assertEquals( "Unexpected elements.", asList( "a", "c" ), list );
+		assertThrows( "Can't remove twice.", IllegalStateException.class, iterator::remove );
+		assertEquals( "Unexpected next index.", 1, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 0, iterator.previousIndex() );
+		assertThrows( "Set is not possible after remove.", IllegalStateException.class, () -> iterator.set( "d" ) );
+		iterator.add( "b" );
+		assertEquals( "Unexpected next index.", 2, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 1, iterator.previousIndex() );
+		assertEquals( "Unexpected elements.", asList( "a", "b", "c" ), list );
+
+		assertEquals( "Unexpected previous element.", "b", iterator.previous() );
+		assertEquals( "Unexpected next index.", 1, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 0, iterator.previousIndex() );
+		iterator.remove();
+		assertEquals( "Unexpected elements.", asList( "a", "c" ), list );
+		assertEquals( "Unexpected next index.", 1, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 0, iterator.previousIndex() );
+		iterator.add( "b" );
+		assertEquals( "Unexpected next index.", 2, iterator.nextIndex() );
+		assertEquals( "Unexpected previous index.", 1, iterator.previousIndex() );
+
+		assertEquals( "Unexpected next element.", "c", iterator.next() );
+		iterator.set( "d" );
+		assertEquals( "Unexpected elements.", asList( "a", "b", "d" ), list );
+		iterator.remove();
+		assertEquals( "Unexpected elements.", asList( "a", "b" ), list );
 	}
 
 	@Test

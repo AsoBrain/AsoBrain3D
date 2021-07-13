@@ -434,27 +434,22 @@ extends ArrayList<E>
 		/**
 		 * Index of current element.
 		 */
-		int _index = -1;
+		int _index = 0;
 
 		/**
-		 * Flag to indicate that the current element can be removed.
+		 * Index that can be removed with {@link #remove()}.
 		 */
-		boolean _removable = false;
-
-		/**
-		 * Flag to indicate that the current element was removed.
-		 */
-		boolean _removed = false;
+		int _lastIndex = -1;
 
 		public void add( final E element )
 		{
 			HashList.this.add( _index++, element );
-			_removable = false;
+			_lastIndex = -1;
 		}
 
 		public boolean hasNext()
 		{
-			return ( _index < size() - 1 );
+			return _index < size();
 		}
 
 		public boolean hasPrevious()
@@ -466,60 +461,58 @@ extends ArrayList<E>
 		{
 			if ( !hasNext() )
 			{
+				//noinspection NewExceptionWithoutArguments
 				throw new NoSuchElementException();
 			}
 
-			int index = _index;
-			if ( !_removed )
-			{
-				_index = ++index;
-			}
-
-			_removable = true;
-			_removed = false;
-
-			return get( index );
+			_lastIndex = _index;
+			return get( _index++ );
 		}
 
 		public int nextIndex()
 		{
-			return ( _removed ? _index : ( _index + 1 ) );
+			return _index;
 		}
 
 		public E previous()
 		{
 			if ( !hasPrevious() )
 			{
+				//noinspection NewExceptionWithoutArguments
 				throw new NoSuchElementException();
 			}
 
-			_removable = true;
-			_removed = false;
+			final int index = --_index;
+			_lastIndex = index;
 
-			return get( --_index );
+			return get( index );
 		}
 
 		public int previousIndex()
 		{
-			return hasPrevious() ? ( _index - 1 ) : -1;
+			return _index - 1;
 		}
 
 		public void remove()
 		{
-			if ( !_removable )
+			if ( _lastIndex == -1 )
 			{
-				throw new IllegalStateException( "can't remove twice" );
+				throw new IllegalStateException( "call next or previous first" );
 			}
 
-			_removable = false;
-			_removed = true;
-
-			HashList.this.remove( _index );
+			HashList.this.remove( _lastIndex );
+			_index = _lastIndex;
+			_lastIndex = -1;
 		}
 
 		public void set( final E value )
 		{
-			HashList.this.set( _index, value );
+			if ( _lastIndex == -1 )
+			{
+				throw new IllegalStateException( "call next or previous first" );
+			}
+
+			HashList.this.set( _lastIndex, value );
 		}
 	}
 }
