@@ -32,6 +32,7 @@ import org.junit.*;
  *
  * @author Gerrit Meinders
  */
+@SuppressWarnings( { "InstanceVariableMayNotBeInitialized", "JavaDoc" } )
 public class TestHashList
 {
 	private @NotNull HashList<String> _list;
