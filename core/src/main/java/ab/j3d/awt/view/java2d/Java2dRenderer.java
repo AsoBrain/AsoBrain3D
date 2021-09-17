@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2013 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -395,7 +395,7 @@ public class Java2dRenderer
 	 * @param renderStyle Render style to use.
 	 *
 	 * @return {@code true} if the shape was painted; {@code false} if the shape
-	 *         should be painted by some other means.
+	 * should be painted by some other means.
 	 */
 	private static boolean paintExtrudedShape( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final ExtrudedObject2D object, final RenderStyle renderStyle )
 	{
@@ -404,12 +404,12 @@ public class Java2dRenderer
 		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
 		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 
-
-		final Shape shape = object.shape;
+		final Shape shape = object.getShape();
+		final Vector3D extrusion = object.getExtrusion();
 
 		g.translate( -0.5, -0.5 ); // Match rounding used in other paint methods.
 
-		if ( ( object.extrusion.x != 0.0 ) || ( object.extrusion.y != 0.0 ) )
+		if ( ( extrusion.x != 0.0 ) || ( extrusion.y != 0.0 ) )
 		{
 			result = false;
 		}
@@ -420,7 +420,7 @@ public class Java2dRenderer
 			final Matrix3D object2graphics = object2view.multiply( view2image );
 
 			final Vector3D v1 = object2graphics.transform( bounds.getMinX(), bounds.getMinY(), 0.0 );
-			final Vector3D v2 = object2graphics.transform( bounds.getMaxX(), bounds.getMaxY(), object.extrusion.z );
+			final Vector3D v2 = object2graphics.transform( bounds.getMaxX(), bounds.getMaxY(), extrusion.z );
 
 			final double minX = Math.min( v1.x, v2.x );
 			final double minY = Math.min( v1.y, v2.y );
@@ -582,7 +582,7 @@ public class Java2dRenderer
 				botRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D bot = MathTools.almostEqual( (double)botRadius, 0.0 ) ? null : new Ellipse2D.Float( x - botRadius, y - botRadius, 2.0f * botRadius, 2.0f * botRadius );
+			final Ellipse2D bot = MathTools.almostEqual( botRadius, 0.0 ) ? null : new Ellipse2D.Float( x - botRadius, y - botRadius, 2.0f * botRadius, 2.0f * botRadius );
 
 			final float topZ = (float)combinedTransform.transformZ( 0.0, 0.0, height );
 			final float topRadius;
@@ -592,7 +592,7 @@ public class Java2dRenderer
 				topRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D top = MathTools.almostEqual( (double)topRadius, 0.0 ) ? null : new Ellipse2D.Float( x - topRadius, y - topRadius, 2.0f * topRadius, 2.0f * topRadius );
+			final Ellipse2D top = MathTools.almostEqual( topRadius, 0.0 ) ? null : new Ellipse2D.Float( x - topRadius, y - topRadius, 2.0f * topRadius, 2.0f * topRadius );
 
 			if ( ( bot != null ) || ( top != null ) )
 			{
@@ -724,7 +724,7 @@ public class Java2dRenderer
 			r = (float)( radius * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
 		}
 
-		final Ellipse2D shape = MathTools.almostEqual( (double)r, 0.0 ) ? null : new Ellipse2D.Float( x - r, y - r, r + r, r + r );
+		final Ellipse2D shape = MathTools.almostEqual( r, 0.0 ) ? null : new Ellipse2D.Float( x - r, y - r, r + r, r + r );
 
 		if ( fillColor != null )
 		{
