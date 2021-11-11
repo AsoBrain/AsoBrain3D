@@ -38,6 +38,13 @@ import org.jetbrains.annotations.*;
  * | 0  0  0  1  |
  * </pre>
  *
+ * <p>
+ * <strong>CAUTION</strong>:
+ * For historic reasons and compatibility with existing code, the methods
+ * {@link #multiply} and {@link #multiplyInverse} premultiply the operands:
+ * {@code multiply( A, B )} yields {@code B * A}. This is opposite to common
+ * mathematical conventions, so beware!
+ *
  * @author Peter S. Heijnen
  */
 @SuppressWarnings( { "StandardVariableNames", "FieldNamingConvention" } )
@@ -867,7 +874,7 @@ public class Matrix3D
 	 *
 	 * @param other Matrix to multiply with.
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = other * this).
 	 */
 	public Matrix3D multiply( final Matrix3D other )
 	{
@@ -880,7 +887,7 @@ public class Matrix3D
 	 * @param m1 First matrix.
 	 * @param m2 Second matrix.
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = m2 * m1).
 	 */
 	public static Matrix3D multiply( final Matrix3D m1, final Matrix3D m2 )
 	{
@@ -909,7 +916,7 @@ public class Matrix3D
 	 * @param zo1 Translation of Z component of first matrix.
 	 * @param m2  Second matrix.
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = m2 * m1).
 	 */
 	public static Matrix3D multiply(
 	final double xx1, final double xy1, final double xz1, final double xo1,
@@ -942,7 +949,7 @@ public class Matrix3D
 	 * @param zz2 Z quotient for Z component of second matrix.
 	 * @param zo2 Translation of Z component of second matrix.
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = m2 * m1).
 	 */
 	public static Matrix3D multiply(
 	final Matrix3D m1,
@@ -986,7 +993,7 @@ public class Matrix3D
 	 * @param zz2 Z quotient for Z component of second matrix.
 	 * @param zo2 Translation of Z component of second matrix.
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = m2 * m1).
 	 */
 	public static Matrix3D multiply(
 	final double xx1, final double xy1, final double xz1, final double xo1,
@@ -1027,7 +1034,7 @@ public class Matrix3D
 	 * @param otherZZ Matrix row 2, column 2 (z-factor for z).
 	 * @param otherZO Matrix row 2, column 3 (offset   for z).
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = other * this).
 	 */
 	public Matrix3D multiply(
 	final double otherXX, final double otherXY, final double otherXZ, final double otherXO,
@@ -1048,7 +1055,7 @@ public class Matrix3D
 	 *
 	 * @param other Matrix whose inverse to multiply with.
 	 *
-	 * @return Resulting matrix.
+	 * @return Resulting matrix (premultiplied: result = other<sup>-1</sup> * this).
 	 */
 	public Matrix3D multiplyInverse( final Matrix3D other )
 	{
