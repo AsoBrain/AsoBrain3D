@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2020 Peter S. Heijnen
+ * Copyright (C) 1999-2021 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
 package ab.j3d.loader;
 
 import java.io.*;
+import java.nio.charset.*;
 import java.text.*;
 import java.util.*;
 import java.util.zip.*;
@@ -53,27 +54,27 @@ public class ObjWriter
 	/**
 	 * Previously written appearances, by material name used in the MTL.
 	 */
-	private final Map<Appearance, String> _appearanceNames = new HashMap<Appearance, String>();
+	private final Map<Appearance, String> _appearanceNames = new HashMap<>();
 
 	/**
 	 * Set of names currently in use.
 	 */
-	private final Collection<String> _uniqueNames = new HashSet<String>();
+	private final Collection<String> _uniqueNames = new HashSet<>();
 
 	/**
 	 * Vertex positions.
 	 */
-	private final HashList<Vector3D> _vertices = new HashList<Vector3D>();
+	private final HashList<Vector3D> _vertices = new HashList<>();
 
 	/**
 	 * Vertex texture coordinates.
 	 */
-	private final HashList<Vector2f> _textureVertices = new HashList<Vector2f>();
+	private final HashList<Vector2f> _textureVertices = new HashList<>();
 
 	/**
 	 * Vertex normals.
 	 */
-	private final HashList<Vector3D> _normals = new HashList<Vector3D>();
+	private final HashList<Vector3D> _normals = new HashList<>();
 
 	/**
 	 * Texture library to use.
@@ -169,7 +170,7 @@ public class ObjWriter
 	 * Sets whether unsupported reflection properties are written as comments.
 	 *
 	 * @param reflectionCommentsEnabled {@code true} to write comments with
-	 *                                unsupported reflection properties.
+	 *                                  unsupported reflection properties.
 	 */
 	public void setReflectionCommentsEnabled( final boolean reflectionCommentsEnabled )
 	{
@@ -289,7 +290,7 @@ public class ObjWriter
 		write( zipOut, node, name + ".mtl" );
 		zipOut.closeEntry();
 
-		final Map<String, Appearance> appearances = new HashMap<String, Appearance>();
+		final Map<String, Appearance> appearances = new HashMap<>();
 		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
 		{
 			appearances.put( entry.getValue(), entry.getKey() );
@@ -303,7 +304,7 @@ public class ObjWriter
 		{
 			final byte[] buffer = new byte[ 10000 ];
 
-			final Set<TextureMap> textures = new LinkedHashSet<TextureMap>();
+			final Collection<TextureMap> textures = new LinkedHashSet<>();
 			for ( final Appearance appearance : _appearanceNames.keySet() )
 			{
 				final TextureMap colorMap = appearance.getColorMap();
@@ -365,15 +366,15 @@ public class ObjWriter
 	/**
 	 * Writes an MTL file containing the given appearances.
 	 *
-	 * @param out             Stream to write to.
-	 * @param node            Node to write appearances for.
+	 * @param out  Stream to write to.
+	 * @param node Node to write appearances for.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
 	public void writeMTL( final OutputStream out, final Node3D node )
 	throws IOException
 	{
-		final Writer writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final Writer writer = new BufferedWriter( new OutputStreamWriter( out, StandardCharsets.US_ASCII ) );
 		writeMTL( writer, node );
 		writer.flush();
 	}
@@ -381,34 +382,21 @@ public class ObjWriter
 	/**
 	 * Writes an MTL file containing the given appearances.
 	 *
-	 * @param writer          Stream to write to.
-	 * @param node            Node to write appearances for.
+	 * @param writer Stream to write to.
+	 * @param node   Node to write appearances for.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public void writeMTL( final Writer writer, final Node3D node )
+	public void writeMTL( final Appendable writer, final Node3D node )
 	throws IOException
 	{
-		Node3DTreeWalker.walk( new Node3DVisitor()
-		{
-			@Override
-			public boolean visitNode( @NotNull final Node3DPath path )
+		Node3DTreeWalker.walk( path -> {
+			final Node3D visitedNode = path.getNode();
+			if ( visitedNode instanceof Object3D )
 			{
-				final Node3D node = path.getNode();
-				if ( node instanceof Object3D )
-				{
-					final Object3D object = (Object3D)node;
-					for ( final FaceGroup faceGroup : object.getFaceGroups() )
-					{
-						final Appearance appearance = faceGroup.getAppearance();
-						if ( appearance != null )
-						{
-							addAppearance( appearance );
-						}
-					}
-				}
-				return true;
+				( (Object3D)visitedNode ).getFaceGroups().stream().map( FaceGroup::getAppearance ).filter( Objects::nonNull ).forEach( this::addAppearance );
 			}
+			return true;
 		}, node );
 
 		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
@@ -420,15 +408,15 @@ public class ObjWriter
 	/**
 	 * Writes an MTL file containing the given appearances.
 	 *
-	 * @param out             Stream to write to.
-	 * @param appearances     Appearances to be written.
+	 * @param out         Stream to write to.
+	 * @param appearances Appearances to be written.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
 	public void writeMTL( final OutputStream out, final Map<String, ? extends Appearance> appearances )
 	throws IOException
 	{
-		final Writer writer = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final Writer writer = new BufferedWriter( new OutputStreamWriter( out, StandardCharsets.US_ASCII ) );
 		writeMTL( writer, appearances );
 		writer.flush();
 	}
@@ -436,12 +424,12 @@ public class ObjWriter
 	/**
 	 * Writes an MTL file containing the given appearances.
 	 *
-	 * @param writer          Stream to write to.
-	 * @param appearances     Appearances to be written.
+	 * @param writer      Stream to write to.
+	 * @param appearances Appearances to be written.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	private void writeMTL( final Writer writer, final Map<String, ? extends Appearance> appearances )
+	private void writeMTL( final Appendable writer, final Map<String, ? extends Appearance> appearances )
 	throws IOException
 	{
 		for ( final Map.Entry<String, ? extends Appearance> entry : appearances.entrySet() )
@@ -577,7 +565,7 @@ public class ObjWriter
 	public void write( final OutputStream out, final Node3D node, final String... materialLibraries )
 	throws IOException
 	{
-		final Writer objWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
+		final Writer objWriter = new BufferedWriter( new OutputStreamWriter( out, StandardCharsets.US_ASCII ) );
 		write( objWriter, node, materialLibraries );
 		objWriter.flush();
 	}
@@ -602,7 +590,7 @@ public class ObjWriter
 			out.write( "\r\n" );
 		}
 
-		final ArrayList<Node3DPath> nodes = new ArrayList<Node3DPath>();
+		final ArrayList<Node3DPath> nodes = new ArrayList<>();
 		Node3DTreeWalker.walk( new Node3DCollector( nodes, Object3D.class ), node );
 
 		final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps = createVertexMap( nodes );
@@ -649,9 +637,9 @@ public class ObjWriter
 		for ( final Vector2f textureVertex : _textureVertices )
 		{
 			out.append( "vt " );
-			out.append( _decimalFormat.format( (double)textureVertex.getX() ) );
+			out.append( _decimalFormat.format( textureVertex.getX() ) );
 			out.append( ' ' );
-			out.append( _decimalFormat.format( (double)textureVertex.getY() ) );
+			out.append( _decimalFormat.format( textureVertex.getY() ) );
 			out.append( "\r\n" );
 		}
 	}
@@ -691,41 +679,39 @@ public class ObjWriter
 	private void writeObjects( final Appendable out, final Iterable<Node3DPath> objects, final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps )
 	throws IOException
 	{
-		Appearance currentAppearance = null;
-
 		for ( final Node3DPath path : objects )
 		{
 			final Object3D object = (Object3D)path.getNode();
 			final Map<Vertex3D, ObjVertex> vertexMap = vertexMaps.get( path );
-
-			out.append( isWriteObjectsAsGroups() ? "g " : "o " );
-			out.append( getObjectName( object ) );
-			out.append( "\r\n" );
+			Appearance currentAppearance = null;
 
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
 			{
 				final Appearance appearance = faceGroup.getAppearance();
-				if ( appearance == null )
+				if ( appearance != null )
 				{
-					throw new IOException( "Can't write null-appearance of object " + object );
-				}
+					if ( currentAppearance == null )
+					{
+						out.append( isWriteObjectsAsGroups() ? "g " : "o " ).append( getObjectName( object ) ).append( "\r\n" );
+					}
 
-				//noinspection ObjectEquality
-				if ( appearance != currentAppearance )
-				{
-					final String materialName = addAppearance( appearance );
+					//noinspection ObjectEquality
+					if ( appearance != currentAppearance )
+					{
+						final String materialName = addAppearance( appearance );
 
-					//noinspection SpellCheckingInspection
-					out.append( "usemtl " );
-					out.append( materialName );
-					out.append( "\r\n" );
+						//noinspection SpellCheckingInspection
+						out.append( "usemtl " );
+						out.append( materialName );
+						out.append( "\r\n" );
 
-					currentAppearance = appearance;
-				}
+						currentAppearance = appearance;
+					}
 
-				for ( final Face3D face : faceGroup.getFaces() )
-				{
-					writeFace( out, faceGroup, face, vertexMap );
+					for ( final Face3D face : faceGroup.getFaces() )
+					{
+						writeFace( out, faceGroup, face, vertexMap );
+					}
 				}
 			}
 		}
@@ -814,22 +800,22 @@ public class ObjWriter
 	private void writeVertex( @NotNull final Appendable out, @NotNull final ObjVertex vertex )
 	throws IOException
 	{
-		out.append( ' ' );
-		out.append( String.valueOf( vertex._vertexIndex ) );
+		out.append( ' ' ).append( String.valueOf( vertex.getVertexIndex() ) );
 
-		if ( ( vertex._textureVertexIndex > 0 ) || ( vertex._normalIndex > 0 ) )
+		final int textureVertexIndex = vertex.getTextureVertexIndex();
+		final int normalIndex = vertex.getNormalIndex();
+		if ( ( textureVertexIndex > 0 ) || ( normalIndex > 0 ) )
 		{
 			out.append( '/' );
 
-			if ( vertex._textureVertexIndex > 0 )
+			if ( textureVertexIndex > 0 )
 			{
-				out.append( String.valueOf( vertex._textureVertexIndex ) );
+				out.append( String.valueOf( textureVertexIndex ) );
 			}
 
-			if ( vertex._normalIndex > 0 )
+			if ( normalIndex > 0 )
 			{
-				out.append( '/' );
-				out.append( String.valueOf( vertex._normalIndex ) );
+				out.append( '/' ).append( String.valueOf( normalIndex ) );
 			}
 		}
 	}
@@ -861,13 +847,13 @@ public class ObjWriter
 		final HashList<Vector2f> textureVertices = _textureVertices;
 		final HashList<Vector3D> normals = _normals;
 
-		final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps = new IdentityHashMap<Node3DPath, Map<Vertex3D, ObjVertex>>();
+		final Map<Node3DPath, Map<Vertex3D, ObjVertex>> vertexMaps = new IdentityHashMap<>();
 		for ( final Node3DPath path : nodes )
 		{
 			final Matrix3D transform = path.getTransform();
 			final Object3D object = (Object3D)path.getNode();
 
-			final Map<Vertex3D, ObjVertex> vertexMap = new IdentityHashMap<Vertex3D, ObjVertex>();
+			final Map<Vertex3D, ObjVertex> vertexMap = new IdentityHashMap<>();
 
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
 			{
@@ -953,6 +939,21 @@ public class ObjWriter
 			_vertexIndex = vertexIndex;
 			_textureVertexIndex = textureVertexIndex;
 			_normalIndex = normalIndex;
+		}
+
+		public int getVertexIndex()
+		{
+			return _vertexIndex;
+		}
+
+		public int getTextureVertexIndex()
+		{
+			return _textureVertexIndex;
+		}
+
+		public int getNormalIndex()
+		{
+			return _normalIndex;
 		}
 
 		@Override
