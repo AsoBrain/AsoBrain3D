@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>com.asobrain.ab3d</groupId>
 		<artifactId>ab3d</artifactId>
-		<version>1.20-SNAPSHOT</version>
+		<version>1.21-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ab3d-core</artifactId>
 	<description>3D core library. Includes geometry classes and a scene graph model.</description>
-	<version>1.20-SNAPSHOT</version>
+	<version>1.21-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>
