@@ -23,8 +23,8 @@ import java.util.*;
 import ab.j3d.*;
 import static ab.j3d.geom.GeometryTools.*;
 import ab.j3d.junit.*;
-import org.junit.*;
 import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  * This class tests the {@link GeometryTools} class.
@@ -387,6 +387,60 @@ public class TestGeometryTools
 				assertEquals( description + " threw wrong exception", expectedException, e.getClass() );
 			}
 		}
+	}
+
+	@Test
+	public void testGetIntersectionBetweenRayAndBox()
+	{
+		final Bounds3D bounds = new Bounds3D( new Vector3D( -10, -20, -30 ), new Vector3D( 30, 10, 20 ) );
+
+		// Ray from X- to X+
+		assertEquals( "Unexpected intersection.", new Vector3D( -10, 0, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -50, 0, 0 ), Vector3D.POSITIVE_X_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( -10, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -50, -20, 0 ), Vector3D.POSITIVE_X_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( -50, -30, 0 ), Vector3D.POSITIVE_X_AXIS ) );
+
+		// Ray from X+ to X-
+		assertEquals( "Unexpected intersection.", new Vector3D( 30, 0, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 50, 0, 0 ), Vector3D.NEGATIVE_X_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 30, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 50, -20, 0 ), Vector3D.NEGATIVE_X_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 50, -30, 0 ), Vector3D.NEGATIVE_X_AXIS ) );
+
+		// Ray from Y- to Y+
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( -20, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, -40 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( -10, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -10, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 0, -20, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, -30 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 5, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 5, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 30, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 30, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 0, -20, 20 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, 20 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 40, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, 30 ), Vector3D.POSITIVE_Y_AXIS ) );
+
+		// Ray from Z- to Z+
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( -20, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( -10, 0, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -10, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 5, 0, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 5, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 30, 0, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 30, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 40, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+
+		// Ray not axis-aligned
+		assertEquals( "Unexpected intersection.", new Vector3D( -10, 5, 2.5 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -20, 0, 0 ), Vector3D.normalize( 2, 1, 0.5 ) ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 2.5, -20, 5 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -30, 0 ), Vector3D.normalize( 0.5, 2, 1 ) ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 5, 2.5, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, 0, -40 ), Vector3D.normalize( 1, 0.5, 2 ) ) );
 	}
 
 	/**

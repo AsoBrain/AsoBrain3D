@@ -969,6 +969,85 @@ public class GeometryTools
 	}
 
 	/**
+	 * Returns the intersection point between a (half) ray and a box (AABB).
+	 *
+	 * <p>This implementation uses the 'slab method' explained at
+	 * <a href="https://education.siggraph.org/static/HyperGraph/raytrace/rtinter3.htm">https://education.siggraph.org/static/HyperGraph/raytrace/rtinter3.htm</a>
+	 * and <a href="https://tavianator.com/2011/ray_box.html">https://tavianator.com/2011/ray_box.html</a>.
+	 *
+	 * @param box          Axis-aligned bounding box.
+	 * @param rayOrigin    Origin of the ray.
+	 * @param rayDirection Direction of the ray.
+	 *
+	 * @return Intersection-point between ray and box; {@code null} if no
+	 * intersection exists.
+	 */
+	public static @Nullable Vector3D getIntersectionBetweenRayAndBox( final @NotNull Bounds3D box, final @NotNull Vector3D rayOrigin, final @NotNull Vector3D rayDirection )
+	{
+		double tMin = Double.NEGATIVE_INFINITY;
+		double tMax = Double.POSITIVE_INFINITY;
+
+		if ( rayDirection.x == 0.0 )
+		{
+			if ( rayOrigin.x < box.minX() ||
+			     rayOrigin.x > box.maxX() )
+			{
+				// No intersection.
+				tMin = Double.POSITIVE_INFINITY;
+				tMax = Double.NEGATIVE_INFINITY;
+			}
+		}
+		else
+		{
+			final double tx1 = ( box.minX() - rayOrigin.x ) / rayDirection.x;
+			final double tx2 = ( box.maxX() - rayOrigin.x ) / rayDirection.x;
+
+			tMin = Math.max( tMin, Math.min( tx1, tx2 ) );
+			tMax = Math.min( tMax, Math.max( tx1, tx2 ) );
+		}
+
+		if ( rayDirection.y == 0.0 )
+		{
+			if ( rayOrigin.y < box.minY() ||
+			     rayOrigin.y > box.maxY() )
+			{
+				// No intersection.
+				tMin = Double.POSITIVE_INFINITY;
+				tMax = Double.NEGATIVE_INFINITY;
+			}
+		}
+		else
+		{
+			final double ty1 = ( box.minY() - rayOrigin.y ) / rayDirection.y;
+			final double ty2 = ( box.maxY() - rayOrigin.y ) / rayDirection.y;
+
+			tMin = Math.max( tMin, Math.min( ty1, ty2 ) );
+			tMax = Math.min( tMax, Math.max( ty1, ty2 ) );
+		}
+
+		if ( rayDirection.z == 0.0 )
+		{
+			if ( rayOrigin.z < box.minZ() ||
+			     rayOrigin.z > box.maxZ() )
+			{
+				// No intersection.
+				tMin = Double.POSITIVE_INFINITY;
+				tMax = Double.NEGATIVE_INFINITY;
+			}
+		}
+		else
+		{
+			final double tz1 = ( box.minZ() - rayOrigin.z ) / rayDirection.z;
+			final double tz2 = ( box.maxZ() - rayOrigin.z ) / rayDirection.z;
+
+			tMin = Math.max( tMin, Math.min( tz1, tz2 ) );
+			tMax = Math.min( tMax, Math.max( tz1, tz2 ) );
+		}
+
+		return tMax >= 0 && tMax >= tMin ? rayOrigin.plus( rayDirection.multiply( tMin >= 0 ? tMin : tMax ) ) : null;
+	}
+
+	/**
 	 * Get normal vector of plane defined by the specified set of points. The
 	 * normal will point 'outwards' if the points are specified in clockwise
 	 * ordering.
