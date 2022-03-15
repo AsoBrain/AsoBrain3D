@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2016 Peter S. Heijnen
+ * Copyright (C) 1999-2022 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,9 @@ package ab.j3d.geom;
 import java.util.*;
 
 import ab.j3d.*;
+import static ab.j3d.geom.GeometryTools.*;
 import ab.j3d.junit.*;
+import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
@@ -52,7 +54,7 @@ public class TestGeometryTools
 			0.0, 0.0, 1.0, 0.0,
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 18.0 );
-			Assert.assertFalse( "Expected no collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertFalse( "Expected no collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -62,7 +64,7 @@ public class TestGeometryTools
 			1.0, 0.0, 0.0, 11.0,
 			0.0, 0.0, -1.0, 0.0,
 			0.0, 1.0, 0.0, 10.5 );
-			Assert.assertFalse( "Expected no collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertFalse( "Expected no collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -72,7 +74,7 @@ public class TestGeometryTools
 			1.0, 0.0, 0.0, 184.3,
 			0.0, 1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 195.5 );
-			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertTrue( "Expected collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -82,7 +84,7 @@ public class TestGeometryTools
 			1.0, 0.0, 0.0, 184.3,
 			0.0, 1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 195.5 );
-			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertTrue( "Expected collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -92,7 +94,7 @@ public class TestGeometryTools
 			0.0, 0.0, 1.0, 336.6,
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 18.0 );
-			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertTrue( "Expected collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -102,7 +104,7 @@ public class TestGeometryTools
 			1.0, 0.0, 0.0, 11.0,
 			0.0, 0.0, -1.0, 0.1,
 			0.0, 1.0, 0.0, 10.5 );
-			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertTrue( "Expected collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -112,7 +114,7 @@ public class TestGeometryTools
 			1.0, 0.0, 0.0, 11.0,
 			0.0, 0.0, -1.0, 0.1,
 			0.0, 1.0, 0.0, 10.5 );
-			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertTrue( "Expected collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 
 		{
@@ -122,7 +124,7 @@ public class TestGeometryTools
 			0.0, 0.0, 1.0, 581.9,
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 18.0 );
-			Assert.assertTrue( "Expected collision", GeometryTools.testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
+			assertTrue( "Expected collision", testOrientedBoundingBoxIntersection( first, secondToFirst, second ) );
 		}
 	}
 
@@ -135,7 +137,6 @@ public class TestGeometryTools
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersectionBetweenRayAndPolygon()" );
 
-		@SuppressWarnings( "JavaDoc" )
 		class Test
 		{
 			final Polygon3D _polygon;
@@ -218,9 +219,9 @@ public class TestGeometryTools
 			final Test test = tests[ i ];
 			final String description = "Test #" + ( i + 1 );
 
-			final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPolygon( test._polygon, test._ray );
+			final Vector3D result = getIntersectionBetweenRayAndPolygon( test._polygon, test._ray );
 
-			Assert.assertEquals( description, test._expected, result );
+			assertEquals( description, test._expected, result );
 		}
 	}
 
@@ -230,13 +231,11 @@ public class TestGeometryTools
 	 * @throws Exception if the test fails.
 	 */
 	@Test
-	@SuppressWarnings( "rawtypes" )
 	public void testGetIntersectionBetweenRayAndPlane()
 	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersectionBetweenRayAndPlane()" );
 
-		@SuppressWarnings( "JavaDoc" )
 		class Test
 		{
 			final double _planeNormalX;
@@ -361,21 +360,21 @@ public class TestGeometryTools
 			final Test test = tests[ i ];
 			final String description = "Test #" + ( i + 1 );
 
-			Class expectedException = null;
-			if ( ( test._expected instanceof Class ) && Exception.class.isAssignableFrom( (Class)test._expected ) )
+			Class<?> expectedException = null;
+			if ( ( test._expected instanceof Class ) && Exception.class.isAssignableFrom( (Class<?>)test._expected ) )
 			{
-				expectedException = (Class)test._expected;
+				expectedException = (Class<?>)test._expected;
 			}
 
 			try
 			{
-				final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPlane( test._planeNormalX, test._planeNormalY, test._planeNormalZ, test._planeDistance, test._planeTwoSided, test._rayOrigin, test._rayDirection, true );
+				final Vector3D result = getIntersectionBetweenRayAndPlane( test._planeNormalX, test._planeNormalY, test._planeNormalZ, test._planeDistance, test._planeTwoSided, test._rayOrigin, test._rayDirection, true );
 				if ( expectedException != null )
 				{
-					Assert.fail( description + " should have thrown exception" );
+					fail( description + " should have thrown exception" );
 				}
 
-				Assert.assertEquals( description, test._expected, result );
+				assertEquals( description, test._expected, result );
 			}
 			catch ( final Exception e )
 			{
@@ -385,9 +384,63 @@ public class TestGeometryTools
 					throw e;
 				}
 
-				Assert.assertEquals( description + " threw wrong exception", expectedException, e.getClass() );
+				assertEquals( description + " threw wrong exception", expectedException, e.getClass() );
 			}
 		}
+	}
+
+	@Test
+	public void testGetIntersectionBetweenRayAndBox()
+	{
+		final Bounds3D bounds = new Bounds3D( new Vector3D( -10, -20, -30 ), new Vector3D( 30, 10, 20 ) );
+
+		// Ray from X- to X+
+		assertEquals( "Unexpected intersection.", new Vector3D( -10, 0, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -50, 0, 0 ), Vector3D.POSITIVE_X_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( -10, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -50, -20, 0 ), Vector3D.POSITIVE_X_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( -50, -30, 0 ), Vector3D.POSITIVE_X_AXIS ) );
+
+		// Ray from X+ to X-
+		assertEquals( "Unexpected intersection.", new Vector3D( 30, 0, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 50, 0, 0 ), Vector3D.NEGATIVE_X_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 30, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 50, -20, 0 ), Vector3D.NEGATIVE_X_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 50, -30, 0 ), Vector3D.NEGATIVE_X_AXIS ) );
+
+		// Ray from Y- to Y+
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( -20, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, -40 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( -10, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -10, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 0, -20, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, -30 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 5, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 5, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 30, -20, 0 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 30, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 0, -20, 20 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, 20 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 40, -50, 0 ), Vector3D.POSITIVE_Y_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -50, 30 ), Vector3D.POSITIVE_Y_AXIS ) );
+
+		// Ray from Z- to Z+
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( -20, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( -10, 0, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -10, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 5, 0, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 5, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertEquals( "Unexpected intersection on box edge.", new Vector3D( 30, 0, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 30, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+		assertNull( "Expected no intersection.", getIntersectionBetweenRayAndBox( bounds, new Vector3D( 40, 0, -50 ), Vector3D.POSITIVE_Z_AXIS ) );
+
+		// Ray not axis-aligned
+		assertEquals( "Unexpected intersection.", new Vector3D( -10, 5, 2.5 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( -20, 0, 0 ), Vector3D.normalize( 2, 1, 0.5 ) ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 2.5, -20, 5 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, -30, 0 ), Vector3D.normalize( 0.5, 2, 1 ) ) );
+		assertEquals( "Unexpected intersection.", new Vector3D( 5, 2.5, -30 ),
+		              getIntersectionBetweenRayAndBox( bounds, new Vector3D( 0, 0, -40 ), Vector3D.normalize( 1, 0.5, 2 ) ) );
 	}
 
 	/**
@@ -398,7 +451,6 @@ public class TestGeometryTools
 	{
 		System.out.println( CLASS_NAME + ".testGetPlaneNormal()" );
 
-		@SuppressWarnings( "JavaDoc" )
 		class Test
 		{
 			final Vector3D _p1;
@@ -466,7 +518,8 @@ public class TestGeometryTools
 			final String description = "Test #" + ( i + 1 );
 
 			final Vector3D expected = test._expected;
-			final Vector3D actual = GeometryTools.getPlaneNormal( test._p1, test._p2, test._p3 );
+			final Vector3D actual = getPlaneNormal( test._p1, test._p2, test._p3 );
+			assertNotNull( description + ": Could not determine plane normal", actual );
 
 			Vector3DTester.assertEquals( description, expected, actual, 0.0001 );
 		}
@@ -478,7 +531,6 @@ public class TestGeometryTools
 	 * @throws Exception if the test fails.
 	 */
 	@Test
-	@SuppressWarnings( "JavaDoc" )
 	public void testIsPointInsidePolygon()
 	{
 		System.out.println( CLASS_NAME + ".testIsPointInsidePolygon()" );
@@ -722,8 +774,8 @@ public class TestGeometryTools
 			final Test test = tests[ i ];
 			final String description = "Test #" + ( i + 1 );
 
-			final boolean result = GeometryTools.isPointInsidePolygon( test._polygon, test._x, test._y, test._z );
-			Assert.assertEquals( description, test._expected, result );
+			final boolean result = isPointInsidePolygon( test._polygon, test._x, test._y, test._z );
+			assertEquals( description, test._expected, result );
 		}
 	}
 
@@ -734,33 +786,32 @@ public class TestGeometryTools
 	public void testIntersectSphereCylinder()
 	{
 		// Obvious intersections and misses.
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
-		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 2.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
-		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 2.0, 1.0, 1.0, 2.0, 1.0 ) );
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -0.5, 1.0, 2.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 1.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", testSphereCylinderIntersection( 2.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", testSphereCylinderIntersection( 1.0, 2.0, 1.0, 1.0, 2.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 1.0, 1.0, -0.5, 1.0, 2.0, 1.0 ) );
 
 		// Sphere center below cylinder. (extreme cases)
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
-		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) - 0.001, 1.0, 2.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) - 0.001, 1.0, 2.0, 1.0 ) );
 
 		// Sphere center above cylinder. (extreme cases)
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
-		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) + 0.001, 1.0, 2.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) + 0.001, 1.0, 2.0, 1.0 ) );
 
 		// Sphere center on cylinder center line.
-		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.001, 1.0, 1.0, 1.0 ) );
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.0, 1.0, 1.0, 1.0 ) );
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 ) );
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ) );
-		Assert.assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.0, 1.0, 1.0, 1.0 ) );
-		Assert.assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.001, 1.0, 1.0, 1.0 ) );
+		assertFalse( "Unexpected result.", testSphereCylinderIntersection( 0.0, 0.0, -1.001, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 0.0, 0.0, -1.0, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", testSphereCylinderIntersection( 0.0, 0.0, 2.0, 1.0, 1.0, 1.0 ) );
+		assertFalse( "Unexpected result.", testSphereCylinderIntersection( 0.0, 0.0, 2.001, 1.0, 1.0, 1.0 ) );
 	}
 
 	/**
 	 * Unit test for {@link GeometryTools#testCylinderContainsPoint}.
 	 */
 	@Test
-	@SuppressWarnings( "ConstantMathCall" )
 	public void testCylinderContainsPoint()
 	{
 		System.out.println( CLASS_NAME + ".testCylinderContainsPoint" );
@@ -777,59 +828,59 @@ public class TestGeometryTools
 				final boolean xInRange = ( x >= -radius ) && ( x <= radius );
 				final double diagonal = Math.sqrt( 0.5 ) * x;
 
-				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, height, radius ) );
 
 				// Z+
-				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, 0.0, 0.0, 1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, z, 0.0, 0.0, 1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, z, 0.0, 0.0, 1.0, height, radius ) );
 
 				// Z-
-				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, -z, 0.0, 0.0, -1.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, x, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, 0.0, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -x, -z, 0.0, 0.0, -1.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -diagonal, -z, 0.0, 0.0, -1.0, height, radius ) );
 
 				// X+
-				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, 0.0, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, x, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, -x, 1.0, 0.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, 0.0, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, x, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -x, 0.0, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, -diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, 0.0, -x, 1.0, 0.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( z, diagonal, -diagonal, 1.0, 0.0, 0.0, height, radius ) );
 
 				// Y-
-				Assert.assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, x, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, -x, 0.0, -1.0, 0.0, height, radius ) );
-				Assert.assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, x, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -x, -z, 0.0, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( -diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( 0.0, -z, -x, 0.0, -1.0, 0.0, height, radius ) );
+				assertEquals( "Unexpected result", zInRange && xInRange, GeometryTools.testCylinderContainsPoint( diagonal, -z, -diagonal, 0.0, -1.0, 0.0, height, radius ) );
 			}
 		}
 	}
@@ -846,28 +897,28 @@ public class TestGeometryTools
 			final Vector2D p1 = Vector2D.ZERO;
 			final Vector2D p2 = new Vector2D( 10.0, 0.0 );
 			final Vector2D p3 = new Vector2D( 10.0, 10.0 );
-			Assert.assertEquals( "Test #1", 50.000, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+			assertEquals( "Test #1", 50.000, getTriangleArea( p1, p2, p3 ), 0.001 );
 		}
 
 		{
 			final Vector2D p1 = Vector2D.ZERO;
 			final Vector2D p2 = new Vector2D( 10.0, 0.0 );
 			final Vector2D p3 = new Vector2D( 20.0, 10.0 );
-			Assert.assertEquals( "Test #2", 49.999, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+			assertEquals( "Test #2", 49.999, getTriangleArea( p1, p2, p3 ), 0.001 );
 		}
 
 		{
 			final Vector2D p1 = Vector2D.ZERO;
 			final Vector2D p2 = new Vector2D( 10.0, 0.0 );
 			final Vector2D p3 = new Vector2D( 5.0, 10.0 );
-			Assert.assertEquals( "Test #3", 50.000, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+			assertEquals( "Test #3", 50.000, getTriangleArea( p1, p2, p3 ), 0.001 );
 		}
 
 		{
 			final Vector2D p1 = Vector2D.ZERO;
 			final Vector2D p2 = Vector2D.ZERO;
 			final Vector2D p3 = new Vector2D( 0.0, 10.0 );
-			Assert.assertEquals( "Test #4", 0.000, GeometryTools.getTriangleArea( p1, p2, p3 ), 0.001 );
+			assertEquals( "Test #4", 0.000, getTriangleArea( p1, p2, p3 ), 0.001 );
 		}
 	}
 }
