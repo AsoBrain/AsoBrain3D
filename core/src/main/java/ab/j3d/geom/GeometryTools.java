@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2022 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -387,7 +387,7 @@ public class GeometryTools
 				return false;
 			}
 
-			maxDistance = maxDistance + ( dx * dx );
+			maxDistance += ( dx * dx );
 		}
 		else if ( sphereCenterX > boxMaxX )
 		{
@@ -397,7 +397,7 @@ public class GeometryTools
 				return false;
 			}
 
-			maxDistance = maxDistance + ( dx * dx );
+			maxDistance += ( dx * dx );
 		}
 
 		//noinspection Duplicates
@@ -409,7 +409,7 @@ public class GeometryTools
 				return false;
 			}
 
-			maxDistance = maxDistance + ( dy * dy );
+			maxDistance += ( dy * dy );
 		}
 		else if ( sphereCenterY > boxMaxY )
 		{
@@ -419,7 +419,7 @@ public class GeometryTools
 				return false;
 			}
 
-			maxDistance = maxDistance + ( dy * dy );
+			maxDistance += ( dy * dy );
 		}
 
 		//noinspection Duplicates
@@ -431,7 +431,7 @@ public class GeometryTools
 				return false;
 			}
 
-			maxDistance = maxDistance + ( dz * dz );
+			maxDistance += ( dz * dz );
 		}
 		else if ( sphereCenterZ > boxMaxZ )
 		{
@@ -441,7 +441,7 @@ public class GeometryTools
 				return false;
 			}
 
-			maxDistance = maxDistance + ( dz * dz );
+			maxDistance += ( dz * dz );
 		}
 
 		return ( maxDistance < sphereRadius * sphereRadius );
@@ -1648,7 +1648,7 @@ public class GeometryTools
 		{
 			boundsBuilder.addPoint( node.getData() );
 		}
-		final List<List<Vector2D>> result = new ArrayList<List<Vector2D>>();
+		final List<List<Vector2D>> result = new ArrayList<>();
 
 		for ( final Graph.Node<Vector3D> startNode : segmentGraph )
 		{
@@ -1658,7 +1658,7 @@ public class GeometryTools
 				/*
 				 * Build a line strip starting at the current node.
 				 */
-				final List<Vector3D> strip = new ArrayList<Vector3D>();
+				final List<Vector3D> strip = new ArrayList<>();
 				strip.add( startNode.getData() );
 
 				Graph.Node<Vector3D> currentNode = startNode;
@@ -1681,7 +1681,7 @@ public class GeometryTools
 				/*
 				 * Filter out redundant line segments.
 				 */
-				final List<Vector2D> path2d = new ArrayList<Vector2D>( strip.size() );
+				final List<Vector2D> path2d = new ArrayList<>( strip.size() );
 
 				double prevX = 0.0;
 				double prevY = 0.0;
@@ -1690,8 +1690,8 @@ public class GeometryTools
 				for ( int i = 0; i <= lastPoint; i++ )
 				{
 					final Vector2D cur3d = strip.get( i );
-					final double curX = Vector3D.dot( xAxis, cur3d );
-					final double curY = Vector3D.dot( yAxis, cur3d );
+					final double curX = Vector2D.dot( xAxis, cur3d );
+					final double curY = Vector2D.dot( yAxis, cur3d );
 
 					if ( ( i == 0 ) || ( i == lastPoint ) )
 					{
@@ -1700,8 +1700,8 @@ public class GeometryTools
 					else
 					{
 						final Vector2D next3d = strip.get( i );
-						final double nextX = Vector3D.dot( xAxis, next3d );
-						final double nextY = Vector3D.dot( yAxis, next3d );
+						final double nextX = Vector2D.dot( xAxis, next3d );
+						final double nextY = Vector2D.dot( yAxis, next3d );
 
 						final double cosAngle = Vector2D.cosAngle( curX - prevX, curY - prevY, nextX - curX, nextY - curY );
 						if ( Math.abs( cosAngle ) < COSINE_ONE_DEGREE )
@@ -1732,12 +1732,12 @@ public class GeometryTools
 	 *
 	 * @return Graph representing the cross-section.
 	 */
-	static Vector3DGraph createCrossSectionGraph( @NotNull final Object3D object, @NotNull final Plane3D plane )
+	static @NotNull Vector3DGraph createCrossSectionGraph( final @NotNull Object3D object, final @NotNull Plane3D plane )
 	{
 		final double planeDistance = plane.getDistance();
 		final Vector3D planeNormal = plane.getNormal();
 
-		final List<Vector3D> segments = new ArrayList<Vector3D>();
+		final List<Vector3D> segments = new ArrayList<>();
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
@@ -1746,12 +1746,10 @@ public class GeometryTools
 				final Vector3D faceNormal = face.getNormal();
 				final Tessellation tessellation = face.getTessellation();
 
-				if ( ( almostEqual( planeNormal.x, faceNormal.x ) && almostEqual( planeNormal.y, faceNormal.y ) && almostEqual( planeNormal.z, faceNormal.z ) && almostEqual( planeDistance, face.getDistance() ) ) ||
-				     ( almostEqual( planeNormal.x, -faceNormal.x ) && almostEqual( planeNormal.y, -faceNormal.y ) && almostEqual( planeNormal.z, -faceNormal.z ) && almostEqual( planeDistance, -face.getDistance() ) ) )
-				{
-					System.out.println( "face is co-planar!" );
-				}
-				else
+				final boolean coplanar = ( almostEqual( planeNormal.x, faceNormal.x ) && almostEqual( planeNormal.y, faceNormal.y ) && almostEqual( planeNormal.z, faceNormal.z ) && almostEqual( planeDistance, face.getDistance() ) ) ||
+				                         ( almostEqual( planeNormal.x, -faceNormal.x ) && almostEqual( planeNormal.y, -faceNormal.y ) && almostEqual( planeNormal.z, -faceNormal.z ) && almostEqual( planeDistance, -face.getDistance() ) );
+
+				if ( !coplanar )
 				{
 					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 					{
@@ -1827,10 +1825,15 @@ public class GeometryTools
 		final Vector3DGraph segmentGraph = new Vector3DGraph();
 		for ( int i = 0; i < segments.size(); i += 2 )
 		{
-			final Graph.Node<Vector3D> node1 = segmentGraph.getOrAdd( segments.get( i ) );
-			final Graph.Node<Vector3D> node2 = segmentGraph.getOrAdd( segments.get( i + 1 ) );
-			node1.connect( node2 );
-			node2.connect( node1 );
+			final Vector3D p1 = segments.get( i );
+			final Vector3D p2 = segments.get( i + 1 );
+			if ( !p1.almostEquals( p2 ) )
+			{
+				final Graph.Node<Vector3D> node1 = segmentGraph.getOrAdd( p1 );
+				final Graph.Node<Vector3D> node2 = segmentGraph.getOrAdd( p2 );
+				node1.connect( node2 );
+				node2.connect( node1 );
+			}
 		}
 		return segmentGraph;
 	}
