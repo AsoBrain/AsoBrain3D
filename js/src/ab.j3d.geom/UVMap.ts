@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import { BufferAttribute, BufferGeometry } from 'three'
+import { BufferAttribute, BufferGeometry } from 'three';
 
 import TextureMap from '../ab.j3d/TextureMap';
 import Vector3D from '../ab.j3d/Vector3D';

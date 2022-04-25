@@ -1,6 +1,6 @@
 {
   "name": "@numdata/ab3d",
-  "version": "1.0.2",
+  "version": "1.22.0",
   "description": "AsoBrain 3D Toolkit",
   "license": "LGPL-2.1",
   "publishConfig": {
@@ -11,14 +11,20 @@
     "email": "meinders@numdata.com"
   },
   "scripts": {
+    "clean": "gulp clean",
     "build": "gulp build",
     "watch": "gulp watch",
     "test": "jest src"
   },
   "main": "./lib/module.js",
   "module": "./lib/module.js",
+  "files": [
+    "lib"
+  ],
   "dependencies": {
-    "@numdata/oss": "^1.1.0"
+    "@numdata/oss": "^1.26.0",
+    "three": "^0.137.0",
+    "@types/three": "^0.137.0"
   },
   "devDependencies": {
     "@numdata/common-build-gulp": "^2.0.0",
