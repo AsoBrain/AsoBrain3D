@@ -1,0 +1,83 @@
+name: Build and publish to private Maven repo
+
+on:
+  push:
+    branches: [ master, release-* ]
+    paths:
+      - '!js/**'
+  pull_request:
+    branches: [ master, release-* ]
+    paths:
+      - '!js/**'
+
+env:
+  DISPLAY: ':0'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: setupJava
+        name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      #      - name: Download Maven (workaround for nektos/act)
+      #        run: |
+      #          curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip
+      #          apt-get update
+      #          apt-get -y install unzip
+      #          unzip -d /usr/share maven.zip
+      #          rm maven.zip
+      #          ln -s /usr/share/apache-maven-3.6.3/bin/mvn /usr/bin/mvn
+      #          echo "M2_HOME=/usr/share/apache-maven-3.6.3" | tee -a /etc/environment
+
+      - name: Install virtual frame buffer
+        run: |
+          sudo apt-get -q update
+          sudo apt-get -qy install xvfb libxtst6 libxi-dev
+
+      - name: Create Maven toolchains.xml
+        uses: cactuslab/maven-toolchains-xml-action@v1
+        with:
+          toolchains: |
+            [
+              {"jdkVersion": "1.8", "jdkHome": "${{steps.setupJava.outputs.path}}"}
+            ]
+
+      - name: Start virtual frame buffer
+        run: |
+          echo Xvfb ${DISPLAY} +extension GLX -screen 0 1024x768x24
+          Xvfb ${DISPLAY} +extension GLX -screen 0 1024x768x24 & sleep 3s
+          echo Should be running now
+
+      - name: Build and deploy with Maven
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]
+          then
+            mvn -B -s settings.xml deploy -Pjogl1 -Ddependency-check.skip
+          else
+            mvn -B -s settings.xml verify -Pjogl1 -Ddependency-check.skip
+          fi
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_IVENZA_NET_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_IVENZA_NET_PASSWORD }}
+
+      - name: Stop virtual frame buffer
+        uses: bcomnes/cleanup-xvfb@v1
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage-report/target/site/jacoco-aggregate

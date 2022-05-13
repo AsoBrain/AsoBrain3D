@@ -1,0 +1,42 @@
+name: Publish Javascript
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'npm'
+          cache-dependency-path: js/package-lock.json
+          scope: '@numdata'
+          registry-url: 'https://earl.ivenza.net/npm/'
+
+      - name: Install dependencies
+        run: cd js; npm ci --no-audit
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      - name: Security audit
+        run: cd js; npm audit --production
+
+      - name: Build
+        run: cd js; npm run build
+
+      - name: Test
+        run: cd js; npm run test
+
+      - name: Publish
+        run: cd js; npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
