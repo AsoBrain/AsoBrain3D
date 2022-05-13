@@ -62,6 +62,7 @@ public class TestJOGLOffscreenView
 		try
 		{
 			System.out.println( " - When called from non-OpenGL thread (" + Thread.currentThread() + ")" );
+			//noinspection ResultOfObjectAllocationIgnored
 			new JOGLOffscreenView( joglEngine, scene );
 			fail( "Must throw an exception if not called from OpenGL thread." );
 		}
@@ -70,30 +71,25 @@ public class TestJOGLOffscreenView
 			assertFalse( "Test must not be run on OpenGL thread.", Threading.isOpenGLThread() );
 		}
 
-		Threading.invokeOnOpenGLThread( true, new Runnable()
-		{
-			@Override
-			public void run()
+		Threading.invokeOnOpenGLThread( true, () -> {
+			System.out.println( " - When called from OpenGL thread (" + Thread.currentThread() + ")" );
+			try
 			{
-				System.out.println( " - When called from OpenGL thread (" + Thread.currentThread() + ")" );
+				final JOGLOffscreenView view = new JOGLOffscreenView( joglEngine, scene );
 				try
 				{
-					final JOGLOffscreenView view = new JOGLOffscreenView( joglEngine, scene );
-					try
-					{
-						view.setCameraControl( new FromToCameraControl( view, 1.0 ) );
-						final BufferedImage image = view.renderImage( 1, 1 );
-						assertEquals( "Unexpected rendering: should be a green pixel.", Integer.toHexString( green.getDiffuseColor().getARGB() ), Integer.toHexString( image.getRGB( 0, 0 ) ) );
-					}
-					finally
-					{
-						view.dispose();
-					}
+					view.setCameraControl( new FromToCameraControl( view, 1.0 ) );
+					final BufferedImage image = view.renderImage( 1, 1 );
+					assertEquals( "Unexpected rendering: should be a green pixel.", Integer.toHexString( green.getDiffuseColor().getARGB() ), Integer.toHexString( image.getRGB( 0, 0 ) ) );
 				}
 				finally
 				{
-					joglEngine.dispose();
+					view.dispose();
 				}
+			}
+			finally
+			{
+				joglEngine.dispose();
 			}
 		} );
 	}
