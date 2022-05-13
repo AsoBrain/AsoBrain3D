@@ -271,17 +271,6 @@
 				<module>jogl1</module>
 			</modules>
 		</profile>
-		<profile>
-			<id>js</id>
-			<activation>
-				<property>
-					<name>!skipjs</name>
-				</property>
-			</activation>
-			<modules>
-				<module>js</module>
-			</modules>
-		</profile>
 	</profiles>
 
 	<reporting>
