@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2022 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,10 @@ public class TestJOGLOffscreenView
 		final JOGLEngine joglEngine = new JOGLEngine( new ClassLoaderTextureLibrary( getClass().getClassLoader() ), JOGLConfiguration.createLusciousInstance() );
 
 		final Scene scene = new Scene( Scene.METER );
-		scene.addContentNode( "box", Matrix3D.getTranslation( -0.5, -0.5, -0.5 ), new Box3D( 1.0, 1.0, 1.0, null, BasicAppearances.GREEN ) );
+		scene.setAmbient( 1, 1, 1 );
+		scene.addContentNode( "light", Matrix3D.IDENTITY, new Light3D( 0.0f, 0.0f ) );
+		final Appearance green = BasicAppearances.GREEN;
+		scene.addContentNode( "box", Matrix3D.getTranslation( -0.5, -0.5, -0.5 ), new Box3D( 1.0, 1.0, 1.0, null, green ) );
 
 		try
 		{
@@ -62,7 +65,7 @@ public class TestJOGLOffscreenView
 			new JOGLOffscreenView( joglEngine, scene );
 			fail( "Must throw an exception if not called from OpenGL thread." );
 		}
-		catch ( IllegalStateException ignored )
+		catch ( final IllegalStateException ignored )
 		{
 			assertFalse( "Test must not be run on OpenGL thread.", Threading.isOpenGLThread() );
 		}
@@ -80,7 +83,7 @@ public class TestJOGLOffscreenView
 					{
 						view.setCameraControl( new FromToCameraControl( view, 1.0 ) );
 						final BufferedImage image = view.renderImage( 1, 1 );
-						Assert.assertEquals( "Unexpected rendering: should be a green pixel.", Integer.toHexString( 0xff33ff33 ), Integer.toHexString( image.getRGB( 0, 0 ) ) );
+						assertEquals( "Unexpected rendering: should be a green pixel.", Integer.toHexString( green.getDiffuseColor().getARGB() ), Integer.toHexString( image.getRGB( 0, 0 ) ) );
 					}
 					finally
 					{
