@@ -127,6 +127,13 @@
 							</execution>
 						</executions>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>webstart-pack-and-sign</id>
+			<build>
+				<plugins>
 					<plugin>
 						<groupId>com.github.batkinson.plugins</groupId>
 						<artifactId>maven-pack200-plugin</artifactId>

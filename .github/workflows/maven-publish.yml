@@ -64,9 +64,9 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "push" ]
           then
-            mvn -B -s settings.xml deploy -Pjogl1 -Ddependency-check.skip
+            mvn -B -s settings.xml deploy -Pjogl1 -Pwebstart -Ddependency-check.skip
           else
-            mvn -B -s settings.xml verify -Pjogl1 -Ddependency-check.skip
+            mvn -B -s settings.xml verify -Pjogl1 -Pwebstart -Ddependency-check.skip
           fi
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_IVENZA_NET_USERNAME }}
