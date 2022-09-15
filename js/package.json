@@ -1,6 +1,6 @@
 {
   "name": "@numdata/ab3d",
-  "version": "1.23.1",
+  "version": "1.23.2",
   "description": "AsoBrain 3D Toolkit",
   "license": "LGPL-2.1",
   "publishConfig": {

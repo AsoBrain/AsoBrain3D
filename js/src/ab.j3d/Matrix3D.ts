@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2022 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1046,13 +1046,13 @@ export default class Matrix3D
 	}
 
 	/**
-	 * Transform a bounds using this transform.
+	 * Transform a box using this transform.
 	 *
-	 * @param b Bounds to transform.
+	 * @param b Box to transform.
 	 *
-	 * @return Resulting vector.
+	 * @return Resulting box.
 	 */
-	transform( b: Bounds3D ): Vector3D;
+	transform( b: Bounds3D ): Bounds3D;
 
 	/**
 	 * Transform a vector using this transform.
@@ -1074,7 +1074,7 @@ export default class Matrix3D
 	 */
 	transform( x: number, y: number, z: number ): Vector3D;
 
-	transform( x: any, y?: number, z?: number ): Vector3D
+	transform( x: any, y?: number, z?: number ): Vector3D | Bounds3D
 	{
 		let result;
 
