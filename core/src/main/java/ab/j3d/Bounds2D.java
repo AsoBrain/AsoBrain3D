@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2022 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,15 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d;
 
 /**
  * This class represents rectangular 2D bounds.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @author Peter S. Heijnen
  */
 public abstract class Bounds2D
 {
@@ -113,11 +110,11 @@ public abstract class Bounds2D
 	}
 
 	/**
-	 * Determines whether the <code>RectangularShape</code> is empty. When the
-	 * <code>RectangularShape</code> is empty, it encloses no area.
+	 * Determines whether the {@code RectangularShape} is empty. When the
+	 * {@code RectangularShape} is empty, it encloses no area.
 	 *
-	 * @return <code>true</code> if the <code>RectangularShape</code> is empty;
-	 *         <code>false</code> otherwise.
+	 * @return {@code true} if the {@code RectangularShape} is empty;
+	 *         {@code false} otherwise.
 	 */
 	public boolean isEmpty()
 	{
@@ -129,8 +126,8 @@ public abstract class Bounds2D
 	 *
 	 * @param   point   Point to test.
 	 *
-	 * @return  <code>true</code> if the point is within these bounds;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the point is within these bounds;
+	 *          {@code false} otherwise.
 	 */
 	public boolean contains( final Vector2D point )
 	{
@@ -143,8 +140,8 @@ public abstract class Bounds2D
 	 * @param   x   X coordinate of  point to test.
 	 * @param   y   Y coordinate of  point to test.
 	 *
-	 * @return  <code>true</code> if the point is within these bounds;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the point is within these bounds;
+	 *          {@code false} otherwise.
 	 */
 	public boolean contains( final double x, final double y )
 	{
@@ -156,8 +153,8 @@ public abstract class Bounds2D
 	 *
 	 * @param   other   Bounds to test.
 	 *
-	 * @return  <code>true</code> if the other bounds are contained wihin these
-	 *          bounds; <code>false</code> otherwise.
+	 * @return  {@code true} if the other bounds are contained wihin these
+	 *          bounds; {@code false} otherwise.
 	 */
 	public boolean contains( final Bounds2D other )
 	{
@@ -172,8 +169,8 @@ public abstract class Bounds2D
 	 * @param   maxX    Maximum X coordinate of bounds to test.
 	 * @param   maxY    Maximum Y coordinate of bounds to test.
 	 *
-	 * @return  <code>true</code> if the other bounds are contained wihin these
-	 *          bounds; <code>false</code> otherwise.
+	 * @return  {@code true} if the other bounds are contained wihin these
+	 *          bounds; {@code false} otherwise.
 	 */
 	public boolean contains( final double minX, final double minY, final double maxX, final double maxY )
 	{
@@ -186,7 +183,7 @@ public abstract class Bounds2D
 	 * @param   other   Bounds to intersect with.
 	 *
 	 * @return  Intersection of bounds;
-	 *          <code>null</code> if the bounds are disjunct.
+	 *          {@code null} if the bounds are disjunct.
 	 */
 	public VarBounds2D intersect( final Bounds2D other )
 	{
@@ -200,7 +197,7 @@ public abstract class Bounds2D
 	 * @param   bounds2     Second bounds to intersect.
 	 *
 	 * @return  Intersection of bounds;
-	 *          <code>null</code> if the bounds are disjunct.
+	 *          {@code null} if the bounds are disjunct.
 	 */
 	public static VarBounds2D intersect( final Bounds2D bounds1, final Bounds2D bounds2 )
 	{
@@ -217,8 +214,8 @@ public abstract class Bounds2D
 	 *
 	 * @param   other   Bounds to test for intersection.
 	 *
-	 * @return  <code>true</code> if the bounds intersect;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the bounds intersect;
+	 *          {@code false} otherwise.
 	 */
 	public boolean intersects( final Bounds2D other )
 	{
@@ -233,8 +230,8 @@ public abstract class Bounds2D
 	 * @param   maxX    Maximum X coordinate of bounds to test.
 	 * @param   maxY    Maximum Y coordinate of bounds to test.
 	 *
-	 * @return  <code>true</code> if the bounds intersect;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the bounds intersect;
+	 *          {@code false} otherwise.
 	 */
 	public boolean intersects( final double minX, final double minY, final double maxX, final double maxY )
 	{
@@ -249,8 +246,8 @@ public abstract class Bounds2D
 	 * @param   endX    X coordinate of line segment end point.
 	 * @param   endY    Y coordinate of line segment end point.
 	 *
-	 * @return  <code>true</code> if the line segment intersects these bounds;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the line segment intersects these bounds;
+	 *          {@code false} otherwise.
 	 */
 	public boolean intersectsLine( final double startX, final double startY, final double endX, final double endY )
 	{
@@ -381,6 +378,12 @@ public abstract class Bounds2D
 		}
 
 		return result;
+	}
+
+	@Override
+	public String toString()
+	{
+		return getMinX() + "," + getMinY() + ";" + getMaxX() + "," + getMaxY();
 	}
 
 	/**
