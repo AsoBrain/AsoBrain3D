@@ -22,8 +22,7 @@ import ab.j3d.model.*;
 import ab.j3d.view.*;
 
 /**
- * Interface for examples that can be run by {@link ExampleApp} or
- * {@link ExampleApplet}.
+ * Interface for examples that can be run by {@link ExampleApp}.
  *
  * @author Gerrit Meinders
  */

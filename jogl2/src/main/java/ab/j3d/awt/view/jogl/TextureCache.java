@@ -20,7 +20,6 @@ package ab.j3d.awt.view.jogl;
 
 import java.awt.image.*;
 import java.io.*;
-import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -59,17 +58,17 @@ public class TextureCache
 	/**
 	 * Cached textures, mapped by arbitrary key objects.
 	 */
-	private final Map<Object, TextureProxy> _textures;
+	private final Map<Object, TextureProxy> _textures = new HashMap<>();
 
 	/**
 	 * Used to load texture data asynchronously.
 	 */
-	private final ExecutorService _executorService;
+	private final ExecutorService _executorService = Executors.newSingleThreadExecutor( new DaemonThreadFactory() );
 
 	/**
 	 * Set of textures, by key object, with an alpha channel.
 	 */
-	private final Set<Object> _alpha;
+	private final Set<Object> _alpha = new HashSet<>();
 
 	/**
 	 * Maximum allowed texture size.
@@ -89,27 +88,16 @@ public class TextureCache
 	/**
 	 * Event listeners.
 	 */
-	private final List<TextureCacheListener> _listeners;
+	private final List<TextureCacheListener> _listeners = new ArrayList<>();
 
 	/**
 	 * Whether textures should be loaded asynchronously.
 	 */
 	private boolean _asynchronous = true;
 
-	/**
-	 * Construct new texture cache.
-	 *
-	 * @param textureLibrary Texture library.
-	 */
-	public TextureCache( final TextureLibrary textureLibrary )
+	public TextureCache( TextureLibrary textureLibrary )
 	{
 		_textureLibrary = textureLibrary;
-
-		_textures = new HashMap<Object, TextureProxy>();
-		_alpha = new HashSet<Object>();
-		_executorService = Executors.newSingleThreadExecutor( new DaemonThreadFactory() );
-
-		_listeners = new ArrayList<TextureCacheListener>();
 	}
 
 	/**
@@ -121,24 +109,24 @@ public class TextureCache
 		/*
 		 * Determine requirements for textures.
 		 */
-		final GL gl = GLU.getCurrentGL();
+		GL gl = GLU.getCurrentGL();
 
-		final int[] maxTextureSizeBuffer = new int[ 1 ];
+		int[] maxTextureSizeBuffer = new int[ 1 ];
 		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE, maxTextureSizeBuffer, 0 );
 
 		_maximumTextureSize = Math.max( 64, maxTextureSizeBuffer[ 0 ] );
-		final boolean mac = "Mac OS X".equals( System.getProperty( "os.name" ) );
+		boolean mac = "Mac OS X".equals( System.getProperty( "os.name" ) );
 		_nonPowerOfTwo = !mac && gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" );
 		_isOpenGL12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
 
 		/*
 		 * Remove references to textures that are no longer valid.
 		 */
-		final Set<Map.Entry<Object, TextureProxy>> textureEntries = _textures.entrySet();
-		for ( final Iterator<Map.Entry<Object, TextureProxy>> i = textureEntries.iterator(); i.hasNext(); )
+		Set<Map.Entry<Object, TextureProxy>> textureEntries = _textures.entrySet();
+		for ( Iterator<Map.Entry<Object, TextureProxy>> i = textureEntries.iterator(); i.hasNext(); )
 		{
-			final Map.Entry<Object, TextureProxy> entry = i.next();
-			final TextureProxy textureProxy = entry.getValue();
+			Map.Entry<Object, TextureProxy> entry = i.next();
+			TextureProxy textureProxy = entry.getValue();
 
 			/*
 			 * If texture data is still available, a new texture can be created.
@@ -157,59 +145,28 @@ public class TextureCache
 	 */
 	public void dispose()
 	{
-		final ExecutorService executorService = _executorService;
+		ExecutorService executorService = _executorService;
 		try
 		{
-			AccessController.doPrivileged( new PrivilegedAction<Object>()
-			{
-				public Object run()
-				{
-					return executorService.shutdownNow();
-				}
-			} );
-
+			executorService.shutdownNow();
 			executorService.awaitTermination( 10L, TimeUnit.SECONDS );
 		}
-		catch ( final InterruptedException e )
+		catch ( InterruptedException e )
 		{
-			e.printStackTrace();
-		}
-		catch ( final SecurityException e )
-		{
-			/*
-			 * Thrown when modifying threads (to shutdown the executor service)
-			 * is not allowed. Should be caught, e.g. to avoid an error dialog
-			 * when called from an applet.
-			 */
-			e.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
 	}
 
-	/**
-	 * Returns the maximum texture size.
-	 *
-	 * @return Maximum texture size.
-	 */
 	public int getMaximumTextureSize()
 	{
 		return _maximumTextureSize;
 	}
 
-	/**
-	 * Returns whether non-power-of-two textures are supported.
-	 *
-	 * @return <code>true</code> if non-power-of-two textures are supported.
-	 */
 	public boolean isNonPowerOfTwo()
 	{
 		return _nonPowerOfTwo;
 	}
 
-	/**
-	 * Returns whether OpenGL 1.2 support is available.
-	 *
-	 * @return <code>true</code> if OpenGL 1.2 support is available.
-	 */
 	public boolean isOpenGL12()
 	{
 		return _isOpenGL12;
@@ -220,9 +177,9 @@ public class TextureCache
 	 *
 	 * @param texture Name of the texture.
 	 *
-	 * @return <code>true</code> if the texture has an alpha channel.
+	 * @return {@code true} if the texture has an alpha channel.
 	 */
-	public boolean hasAlpha( final TextureMap texture )
+	public boolean hasAlpha( TextureMap texture )
 	{
 		return _alpha.contains( texture );
 	}
@@ -232,13 +189,12 @@ public class TextureCache
 	 *
 	 * @param textureMap Texture map.
 	 *
-	 * @return Texture for the specified name; <code>null</code> if the texture
+	 * @return Texture for the specified name; {@code null} if the texture
 	 * is not available (or not yet).
 	 */
-	@Nullable
-	public Texture getTexture( @NotNull final TextureMap textureMap )
+	public @Nullable Texture getTexture( TextureMap textureMap )
 	{
-		final Map<Object, TextureProxy> textures = _textures;
+		Map<Object, TextureProxy> textures = _textures;
 
 		TextureProxy textureProxy = textures.get( textureMap );
 		if ( textureProxy == null )
@@ -247,11 +203,11 @@ public class TextureCache
 			loadTexture( textureMap, textureProxy );
 		}
 
-		final Texture result = textureProxy.getTexture();
+		Texture result = textureProxy.getTexture();
 
 		if ( result != null )
 		{
-			final TextureData textureData = textureProxy.getTextureData();
+			TextureData textureData = textureProxy.getTextureData();
 			if ( ( textureData != null ) && ( textureData.getInternalFormat() == GL.GL_RGBA ) )
 			{
 				_alpha.add( textureMap );
@@ -266,17 +222,16 @@ public class TextureCache
 	 *
 	 * @param appearance Appearance to get color map texture from.
 	 *
-	 * @return Color map texture; <code>null</code> if face has no color map or
+	 * @return Color map texture; {@code null} if face has no color map or
 	 * no texture coordinates.
 	 */
-	@Nullable
-	public Texture getColorMapTexture( final Appearance appearance )
+	public @Nullable Texture getColorMapTexture( Appearance appearance )
 	{
 		Texture result = null;
 
 		if ( appearance != null )
 		{
-			final TextureMap colorMap = appearance.getColorMap();
+			TextureMap colorMap = appearance.getColorMap();
 			if ( colorMap != null )
 			{
 				result = getTexture( colorMap );
@@ -291,17 +246,16 @@ public class TextureCache
 	 *
 	 * @param appearance Appearance  to get bump map texture from.
 	 *
-	 * @return Color map texture; <code>null</code> if face has no color map or
+	 * @return Color map texture; {@code null} if face has no color map or
 	 * no texture coordinates.
 	 */
-	@Nullable
-	public Texture getBumpMapTexture( final Appearance appearance )
+	public @Nullable Texture getBumpMapTexture( Appearance appearance )
 	{
 		Texture result = null;
 
 		if ( appearance != null )
 		{
-			final TextureMap bumpMap = appearance.getBumpMap();
+			TextureMap bumpMap = appearance.getBumpMap();
 			if ( bumpMap != null )
 			{
 				TextureProxy textureProxy = _textures.get( bumpMap );
@@ -325,8 +279,7 @@ public class TextureCache
 	 *
 	 * @return Normalization cube map.
 	 */
-	@Nullable
-	public Texture getNormalizationCubeMap()
+	public @Nullable Texture getNormalizationCubeMap()
 	{
 		TextureProxy result = _textures.get( NORMALIZATION_CUBE_MAP );
 		if ( result == null )
@@ -344,8 +297,7 @@ public class TextureCache
 	 *
 	 * @return Cube map texture.
 	 */
-	@Nullable
-	public Texture getCubeMap( final CubeMap cubeMap )
+	public @Nullable Texture getCubeMap( CubeMap cubeMap )
 	{
 		TextureProxy textureProxy = _textures.get( cubeMap );
 		if ( textureProxy == null )
@@ -363,20 +315,14 @@ public class TextureCache
 	 * @param key          Key identifying the texture.
 	 * @param textureProxy Texture to be loaded.
 	 */
-	private void loadTexture( @NotNull final Object key, @NotNull final TextureProxy textureProxy )
+	private void loadTexture( Object key, TextureProxy textureProxy )
 	{
 		_textures.put( key, textureProxy );
 
-		final Future<TextureData> textureData = _executorService.submit( textureProxy );
+		Future<TextureData> textureData = _executorService.submit( textureProxy );
 		textureProxy.setTextureData( textureData );
 
-		_executorService.submit( new Runnable()
-		{
-			public void run()
-			{
-				fireTextureChange( textureProxy );
-			}
-		} );
+		_executorService.submit( () -> fireTextureChange( textureProxy ) );
 
 		if ( !isAsynchronous() )
 		{
@@ -384,17 +330,18 @@ public class TextureCache
 			{
 				textureData.get();
 			}
-			catch ( final InterruptedException e )
+			catch ( InterruptedException e )
 			{
-				final Throwable cause = e.getCause();
+				Throwable cause = e.getCause();
 				if ( cause != null )
 				{
 					e.printStackTrace();
 				}
+				Thread.currentThread().interrupt();
 			}
-			catch ( final ExecutionException e )
+			catch ( ExecutionException e )
 			{
-				final Throwable cause = e.getCause();
+				Throwable cause = e.getCause();
 				if ( cause != null )
 				{
 					e.printStackTrace();
@@ -408,7 +355,7 @@ public class TextureCache
 	 *
 	 * @param listener Listener to be added.
 	 */
-	public void addListener( @NotNull final TextureCacheListener listener )
+	public void addListener( TextureCacheListener listener )
 	{
 		_listeners.add( listener );
 	}
@@ -418,7 +365,7 @@ public class TextureCache
 	 *
 	 * @param listener Listener to be removed.
 	 */
-	public void removeListener( @NotNull final TextureCacheListener listener )
+	public void removeListener( TextureCacheListener listener )
 	{
 		_listeners.remove( listener );
 	}
@@ -428,36 +375,16 @@ public class TextureCache
 	 *
 	 * @param textureProxy Changed texture.
 	 */
-	protected void fireTextureChange( @NotNull final TextureProxy textureProxy )
+	protected void fireTextureChange( TextureProxy textureProxy )
 	{
-		SwingUtilities.invokeLater( new Runnable()
-		{
-			public void run()
-			{
-				for ( final TextureCacheListener listener : _listeners )
-				{
-					listener.textureChanged( TextureCache.this, textureProxy );
-				}
-			}
-		} );
+		SwingUtilities.invokeLater( () -> _listeners.forEach( listener -> listener.textureChanged( this, textureProxy ) ) );
 	}
 
-	/**
-	 * Sets whether textures should be loaded asynchronously.
-	 *
-	 * @param asynchronous {@code true} to load textures asynchronously
-	 *                     (default).
-	 */
-	public void setAsynchronous( final boolean asynchronous )
+	public void setAsynchronous( boolean asynchronous )
 	{
 		_asynchronous = asynchronous;
 	}
 
-	/**
-	 * Returns whether textures should be loaded asynchronously.
-	 *
-	 * @return {@code true} to load textures asynchronously.
-	 */
 	public boolean isAsynchronous()
 	{
 		return _asynchronous;
@@ -472,8 +399,7 @@ public class TextureCache
 	 *
 	 * @throws IOException if an I/O error occurs while reading the image.
 	 */
-	@Nullable
-	public BufferedImage loadImage( final TextureMap textureMap )
+	public @Nullable BufferedImage loadImage( TextureMap textureMap )
 	throws IOException
 	{
 		return _textureLibrary.loadImage( textureMap );
@@ -507,23 +433,13 @@ public class TextureCache
 		 */
 		private DaemonThreadFactory()
 		{
-			final SecurityManager securityManager = System.getSecurityManager();
-			if ( securityManager != null )
-			{
-				_group = securityManager.getThreadGroup();
-			}
-			else
-			{
-				final Thread currentThread = Thread.currentThread();
-				_group = currentThread.getThreadGroup();
-			}
-
+			_group = Thread.currentThread().getThreadGroup();
 			_poolNumber = THREAD_FACTORY_POOL_NUMBER.getAndIncrement();
 		}
 
-		public Thread newThread( final Runnable runnable )
+		public Thread newThread( Runnable runnable )
 		{
-			final Thread result = new Thread( _group, runnable, "TextureCache-" + _poolNumber + "-thread-" + _threadNumber.getAndIncrement(), 0L );
+			Thread result = new Thread( _group, runnable, "TextureCache-" + _poolNumber + "-thread-" + _threadNumber.getAndIncrement(), 0L );
 			result.setDaemon( true );
 			result.setPriority( Thread.NORM_PRIORITY );
 			return result;

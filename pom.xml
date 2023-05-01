@@ -6,7 +6,7 @@
 
 	<groupId>com.asobrain.ab3d</groupId>
 	<artifactId>ab3d</artifactId>
-	<version>1.23-SNAPSHOT</version>
+	<version>1.24-SNAPSHOT</version>
 	<description>Straightforward engine-independent 3D Java library.</description>
 	<url>https://github.com/AsoBrain/AsoBrain3D</url>
 
@@ -50,11 +50,6 @@
 				<type>test-jar</type>
 				<version>${project.version}</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.asobrain.ab3d</groupId>
-				<artifactId>ab3d-jogl1</artifactId>
-				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.asobrain.ab3d</groupId>
@@ -149,16 +144,6 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
 					<version>3.2.0</version>
-				</plugin>
-				<plugin>
-					<groupId>com.github.batkinson.plugins</groupId>
-					<artifactId>maven-pack200-plugin</artifactId>
-					<version>1.0.1</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jarsigner-plugin</artifactId>
-					<version>3.0.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -275,12 +260,6 @@
 			<properties>
 				<jdk.version>11</jdk.version>
 			</properties>
-		</profile>
-		<profile>
-			<id>jogl1</id>
-			<modules>
-				<module>jogl1</module>
-			</modules>
 		</profile>
 	</profiles>
 
