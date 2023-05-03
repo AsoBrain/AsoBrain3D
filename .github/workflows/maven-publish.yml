@@ -31,28 +31,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      #      - name: Download Maven (workaround for nektos/act)
-      #        run: |
-      #          curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip
-      #          apt-get update
-      #          apt-get -y install unzip
-      #          unzip -d /usr/share maven.zip
-      #          rm maven.zip
-      #          ln -s /usr/share/apache-maven-3.6.3/bin/mvn /usr/bin/mvn
-      #          echo "M2_HOME=/usr/share/apache-maven-3.6.3" | tee -a /etc/environment
+      - name: Adjust Maven toolchains.xml
+        run: |
+          cd ~/.m2/
+          mv toolchains.xml toolchains.xml.bak
+          sed 's@<version>8</version>@<version>1.8</version>@' <toolchains.xml.bak >toolchains.xml
 
       - name: Install virtual frame buffer
         run: |
           sudo apt-get -q update
           sudo apt-get -qy install xvfb libxtst6 libxi-dev
-
-      - name: Create Maven toolchains.xml
-        uses: cactuslab/maven-toolchains-xml-action@v1
-        with:
-          toolchains: |
-            [
-              {"jdkVersion": "1.8", "jdkHome": "${{steps.setupJava.outputs.path}}"}
-            ]
 
       - name: Start virtual frame buffer
         run: |
