@@ -36,7 +36,7 @@ public class Ab3dExample
 {
 	/**
 	 * Create render engine for this example. An engine can be specified using
-	 * the 'engineName' applet parameter. Possible values:
+	 * the 'engineName' parameter. Possible values:
 	 * <dl>
 	 * <dt>default (also if invalid name is specified)</dt>
 	 * <dd>JOGL renderer with default configuration options.</dd>
