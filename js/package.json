@@ -22,16 +22,21 @@
     "lib"
   ],
   "dependencies": {
-    "@numdata/oss": "^1.26.0",
+    "@numdata/oss": "^1.27.2",
     "three": "^0.137.0",
     "@types/three": "^0.137.0"
   },
   "devDependencies": {
-    "@numdata/common-build-gulp": "^3.0.1",
-    "@numdata/common-config": "^2.0.2",
-    "chai": "^4.2.0",
+    "@numdata/common-build-gulp": "^5.1.1",
+    "@numdata/common-config": "^5.1.0",
+    "chai": "^4.3.7",
     "gulp": "^4.0.2",
-    "jest": "^26.0.1"
+    "jest": "^29.5.0"
+  },
+  "overrides": {
+    "chokidar": "^3.0.0",
+    "micromatch": "^4.0.0",
+    "glob-parent": "^6.0.0"
   },
   "sideEffects": false
 }
