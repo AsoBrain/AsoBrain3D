@@ -1,11 +1,20 @@
-name: Publish Javascript
+name: Build/publish Javascript
 
 on:
+  push:
+    branches: [ master, release-* ]
+    paths:
+      - 'js/**'
+  pull_request:
+    branches: [ master, release-* ]
+    paths:
+      - 'js/**'
   release:
     types: [ created ]
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,6 +46,7 @@ jobs:
         run: cd js; npm run test
 
       - name: Publish
+        if: ${{ github.event_name == 'release' }}
         run: cd js; npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
