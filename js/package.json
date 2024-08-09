@@ -4,7 +4,7 @@
   "description": "AsoBrain 3D Toolkit",
   "license": "LGPL-2.1",
   "publishConfig": {
-    "registry": "https://earl.ivenza.net/npm/"
+    "registry": "https://npm.ivenza.net/"
   },
   "author": {
     "name": "Gerrit Meinders",
