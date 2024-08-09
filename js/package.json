@@ -1,6 +1,6 @@
 {
   "name": "@numdata/ab3d",
-  "version": "1.24.0",
+  "version": "1.24.1",
   "description": "AsoBrain 3D Toolkit",
   "license": "LGPL-2.1",
   "publishConfig": {
@@ -22,9 +22,7 @@
     "lib"
   ],
   "dependencies": {
-    "@numdata/oss": "^1.27.2",
-    "three": "^0.137.0",
-    "@types/three": "^0.137.0"
+    "@numdata/oss": "^1.27.2"
   },
   "devDependencies": {
     "@numdata/common-build-gulp": "^5.1.1",
@@ -32,6 +30,10 @@
     "chai": "^4.3.7",
     "gulp": "^4.0.2",
     "jest": "^29.5.0"
+  },
+  "peerDependencies": {
+    "three": ">= 0.137.0",
+    "@types/three": ">= 0.137.0"
   },
   "overrides": {
     "chokidar": "^3.0.0",
