@@ -6,7 +6,7 @@
 
 	<groupId>com.asobrain.ab3d</groupId>
 	<artifactId>ab3d</artifactId>
-	<version>1.23-SNAPSHOT</version>
+	<version>1.23.0</version>
 	<description>Straightforward engine-independent 3D Java library.</description>
 	<url>https://github.com/AsoBrain/AsoBrain3D</url>
 
