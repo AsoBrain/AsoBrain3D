@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,9 +16,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-import Bounds3D from './Bounds3D';
-import Matrix3D from './Matrix3D';
-import Vector3D from './Vector3D';
+import Bounds3D from './Bounds3D.js';
+import Matrix3D from './Matrix3D.js';
+import Vector3D from './Vector3D.js';
 
 /**
  * This class can be used to calculate a bounding box around a collection of

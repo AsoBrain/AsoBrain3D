@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-import TessellationPrimitive from './TessellationPrimitive';
+import TessellationPrimitive from './TessellationPrimitive.js';
 
 /**
  * A triangle fan is a series of connected triangles with a central vertex.

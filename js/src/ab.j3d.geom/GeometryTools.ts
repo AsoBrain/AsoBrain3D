@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import Bounds3D from '../ab.j3d/Bounds3D';
-import Matrix3D from '../ab.j3d/Matrix3D';
-import Vector2D, { AnyVector2D } from '../ab.j3d/Vector2D';
-import Vector3D, { AnyVector3D } from '../ab.j3d/Vector3D';
+import Bounds3D from '../ab.j3d/Bounds3D.js';
+import Matrix3D from '../ab.j3d/Matrix3D.js';
+import Vector2D, { AnyVector2D } from '../ab.j3d/Vector2D.js';
+import Vector3D, { AnyVector3D } from '../ab.j3d/Vector3D.js';
 
 /**
  * Tolerance to use for floating-point comparisons.

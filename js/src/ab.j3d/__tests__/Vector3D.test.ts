@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 2006-2018 Peter S. Heijnen
+ * Copyright (C) 2006-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
  */
 import { assert } from 'chai';
 
-import Vector3D from '../Vector3D';
+import Vector3D from '../Vector3D.js';
 
 /**
  * This class tests the {@link Vector3D} class.

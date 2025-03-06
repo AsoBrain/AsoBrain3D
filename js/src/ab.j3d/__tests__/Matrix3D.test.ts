@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@ import { assert, AssertionError } from 'chai';
 
 import { toRadians } from '@numdata/oss';
 
-import Matrix3D from '../Matrix3D';
-import Vector3D from '../Vector3D';
+import Matrix3D from '../Matrix3D.js';
+import Vector3D from '../Vector3D.js';
 
 /**
  * This tests the {@link Matrix3D} class.

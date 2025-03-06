@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2022 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,10 +18,10 @@
  */
 import { toRadians } from '@numdata/oss';
 
-import GeometryTools from '../ab.j3d.geom/GeometryTools';
+import GeometryTools from '../ab.j3d.geom/GeometryTools.js';
 
-import Vector3D from './Vector3D';
-import Bounds3D from './Bounds3D';
+import Vector3D from './Vector3D.js';
+import Bounds3D from './Bounds3D.js';
 
 /**
  * This class is used to represent a 3D transformation matrix (although

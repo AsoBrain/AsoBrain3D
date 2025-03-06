@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,11 @@
  */
 import { ArrayTools } from '@numdata/oss';
 
-import Matrix3D from '../ab.j3d/Matrix3D';
-import Vector3D from '../ab.j3d/Vector3D';
+import Matrix3D from '../ab.j3d/Matrix3D.js';
+import Vector3D from '../ab.j3d/Vector3D.js';
 
-import PlanarUVMap from './PlanarUVMap';
-import UVMap from './UVMap';
+import PlanarUVMap from './PlanarUVMap.js';
+import UVMap from './UVMap.js';
 
 /**
  * Defines a box UV-mapping.

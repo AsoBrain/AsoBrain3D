@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import Matrix3D from '../ab.j3d/Matrix3D';
+import Matrix3D from '../ab.j3d/Matrix3D.js';
 
-import TransformUVGenerator from './TransformUVGenerator';
-import UVMap from './UVMap';
-import Vector3D from '../ab.j3d/Vector3D';
-import TextureMap from '../ab.j3d/TextureMap';
+import TransformUVGenerator from './TransformUVGenerator.js';
+import UVMap from './UVMap.js';
+import Vector3D from '../ab.j3d/Vector3D.js';
+import TextureMap from '../ab.j3d/TextureMap.js';
 
 /**
  * Defines a planar UV-mapping.
