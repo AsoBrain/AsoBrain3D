@@ -1,14 +1,30 @@
 {
-  "extends": "@numdata/common-config/tsconfig.json",
   "compilerOptions": {
-    "noImplicitAny": false,
+    "outDir": "lib",
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "NodeNext",
+    "jsx": "react",
     "declaration": true,
-    "rootDir": "./src"
+    "moduleResolution": "NodeNext",
+    "types": [
+      "node"
+    ],
+    "skipLibCheck": true
   },
   "include": [
-    "src/**/*"
+    "src"
   ],
   "exclude": [
-    "**/__tests__/**"
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "lib",
+    "*/__tests__/**",
   ]
 }

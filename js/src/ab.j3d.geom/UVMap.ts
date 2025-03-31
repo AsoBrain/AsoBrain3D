@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,11 @@
 
 import { BufferAttribute, BufferGeometry } from 'three';
 
-import TextureMap from '../ab.j3d/TextureMap';
-import Vector3D from '../ab.j3d/Vector3D';
+import TextureMap from '../ab.j3d/TextureMap.js';
+import Vector3D from '../ab.j3d/Vector3D.js';
 
-import Appearance from './Appearance';
-import UVGenerator from './UVGenerator';
+import Appearance from './Appearance.js';
+import UVGenerator from './UVGenerator.js';
 
 /**
  * Defines a mapping from spatial coordinates to texture coordinates.

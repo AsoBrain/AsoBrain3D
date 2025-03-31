@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-import Vector3D from '../ab.j3d/Vector3D';
+import Vector3D from '../ab.j3d/Vector3D.js';
 
-import Appearance from './Appearance';
-import UVMap from './UVMap';
+import Appearance from './Appearance.js';
+import UVMap from './UVMap.js';
 
 /**
  * This generator can be requested from {@link UVMap} to generate a series of
