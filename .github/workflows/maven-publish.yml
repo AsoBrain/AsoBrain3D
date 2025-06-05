@@ -25,11 +25,11 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - id: setupJava
         name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
@@ -65,7 +65,7 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.MAVEN_IVENZA_NET_PASSWORD }}
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage-report/target/site/jacoco-aggregate
