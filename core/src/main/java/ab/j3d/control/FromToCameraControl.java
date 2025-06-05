@@ -1,5 +1,4 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
  *
@@ -15,7 +14,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * ====================================================================
  */
 package ab.j3d.control;
 
@@ -48,10 +46,9 @@ import org.jetbrains.annotations.*;
  *  <dd>Moves both the 'to' and 'from' point in the current view direction.
  * </dl>
  *
- * @author  G.B.M. Rupert
- * @author  G. Meinders
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author G.B.M. Rupert
+ * @author G. Meinders
+ * @author Peter S. Heijnen
  */
 public class FromToCameraControl
 	extends CameraControl

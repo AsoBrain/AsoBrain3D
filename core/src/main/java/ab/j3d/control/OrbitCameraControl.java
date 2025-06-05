@@ -1,5 +1,4 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
  *
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.control;
 
@@ -41,9 +39,8 @@ import ab.j3d.view.*;
  *      mouse up or down.</dd>
  * </dl>
  *
- * @author  Peter S. Heijnen
- * @author  G.B.M. Rupert
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
+ * @author G.B.M. Rupert
  *
  * @deprecated For removal, since 1.24.0. These controls are outdated. Use {@link FromToCameraControl} instead.
  */

@@ -1,5 +1,4 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
  *
@@ -15,7 +14,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * ====================================================================
  */
 package ab.j3d.control;
 
@@ -29,13 +27,12 @@ import org.jetbrains.annotations.*;
 /**
  * This class implements a camera control that allows only camera panning and
  * zooming.
- * <p />
+ * <p>
  * Panning is achieved by modifying the translational components of the view
  * matrix ({@link View3D#setScene2View}, while the zoom effect is
  * achieved by manipulating the view's zoom factor ({@link View3D#setZoomFactor}.
  *
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Peter S. Heijnen
  */
 public class PanAndZoomCameraControl
 	extends CameraControl
