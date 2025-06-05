@@ -194,15 +194,10 @@ public class PanAndZoomCameraControl
 	 */
 	protected void pan( final ControlInputEvent event )
 	{
-		final View3D view = _view;
-		final Matrix3D scene2view = _dragStartScene2View;
-
-		final double toUnits = view.getPixelsToUnitsFactor();
-
-		final double dx =  toUnits * (double)event.getDragDeltaX();
-		final double dy = -toUnits * (double)event.getDragDeltaY();
-
-		view.setScene2View( scene2view.plus( dx , dy , 0.0 ) );
+		double toUnits = _view.getProjector().imageToViewScale( 0 );
+		double dx = toUnits * event.getDragDeltaX();
+		double dy = -toUnits * event.getDragDeltaY();
+		setScene2View( _dragStartScene2View.plus( dx, dy, 0 ) );
 	}
 
 	/**

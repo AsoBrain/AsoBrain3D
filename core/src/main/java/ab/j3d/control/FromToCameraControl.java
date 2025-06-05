@@ -616,15 +616,10 @@ public class FromToCameraControl
 	 */
 	protected void pan( final ControlInputEvent event )
 	{
-		final Matrix3D scene2view = _dragStartScene2View;
-
-//		final double toUnits = view.getPixelsToUnitsFactor();
-		final double toUnits = 0.01 * _dragStartDistance;
-
-		final double dx =  toUnits * (double)event.getDragDeltaX();
-		final double dy = -toUnits * (double)event.getDragDeltaY();
-
-		setScene2View( scene2view.plus( dx, dy, 0.0 ) );
+		double toUnits = _view.getProjector().imageToViewScale( getDistance() );
+		double dx = toUnits * event.getDragDeltaX();
+		double dy = -toUnits * event.getDragDeltaY();
+		setScene2View( _dragStartScene2View.plus( dx, dy, 0 ) );
 	}
 
 	/**
