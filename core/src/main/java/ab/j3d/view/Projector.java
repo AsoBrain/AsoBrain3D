@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2025 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.view;
 
@@ -30,9 +28,8 @@ import org.jetbrains.annotations.*;
  * surface (image plate, view plane, screen) and back. Implementations
  * of this class provide several projection methods.
  *
- * @author  Rob Veneberg
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author Rob Veneberg
+ * @author Peter S. Heijnen
  */
 public abstract class Projector
 {
@@ -635,6 +632,14 @@ public abstract class Projector
 	public abstract Vector3D imageToView( double imageX, double imageY, double viewZ );
 
 	/**
+	 * Returns the scale of a single pixel in view coordinates at the given
+	 * viewing distance.
+	 *
+	 * @param viewZ Z-coordinate relative to view plane (view units).
+	 */
+	public abstract double imageToViewScale( double viewZ );
+
+	/**
 	 * Get a ray originating from a (mouse) pointer at (<code>pointerX</code>,
 	 * <code>pointerY</code>) on the image plate, pointing into the view volume.
 	 * <p />
@@ -724,52 +729,56 @@ public abstract class Projector
 		}
 
 		@Override
-		public void project( final double[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		public void project( double[] result, int resultOffset, double viewX, double viewY, double viewZ )
 		{
-			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
-			final double x = _imageCenterX + f * viewX;
-			final double y = _imageCenterY - f * viewY;
+			double f = viewToImageScale( viewZ );
+			double x = _imageCenterX - f * viewX;
+			double y = _imageCenterY + f * viewY;
 
 			result[ resultOffset ] = x;
 			result[ resultOffset + 1 ] = y;
 		}
 
 		@Override
-		public void project( final float[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		public void project( float[] result, int resultOffset, double viewX, double viewY, double viewZ )
 		{
-			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
-			final double x = _imageCenterX + f * viewX;
-			final double y = _imageCenterY - f * viewY;
+			double f = viewToImageScale( viewZ );
+			double x = _imageCenterX - f * viewX;
+			double y = _imageCenterY + f * viewY;
 
-			result[ resultOffset ] = (float) x;
-			result[ resultOffset + 1 ] = (float) y;
+			result[ resultOffset ] = (float)x;
+			result[ resultOffset + 1 ] = (float)y;
 		}
 
 		@Override
-		public void project( final int[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		public void project( int[] result, int resultOffset, double viewX, double viewY, double viewZ )
 		{
-			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
-			final double x = _imageCenterX + f * viewX;
-			final double y = _imageCenterY - f * viewY;
+			double f = viewToImageScale( viewZ );
+			double x = _imageCenterX - f * viewX;
+			double y = _imageCenterY + f * viewY;
 
-			result[ resultOffset ] = (int) Math.floor( x + 0.5);
-			result[ resultOffset + 1 ] = (int) Math.floor( y + 0.5 );
+			result[ resultOffset ] = (int)Math.floor( x + 0.5 );
+			result[ resultOffset + 1 ] = (int)Math.floor( y + 0.5 );
 		}
 
 		@Override
-		public Vector3D imageToView( final double imageX, final double imageY, final double viewZ )
+		public Vector3D imageToView( double imageX, double imageY, double viewZ )
 		{
-			final double centerX     = (double)( _imageCenterX );
-			final double centerY     = (double)( _imageCenterY );
-			final double view2pixels = _view2pixels;
-			final double eyeDistance = _eyeDistance;
-
-			final double f = view2pixels / ( 1.0 - ( viewZ + eyeDistance ) / eyeDistance );
-
-			final double viewX = ( imageX - centerX ) / f;
-			final double viewY = ( centerY - imageY ) / f;
-
+			double f = imageToViewScale( viewZ );
+			double viewX = ( _imageCenterX - imageX ) * f;
+			double viewY = ( imageY - _imageCenterY ) * f;
 			return new Vector3D( viewX, viewY, viewZ );
+		}
+
+		private double viewToImageScale( double viewZ )
+		{
+			return _view2pixels / ( ( viewZ + _eyeDistance ) / _eyeDistance - 1.0 );
+		}
+
+		@Override
+		public double imageToViewScale( double viewZ )
+		{
+			return ( ( viewZ + _eyeDistance ) / _eyeDistance - 1.0 ) / _view2pixels;
 		}
 
 		@Override
@@ -904,6 +913,12 @@ public abstract class Projector
 			final double viewY = ( centerY - imageY ) / view2pixels;
 
 			return new Vector3D( viewX, viewY, viewZ );
+		}
+
+		@Override
+		public double imageToViewScale( double viewZ )
+		{
+			return 1.0 / _view2pixels;
 		}
 
 		@Override
