@@ -64,9 +64,6 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_IVENZA_NET_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_IVENZA_NET_PASSWORD }}
 
-      - name: Stop virtual frame buffer
-        uses: bcomnes/cleanup-xvfb@v1
-
       - name: Upload coverage report
         uses: actions/upload-artifact@v3
         with:
