@@ -44,7 +44,10 @@ import ab.j3d.view.*;
  * @author  Peter S. Heijnen
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
+ *
+ * @deprecated For removal, since 1.24.0. These controls are outdated. Use {@link FromToCameraControl} instead.
  */
+@Deprecated
 public class OrbitCameraControl
 	extends CameraControl
 {
