@@ -93,13 +93,6 @@ public class FromToCameraControl
 	private Matrix3D _dragStartScene2View = Matrix3D.IDENTITY;
 
 	/**
-	 * Zoom factor when dragging started.
-	 * <p />
-	 * This is used as temporary state variable for dragging operations.
-	 */
-	private double _dragStartZoomFactor = 1.0;
-
-	/**
 	 * Distance of target point, relative to view position, when dragging started.
 	 * <p />
 	 * This is used as temporary state variable for dragging operations.
@@ -445,7 +438,6 @@ public class FromToCameraControl
 	public void mousePressed( final ControlInputEvent event )
 	{
 		_dragStartScene2View = getScene2View();
-		_dragStartZoomFactor = _view.getZoomFactor();
 		_dragStartDistance = _distance;
 
 		super.mousePressed( event );
