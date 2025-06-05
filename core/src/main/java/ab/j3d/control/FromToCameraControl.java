@@ -1,5 +1,4 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
  *
@@ -15,7 +14,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * ====================================================================
  */
 package ab.j3d.control;
 
@@ -48,10 +46,9 @@ import org.jetbrains.annotations.*;
  *  <dd>Moves both the 'to' and 'from' point in the current view direction.
  * </dl>
  *
- * @author  G.B.M. Rupert
- * @author  G. Meinders
- * @author  Peter S. Heijnen
- * @version $Revision$ $Date$
+ * @author G.B.M. Rupert
+ * @author G. Meinders
+ * @author Peter S. Heijnen
  */
 public class FromToCameraControl
 	extends CameraControl
@@ -91,13 +88,6 @@ public class FromToCameraControl
 	 * This is used as temporary state variable for dragging operations.
 	 */
 	private Matrix3D _dragStartScene2View = Matrix3D.IDENTITY;
-
-	/**
-	 * Zoom factor when dragging started.
-	 * <p />
-	 * This is used as temporary state variable for dragging operations.
-	 */
-	private double _dragStartZoomFactor = 1.0;
 
 	/**
 	 * Distance of target point, relative to view position, when dragging started.
@@ -445,7 +435,6 @@ public class FromToCameraControl
 	public void mousePressed( final ControlInputEvent event )
 	{
 		_dragStartScene2View = getScene2View();
-		_dragStartZoomFactor = _view.getZoomFactor();
 		_dragStartDistance = _distance;
 
 		super.mousePressed( event );
@@ -624,15 +613,10 @@ public class FromToCameraControl
 	 */
 	protected void pan( final ControlInputEvent event )
 	{
-		final Matrix3D scene2view = _dragStartScene2View;
-
-//		final double toUnits = view.getPixelsToUnitsFactor();
-		final double toUnits = 0.01 * _dragStartDistance;
-
-		final double dx =  toUnits * (double)event.getDragDeltaX();
-		final double dy = -toUnits * (double)event.getDragDeltaY();
-
-		setScene2View( scene2view.plus( dx, dy, 0.0 ) );
+		double toUnits = _view.getProjector().imageToViewScale( getDistance() );
+		double dx = toUnits * event.getDragDeltaX();
+		double dy = -toUnits * event.getDragDeltaY();
+		setScene2View( _dragStartScene2View.plus( dx, dy, 0 ) );
 	}
 
 	/**
