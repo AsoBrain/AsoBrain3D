@@ -463,6 +463,12 @@ public class JOGLRenderer
 	{
 		_shaderManager.dispose();
 		_geometryObjectManager.dispose();
+
+		if ( _shadowMap != null )
+		{
+			_shadowMap.delete();
+			_shadowMap = null;
+		}
 	}
 
 	/**
@@ -2141,7 +2147,7 @@ public class JOGLRenderer
 	 * Tree walker that takes level of detail of {@link Object3D}s into account.
 	 */
 	private class LevelOfDetailTreeWalker
-	extends Node3DTreeWalker
+		extends Node3DTreeWalker
 	{
 		/**
 		 * Calculates projected object bounds.
@@ -2174,16 +2180,16 @@ public class JOGLRenderer
 								final Matrix3D object2View = object2scene.multiply( scene2View );
 
 								final double[] points =
-								{
-								boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
-								boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
-								boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
-								boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
-								boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
-								boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
-								boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
-								boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
-								};
+									{
+										boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
+										boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
+										boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
+										boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
+										boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
+										boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
+										boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
+										boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
+									};
 
 								object2View.transform( points, points, 8 );
 								projector.project( points, points, 8 );
