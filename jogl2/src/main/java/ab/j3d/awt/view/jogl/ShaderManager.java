@@ -200,11 +200,14 @@ public class ShaderManager
 		if ( shaderImplementation != null )
 		{
 			final ShaderProgram shaderProgram = shaderImplementation.createProgram( name );
+			_shaderPrograms.put( name, shaderProgram );
+
 			for ( final String shader : shaders )
 			{
 				shaderProgram.attach( getShader( shader ) );
 			}
-			_shaderPrograms.put( name, shaderProgram );
+
+			shaderProgram.link();
 		}
 	}
 
