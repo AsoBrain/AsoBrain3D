@@ -132,7 +132,12 @@ public class TextureCache
 			 * If texture data is still available, a new texture can be created.
 			 * Otherwise, the proxy is of no use anymore.
 			 */
-			if ( !textureProxy.isTextureDataSet() )
+
+			// If the context is reused, the texture may still be valid.
+			Texture texture = textureProxy.getTexture();
+			boolean validTexture = texture != null && gl.glIsTexture( texture.getTextureObject() );
+
+			if ( !validTexture && !textureProxy.isTextureDataSet() )
 			{
 				i.remove();
 				_alpha.remove( entry.getKey() );
@@ -400,7 +405,7 @@ public class TextureCache
 	 * @throws IOException if an I/O error occurs while reading the image.
 	 */
 	public @Nullable BufferedImage loadImage( TextureMap textureMap )
-	throws IOException
+		throws IOException
 	{
 		return _textureLibrary.loadImage( textureMap );
 	}
@@ -411,7 +416,7 @@ public class TextureCache
 	 * runtime from stopping.
 	 */
 	private static class DaemonThreadFactory
-	implements ThreadFactory
+		implements ThreadFactory
 	{
 		/**
 		 * Thread group for new threads.
