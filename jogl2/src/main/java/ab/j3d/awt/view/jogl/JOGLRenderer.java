@@ -461,8 +461,17 @@ public class JOGLRenderer
 	 */
 	public void dispose()
 	{
-		_shaderManager.dispose();
-		_geometryObjectManager.dispose();
+		if ( _shaderManager != null )
+		{
+			_shaderManager.dispose();
+			_shaderManager = null;
+		}
+
+		if (_geometryObjectManager != null )
+		{
+			_geometryObjectManager.dispose();
+			_geometryObjectManager = null;
+		}
 
 		if ( _shadowMap != null )
 		{
