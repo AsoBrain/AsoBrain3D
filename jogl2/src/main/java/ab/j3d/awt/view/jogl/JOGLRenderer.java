@@ -142,12 +142,12 @@ public class JOGLRenderer
 	/**
 	 * Framebuffer for multi-pass rendering.
 	 */
-	private ColorDepthFramebuffer _accumulationBuffer1 = new ColorDepthFramebuffer();
+	private final ColorDepthFramebuffer _accumulationBuffer1 = new ColorDepthFramebuffer();
 
 	/**
 	 * Additional framebuffer for multi-pass rendering on MacOS.
 	 */
-	private ColorDepthFramebuffer _accumulationBuffer2 = new ColorDepthFramebuffer();
+	private final ColorDepthFramebuffer _accumulationBuffer2 = new ColorDepthFramebuffer();
 
 	/**
 	 * Whether color should be rendered for shadow maps, instead of only depth.
@@ -472,6 +472,9 @@ public class JOGLRenderer
 			_geometryObjectManager.dispose();
 			_geometryObjectManager = null;
 		}
+
+		_accumulationBuffer1.delete();
+		_accumulationBuffer2.delete();
 
 		if ( _shadowMap != null )
 		{
