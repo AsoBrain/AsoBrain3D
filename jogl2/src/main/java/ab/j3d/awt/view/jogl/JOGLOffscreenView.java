@@ -37,7 +37,7 @@ import com.jogamp.opengl.util.awt.*;
  * @author Gerrit Meinders
  */
 public class JOGLOffscreenView
-extends OffscreenView3D
+	extends OffscreenView3D
 {
 	/**
 	 * Engine that created this view.
@@ -282,7 +282,7 @@ extends OffscreenView3D
 
 			try
 			{
-				Threading.invokeOnOpenGLThread(true, new Runnable()
+				Threading.invokeOnOpenGLThread( true, new Runnable()
 				{
 					@Override
 					public void run()
@@ -314,11 +314,22 @@ extends OffscreenView3D
 		{
 			try
 			{
+				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+				{
+					throw new GLException( "Failed to make offscreen context current before disposal." );
+				}
+
+				if ( _renderer != null )
+				{
+					_renderer.dispose();
+					_renderer = null;
+				}
+
 				context.release();
 			}
 			catch ( final GLException gle )
 			{
-				// expected
+				gle.printStackTrace();
 			}
 			finally
 			{
@@ -326,7 +337,6 @@ extends OffscreenView3D
 			}
 		}
 
-		_renderer = null;
 		_capabilities = null;
 
 		final JOGLGraphics2D graphics2D = _graphics2D;
