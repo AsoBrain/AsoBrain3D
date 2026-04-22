@@ -435,6 +435,8 @@ public class ShaderManager
 	 */
 	public void dispose()
 	{
+		useShader( null );
+
 		for ( final ShaderProgram shaderProgram : _shaderPrograms.values() )
 		{
 			shaderProgram.dispose();
@@ -446,8 +448,6 @@ public class ShaderManager
 			shader.dispose();
 		}
 		_shaders.clear();
-
-		useShader( null );
 	}
 
 	/**
