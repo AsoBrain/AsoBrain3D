@@ -127,17 +127,21 @@ public class TextureCache
 		{
 			Map.Entry<Object, TextureProxy> entry = i.next();
 			TextureProxy textureProxy = entry.getValue();
+			Texture texture = textureProxy.getTexture();
 
 			/*
 			 * If texture data is still available, a new texture can be created.
 			 * Otherwise, the proxy is of no use anymore.
 			 */
+			boolean notLoaded = texture == null && !textureProxy.isTextureDataSet();
 
-			// If the context is reused, the texture may still be valid.
-			Texture texture = textureProxy.getTexture();
-			boolean validTexture = texture != null && gl.glIsTexture( texture.getTextureObject() );
+			/*
+			 * If the texture object was already created, but is no longer valid
+			 * then it has to be recreated.
+			 */
+			boolean invalidTexture = texture != null && !gl.glIsTexture( texture.getTextureObject() );
 
-			if ( !validTexture && !textureProxy.isTextureDataSet() )
+			if ( invalidTexture || notLoaded )
 			{
 				i.remove();
 				_alpha.remove( entry.getKey() );
