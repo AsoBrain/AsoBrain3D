@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
