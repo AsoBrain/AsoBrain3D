@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.*;
  * Represents an OpenGL Shading Language (GLSL) shader program. This
  * implementation uses the core API, available in OpenGL 2.0 and above.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public class CoreShaderProgram
 	implements ShaderProgram
@@ -53,7 +53,7 @@ public class CoreShaderProgram
 	/**
 	 * Constructs a new shader program.
 	 *
-	 * @param   name    Name for the program, for traceability.
+	 * @param name Name for the program, for traceability.
 	 */
 	public CoreShaderProgram( @Nullable final String name )
 	{
@@ -69,7 +69,7 @@ public class CoreShaderProgram
 	/**
 	 * Returns the underlying program object.
 	 *
-	 * @return  Program object.
+	 * @return Program object.
 	 */
 	public int getProgramObject()
 	{
@@ -129,7 +129,24 @@ public class CoreShaderProgram
 				throw new GLException( ( infoLog == null ) ? ( "'" + _name + "' shader(s) failed to link (sorry, no details available)." ) : ( "Linking of '" + _name + "' shader(s) failed: " + infoLog ) );
 			}
 
+			// Shaders can be detached after successful linking (https://registry.khronos.org/OpenGL-Refpages/gl4/html/glLinkProgram.xhtml)
+			detachShaders( gl2 );
+
 			_linked = true;
+		}
+	}
+
+	private void detachShaders( GL2ES2 gl2 )
+	{
+		// Detach shaders before deleting to prevent memory leak.
+		// According to the standard it should be possible to detach immediately
+		// after linking, but alas, that breaks shadow maps on my machine.
+		int[] count = new int[ 1 ];
+		int[] ids = new int[ 100 ];
+		gl2.glGetAttachedShaders( _program, ids.length, count, 0, ids, 0 );
+		for ( int i = 0; i < count[ 0 ]; i++ )
+		{
+			gl2.glDetachShader( _program, ids[ i ] );
 		}
 	}
 
@@ -162,7 +179,7 @@ public class CoreShaderProgram
 		gl2.glGetProgramiv( _program, GL2ES2.GL_INFO_LOG_LENGTH, infoLogLength, 0 );
 
 		final String infoLog;
-		if( infoLogLength[ 0 ] == 0 )
+		if ( infoLogLength[ 0 ] == 0 )
 		{
 			infoLog = null;
 		}
@@ -197,6 +214,7 @@ public class CoreShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		final GL2ES2 gl2 = gl.getGL2ES2();
+		detachShaders( gl2 );
 		gl2.glDeleteProgram( _program );
 	}
 

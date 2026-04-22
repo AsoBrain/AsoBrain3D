@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ import com.jogamp.opengl.util.awt.*;
  * @author Gerrit Meinders
  */
 public class JOGLOffscreenView
-extends OffscreenView3D
+	extends OffscreenView3D
 {
 	/**
 	 * Engine that created this view.
@@ -163,7 +163,19 @@ extends OffscreenView3D
 		controlInput.addControlInputListener( defaultViewControl );
 		addOverlay( defaultViewControl );
 
-		update();
+		GLContext context = drawable.getContext();
+		if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+		{
+			throw new GLException( "Failed to make offscreen context current." );
+		}
+		try
+		{
+			init( drawable );
+		}
+		finally
+		{
+			context.release();
+		}
 	}
 
 	@Override
@@ -186,18 +198,6 @@ extends OffscreenView3D
 				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
 				{
 					throw new GLException( "Failed to make offscreen context current." );
-				}
-
-				if ( _capabilities == null ) // TODO: Find a better check to init only once.
-				{
-					init( drawable );
-
-					// FIXME: Release context and make it current again. Don't know why, but image is empty otherwise.
-					context.release();
-					if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
-					{
-						throw new GLException( "Failed to make offscreen context current." );
-					}
 				}
 
 				try
@@ -282,7 +282,7 @@ extends OffscreenView3D
 
 			try
 			{
-				Threading.invokeOnOpenGLThread(true, new Runnable()
+				Threading.invokeOnOpenGLThread( true, new Runnable()
 				{
 					@Override
 					public void run()
@@ -314,11 +314,18 @@ extends OffscreenView3D
 		{
 			try
 			{
+				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+				{
+					throw new GLException( "Failed to make offscreen context current before disposal." );
+				}
+
+				if ( _renderer != null )
+				{
+					_renderer.dispose();
+					_renderer = null;
+				}
+
 				context.release();
-			}
-			catch ( final GLException gle )
-			{
-				// expected
 			}
 			finally
 			{
@@ -326,7 +333,6 @@ extends OffscreenView3D
 			}
 		}
 
-		_renderer = null;
 		_capabilities = null;
 
 		final JOGLGraphics2D graphics2D = _graphics2D;

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -200,11 +200,14 @@ public class ShaderManager
 		if ( shaderImplementation != null )
 		{
 			final ShaderProgram shaderProgram = shaderImplementation.createProgram( name );
+			_shaderPrograms.put( name, shaderProgram );
+
 			for ( final String shader : shaders )
 			{
 				shaderProgram.attach( getShader( shader ) );
 			}
-			_shaderPrograms.put( name, shaderProgram );
+
+			shaderProgram.link();
 		}
 	}
 
@@ -432,6 +435,8 @@ public class ShaderManager
 	 */
 	public void dispose()
 	{
+		useShader( null );
+
 		for ( final ShaderProgram shaderProgram : _shaderPrograms.values() )
 		{
 			shaderProgram.dispose();
@@ -443,8 +448,6 @@ public class ShaderManager
 			shader.dispose();
 		}
 		_shaders.clear();
-
-		useShader( null );
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,7 @@ import com.jogamp.opengl.glu.*;
  * }
  * </pre>
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public class ShadowMap
 {
@@ -65,8 +65,7 @@ public class ShadowMap
 	 * Transformation from normalized screen coordinates (-1 to 1) to
 	 * texture coordinates (0 to 1).
 	 */
-	private static final double[] SCREEN_TO_TEXTURE =
-	{
+	private static final double[] SCREEN_TO_TEXTURE = {
 		0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
@@ -118,10 +117,12 @@ public class ShadowMap
 	 */
 	private double[] _modelviewMatrix;
 
+	private int[] _textures;
+
 	/**
 	 * Constructs a new shadow map of the given size.
 	 *
-	 * @param   shadowSize      Length and width of the shadow map.
+	 * @param shadowSize Length and width of the shadow map.
 	 */
 	public ShadowMap( final int shadowSize )
 	{
@@ -133,9 +134,9 @@ public class ShadowMap
 	 * is rendered in addition to a depth map. This can be used to easily view
 	 * what the light 'sees'.
 	 *
-	 * @param   shadowSize      Length and width of the shadow map.
-	 * @param   renderColorMap  <code>true</code> to render a color map;
-	 *                          otherwise only depth is rendered.
+	 * @param shadowSize     Length and width of the shadow map.
+	 * @param renderColorMap <code>true</code> to render a color map;
+	 *                       otherwise only depth is rendered.
 	 */
 	public ShadowMap( final int shadowSize, final boolean renderColorMap )
 	{
@@ -156,8 +157,8 @@ public class ShadowMap
 	/**
 	 * Sets the light to render the shadow map for.
 	 *
-	 * @param   light       Light.
-	 * @param   transform   Light to scene transform.
+	 * @param light     Light.
+	 * @param transform Light to scene transform.
 	 */
 	public void setLight( final Light3D light, final Matrix3D transform )
 	{
@@ -168,21 +169,22 @@ public class ShadowMap
 	/**
 	 * Initializes the shadow map.
 	 *
-	 * @param   gl  OpenGL pipeline.
+	 * @param gl OpenGL pipeline.
 	 */
 	public void init( final GL gl )
 	{
 		final int textureCount = _renderColorMap ? 2 : 1;
 
-		final int[] textures = new int[ textureCount ];
-		gl.glGenTextures( textures.length, textures, 0 );
+		_textures = new int[ textureCount ];
+		gl.glGenTextures( _textures.length, _textures, 0 );
 
 		final Framebuffer framebuffer = new Framebuffer();
+		_framebuffer = framebuffer;
 		framebuffer.bind();
 
 		final int size = _size;
 		{
-			final int depthTexture = textures[ 0 ];
+			final int depthTexture = _textures[ 0 ];
 			gl.glBindTexture( GL.GL_TEXTURE_2D, depthTexture );
 			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL2ES2.GL_DEPTH_COMPONENT, size, size, 0, GL2ES2.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_INT, null );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
@@ -196,7 +198,7 @@ public class ShadowMap
 
 		if ( _renderColorMap )
 		{
-			final int colorTexture = textures[ 1 ];
+			final int colorTexture = _textures[ 1 ];
 			gl.glBindTexture( GL.GL_TEXTURE_2D, colorTexture );
 			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, size, size, 0, GL.GL_RGBA, GL.GL_UNSIGNED_INT, null );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
@@ -214,14 +216,30 @@ public class ShadowMap
 
 		framebuffer.check();
 		Framebuffer.unbind();
-		_framebuffer = framebuffer;
+	}
+
+	public void delete()
+	{
+		GL gl = GLContext.getCurrentGL();
+
+		if ( _framebuffer != null )
+		{
+			_framebuffer.delete();
+			_framebuffer = null;
+		}
+
+		if ( _textures != null )
+		{
+			gl.glDeleteTextures( _textures.length, _textures, 0 );
+			_textures = null;
+		}
 	}
 
 	/**
 	 * Prepares for rendering of the shadow map.
 	 *
-	 * @param   gl      OpenGL pipeline.
-	 * @param   scene   Scene being rendered.
+	 * @param gl    OpenGL pipeline.
+	 * @param scene Scene being rendered.
 	 */
 	public void begin( final GL gl, final Scene scene )
 	{
@@ -320,7 +338,7 @@ public class ShadowMap
 	/**
 	 * Finishes rendering of the shadow map.
 	 *
-	 * @param   gl      OpenGL pipeline.
+	 * @param gl OpenGL pipeline.
 	 */
 	public void end( final GL gl )
 	{
@@ -336,7 +354,7 @@ public class ShadowMap
 	/**
 	 * Loads the projection matrix for projecting the shadow map on the scene.
 	 *
-	 * @param   gl      OpenGL pipeline.
+	 * @param gl OpenGL pipeline.
 	 */
 	public void loadProjectionMatrix( final GL gl )
 	{
@@ -349,7 +367,7 @@ public class ShadowMap
 	/**
 	 * Returns the depth texture.
 	 *
-	 * @return  OpenGL texture.
+	 * @return OpenGL texture.
 	 */
 	public int getDepthTexture()
 	{
@@ -359,7 +377,7 @@ public class ShadowMap
 	/**
 	 * Returns the color texture, if any.
 	 *
-	 * @return  OpenGL texture.
+	 * @return OpenGL texture.
 	 */
 	public int getColorTexture()
 	{

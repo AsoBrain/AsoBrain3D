@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -142,12 +142,12 @@ public class JOGLRenderer
 	/**
 	 * Framebuffer for multi-pass rendering.
 	 */
-	private ColorDepthFramebuffer _accumulationBuffer1 = new ColorDepthFramebuffer();
+	private final ColorDepthFramebuffer _accumulationBuffer1 = new ColorDepthFramebuffer();
 
 	/**
 	 * Additional framebuffer for multi-pass rendering on MacOS.
 	 */
-	private ColorDepthFramebuffer _accumulationBuffer2 = new ColorDepthFramebuffer();
+	private final ColorDepthFramebuffer _accumulationBuffer2 = new ColorDepthFramebuffer();
 
 	/**
 	 * Whether color should be rendered for shadow maps, instead of only depth.
@@ -461,8 +461,26 @@ public class JOGLRenderer
 	 */
 	public void dispose()
 	{
-		_shaderManager.dispose();
-		_geometryObjectManager.dispose();
+		if ( _shaderManager != null )
+		{
+			_shaderManager.dispose();
+			_shaderManager = null;
+		}
+
+		if (_geometryObjectManager != null )
+		{
+			_geometryObjectManager.dispose();
+			_geometryObjectManager = null;
+		}
+
+		_accumulationBuffer1.delete();
+		_accumulationBuffer2.delete();
+
+		if ( _shadowMap != null )
+		{
+			_shadowMap.delete();
+			_shadowMap = null;
+		}
 	}
 
 	/**
@@ -2141,7 +2159,7 @@ public class JOGLRenderer
 	 * Tree walker that takes level of detail of {@link Object3D}s into account.
 	 */
 	private class LevelOfDetailTreeWalker
-	extends Node3DTreeWalker
+		extends Node3DTreeWalker
 	{
 		/**
 		 * Calculates projected object bounds.
@@ -2174,16 +2192,16 @@ public class JOGLRenderer
 								final Matrix3D object2View = object2scene.multiply( scene2View );
 
 								final double[] points =
-								{
-								boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
-								boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
-								boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
-								boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
-								boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
-								boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
-								boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
-								boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
-								};
+									{
+										boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
+										boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
+										boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
+										boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
+										boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
+										boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
+										boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
+										boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
+									};
 
 								object2View.transform( points, points, 8 );
 								projector.project( points, points, 8 );

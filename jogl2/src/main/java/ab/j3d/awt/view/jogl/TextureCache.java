@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2021 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -127,12 +127,21 @@ public class TextureCache
 		{
 			Map.Entry<Object, TextureProxy> entry = i.next();
 			TextureProxy textureProxy = entry.getValue();
+			Texture texture = textureProxy.getTexture();
 
 			/*
 			 * If texture data is still available, a new texture can be created.
 			 * Otherwise, the proxy is of no use anymore.
 			 */
-			if ( !textureProxy.isTextureDataSet() )
+			boolean notLoaded = texture == null && !textureProxy.isTextureDataSet();
+
+			/*
+			 * If the texture object was already created, but is no longer valid
+			 * then it has to be recreated.
+			 */
+			boolean invalidTexture = texture != null && !gl.glIsTexture( texture.getTextureObject() );
+
+			if ( invalidTexture || notLoaded )
 			{
 				i.remove();
 				_alpha.remove( entry.getKey() );
@@ -400,7 +409,7 @@ public class TextureCache
 	 * @throws IOException if an I/O error occurs while reading the image.
 	 */
 	public @Nullable BufferedImage loadImage( TextureMap textureMap )
-	throws IOException
+		throws IOException
 	{
 		return _textureLibrary.loadImage( textureMap );
 	}
@@ -411,7 +420,7 @@ public class TextureCache
 	 * runtime from stopping.
 	 */
 	private static class DaemonThreadFactory
-	implements ThreadFactory
+		implements ThreadFactory
 	{
 		/**
 		 * Thread group for new threads.
