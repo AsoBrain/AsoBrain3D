@@ -1,6 +1,6 @@
 /*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2019 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -163,7 +163,19 @@ public class JOGLOffscreenView
 		controlInput.addControlInputListener( defaultViewControl );
 		addOverlay( defaultViewControl );
 
-		update();
+		GLContext context = drawable.getContext();
+		if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+		{
+			throw new GLException( "Failed to make offscreen context current." );
+		}
+		try
+		{
+			init( drawable );
+		}
+		finally
+		{
+			context.release();
+		}
 	}
 
 	@Override
@@ -186,18 +198,6 @@ public class JOGLOffscreenView
 				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
 				{
 					throw new GLException( "Failed to make offscreen context current." );
-				}
-
-				if ( _capabilities == null ) // TODO: Find a better check to init only once.
-				{
-					init( drawable );
-
-					// FIXME: Release context and make it current again. Don't know why, but image is empty otherwise.
-					context.release();
-					if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
-					{
-						throw new GLException( "Failed to make offscreen context current." );
-					}
 				}
 
 				try
@@ -326,10 +326,6 @@ public class JOGLOffscreenView
 				}
 
 				context.release();
-			}
-			catch ( final GLException gle )
-			{
-				gle.printStackTrace();
 			}
 			finally
 			{
