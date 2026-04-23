@@ -1,8 +1,14 @@
 /*
- * $Id$
- * ====================================================================
+ * (C) Copyright Deli Home Holding B.V. 2026 - All Rights Reserved
+ *
+ * This software may not be used, copied, modified, or distributed in any
+ * form without express permission from Deli Home Holding B.V. Please contact
+ * Deli Home Holding B.V. for license information.
+ */
+
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +23,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.awt.view.jogl;
 
@@ -30,7 +35,7 @@ import org.jetbrains.annotations.*;
  * Provides geometry objects, which are automatically created when first
  * requested and deleted when no longer in use.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  * @version $Revision$ $Date$
  */
 public class GeometryObjectManager
@@ -48,7 +53,7 @@ public class GeometryObjectManager
 	/**
 	 * Geometry objects that were not used during the last frame.
 	 */
-	private final Set<Key> _unusedGeometryObjects = new HashSet<Key>();
+	private final Set<Key> _usedGeometryObjects = new HashSet<Key>();
 
 	/**
 	 * Constructs a new manager for geometry objects.
@@ -61,7 +66,7 @@ public class GeometryObjectManager
 	/**
 	 * Constructs a new manager for geometry objects.
 	 *
-	 * @param   geometryObjectFactory   Creates the managed geometry objects.
+	 * @param geometryObjectFactory Creates the managed geometry objects.
 	 */
 	public GeometryObjectManager( final GeometryObjectFactory geometryObjectFactory )
 	{
@@ -71,10 +76,10 @@ public class GeometryObjectManager
 	/**
 	 * Returns a geometry object for the given faces.
 	 *
-	 * @param   faceGroup   Faces to be included in the geometry.
-	 * @param   type        Type of geometry.
+	 * @param faceGroup Faces to be included in the geometry.
+	 * @param type      Type of geometry.
 	 *
-	 * @return  Geometry object.
+	 * @return Geometry object.
 	 */
 	@NotNull
 	public GeometryObject getGeometryObject( @NotNull final FaceGroup faceGroup, @NotNull final GeometryType type )
@@ -90,7 +95,7 @@ public class GeometryObjectManager
 			geometryObjects.put( key, result );
 		}
 
-		_unusedGeometryObjects.remove( key );
+		_usedGeometryObjects.add( key );
 
 		return result;
 	}
@@ -100,7 +105,31 @@ public class GeometryObjectManager
 	 */
 	public void frameRendered()
 	{
-		deleteUnusedObjects( _geometryObjects, _unusedGeometryObjects );
+		Map<Key, GeometryObject> geometryObjects = _geometryObjects;
+		Set<Key> usedKeys = _usedGeometryObjects;
+
+		/*
+		 * Copy all used entries to a new cache.
+		 *
+		 * This fixes any duplicate keys/entries that may arise when a FaceGroup
+		 * is modified after creating a Key.
+		 */
+		Map<Key, GeometryObject> newCache = new HashMap<>();
+		for ( Key key : usedKeys )
+		{
+			newCache.put( key, geometryObjects.remove( key ) );
+		}
+
+		// Delete any remaining objects.
+		for ( GeometryObject geometryObject : geometryObjects.values() )
+		{
+			geometryObject.delete();
+		}
+
+		geometryObjects.clear();
+		geometryObjects.putAll( newCache );
+
+		usedKeys.clear();
 	}
 
 	/**
@@ -114,24 +143,7 @@ public class GeometryObjectManager
 		}
 		_geometryObjects.clear();
 
-		_unusedGeometryObjects.clear();
-	}
-
-	/**
-	 * Deletes unused geometry objects based on the given set of keys.
-	 *
-	 * @param   geometryObjects     Map of geometry objects.
-	 * @param   unusedKeys          Keys that were not rendered.
-	 */
-	private static <K> void deleteUnusedObjects( final Map<K, GeometryObject> geometryObjects, final Set<K> unusedKeys )
-	{
-		for ( final K key : unusedKeys )
-		{
-			final GeometryObject geometryObject = geometryObjects.remove( key );
-			geometryObject.delete();
-		}
-		unusedKeys.clear();
-		unusedKeys.addAll( geometryObjects.keySet() );
+		_usedGeometryObjects.clear();
 	}
 
 	/**
