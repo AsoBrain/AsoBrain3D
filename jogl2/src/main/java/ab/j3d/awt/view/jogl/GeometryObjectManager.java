@@ -86,6 +86,15 @@ public class GeometryObjectManager
 	{
 		final Map<Key, GeometryObject> geometryObjects = _geometryObjects;
 
+		// Ensure that all vertex normals are generated. Otherwise Key.hashCode/equals are likely to change!
+		for ( Face3D face : faceGroup.getFaces() )
+		{
+			for ( int i = 0, n = face.getVertexCount(); i < n; i++ )
+			{
+				face.getVertexNormal( i );
+			}
+		}
+
 		final Key key = new Key( faceGroup, type );
 		GeometryObject result = geometryObjects.get( key );
 
