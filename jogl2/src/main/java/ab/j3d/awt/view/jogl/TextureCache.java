@@ -53,7 +53,7 @@ public class TextureCache
 	/**
 	 * Library providing texture images.
 	 */
-	private final TextureLibrary _textureLibrary;
+	private @Nullable TextureLibrary _textureLibrary;
 
 	/**
 	 * Cached textures, mapped by arbitrary key objects.
@@ -95,7 +95,12 @@ public class TextureCache
 	 */
 	private boolean _asynchronous = true;
 
-	public TextureCache( TextureLibrary textureLibrary )
+	public TextureCache( @Nullable TextureLibrary textureLibrary )
+	{
+		_textureLibrary = textureLibrary;
+	}
+
+	public void setTextureLibrary( TextureLibrary textureLibrary )
 	{
 		_textureLibrary = textureLibrary;
 	}
@@ -411,7 +416,7 @@ public class TextureCache
 	public @Nullable BufferedImage loadImage( TextureMap textureMap )
 		throws IOException
 	{
-		return _textureLibrary.loadImage( textureMap );
+		return _textureLibrary == null ? null : _textureLibrary.loadImage( textureMap );
 	}
 
 	/**

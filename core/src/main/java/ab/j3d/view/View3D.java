@@ -1,7 +1,6 @@
-/* $Id$
- * ====================================================================
+/*
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2012 Peter S. Heijnen
+ * Copyright (C) 1999-2026 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
  */
 package ab.j3d.view;
 
@@ -62,7 +60,7 @@ public abstract class View3D
 	/**
 	 * Scene being viewed.
 	 */
-	private final Scene _scene;
+	private Scene _scene = null;
 
 	/**
 	 * Resolution of image in meters per pixel. If is set to <code>0.0</code>,
@@ -184,9 +182,6 @@ public abstract class View3D
 	 */
 	protected View3D( @NotNull final Scene scene )
 	{
-		scene.addSceneUpdateListener( this );
-		_scene = scene;
-
 		_resolution = 0.0;
 
 		_pixelsToRadiansFactor = DEFAULT_PIXELS_TO_RADIANS_FACTOR;
@@ -204,11 +199,11 @@ public abstract class View3D
 
 		_cameraControl = null;
 
-		final Grid grid = new Grid();
-		grid.setCellSize( (int)Math.round( 1.0 / scene.getUnit() ) );
-		_grid = grid;
+		_grid = new Grid();
 
 		_background = Background.createDefault();
+
+		setScene( scene );
 
 		appendRenderStyleFilter( new ViewStyleFilter() );
 	}
@@ -268,6 +263,20 @@ public abstract class View3D
 	public Scene getScene()
 	{
 		return _scene;
+	}
+
+	public void setScene( Scene scene )
+	{
+		Scene oldScene = _scene;
+		if ( oldScene != null )
+		{
+			oldScene.removeSceneUpdateListener( this );
+		}
+
+		_scene = scene;
+		_grid.setCellSize( (int)Math.round( 1.0 / scene.getUnit() ) );
+
+		scene.addSceneUpdateListener( this );
 	}
 
 	/**
@@ -751,7 +760,7 @@ public abstract class View3D
 	 * @return  The {@link ViewControlInput} for this view;
 	 *          <code>null</code> if this view has none.
 	 */
-	public abstract ViewControlInput getControlInput();
+	public abstract @Nullable ViewControlInput getControlInput();
 
 	/**
 	 * Adds an {@link ViewOverlay} to this view. The overlay that is added

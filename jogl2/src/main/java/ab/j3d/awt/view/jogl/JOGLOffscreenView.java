@@ -569,4 +569,10 @@ public class JOGLOffscreenView
 
 		return renderer;
 	}
+
+	@Override
+	public void setTextureLibrary( TextureLibrary textureLibrary )
+	{
+		_joglEngine.getTextureCache().setTextureLibrary( textureLibrary );
+	}
 }
