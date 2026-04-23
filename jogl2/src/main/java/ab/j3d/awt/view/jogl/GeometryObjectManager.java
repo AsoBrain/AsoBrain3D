@@ -1,12 +1,4 @@
 /*
- * (C) Copyright Deli Home Holding B.V. 2026 - All Rights Reserved
- *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Deli Home Holding B.V. Please contact
- * Deli Home Holding B.V. for license information.
- */
-
-/*
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2026 Peter S. Heijnen
  *
