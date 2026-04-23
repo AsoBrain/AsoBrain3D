@@ -163,4 +163,22 @@ public class CubeMap
 	{
 		return _top;
 	}
+
+	@Override
+	public boolean equals( Object o )
+	{
+		if ( !( o instanceof CubeMap ) )
+		{
+			return false;
+		}
+
+		CubeMap cubeMap = (CubeMap)o;
+		return _name.equals( cubeMap._name );
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _name.hashCode();
+	}
 }
