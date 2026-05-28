@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "lib",
+    "rootDir": "./src",
+    "outDir": "./lib",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": [
@@ -12,13 +13,11 @@
     "jsx": "react",
     "declaration": true,
     "moduleResolution": "NodeNext",
-    "types": [
-      "node"
-    ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": false
   },
   "include": [
-    "src"
+    "./src"
   ],
   "exclude": [
     "node_modules",
