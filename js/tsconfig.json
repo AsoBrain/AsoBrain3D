@@ -13,9 +13,6 @@
     "jsx": "react",
     "declaration": true,
     "moduleResolution": "NodeNext",
-    "types": [
-      "node"
-    ],
     "skipLibCheck": true,
     "strict": false
   },
