@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "lib",
+    "rootDir": "./src",
+    "outDir": "./lib",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": [
@@ -15,10 +16,11 @@
     "types": [
       "node"
     ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": false
   },
   "include": [
-    "src"
+    "./src"
   ],
   "exclude": [
     "node_modules",
